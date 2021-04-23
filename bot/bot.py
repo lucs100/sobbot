@@ -1,6 +1,7 @@
 import os
 import discord
-import functions as sob 
+import functions as sob
+import sobblepics
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -39,11 +40,14 @@ async def on_message(message):
 		if c == "flipcoin":
 			await(message.channel.send(sob.flipCoin()))
 
-		if (c[0] == 'd'):
+		if c.startswith('d'):
 			try:
 				n = (int(c[1:]))
 				await(message.channel.send(sob.die(n)))
 			except typeError:
 				pass
+
+		if c == "sobbleimage":
+			await(message.channel.send(file = sob.sobbleImage()))
 
 client.run(TOKEN)
