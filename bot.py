@@ -1,5 +1,6 @@
 import os
 import discord
+import functions as sob 
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,10 +19,31 @@ async def on_ready():
 		guildCount = guildCount + 1
 
 	print(f"{guildCount} total connected servers.")
+	print(f"{client.user} is ready!")
+	channel = client.get_channel(835267335169245255)
+	await channel.send("im conected")
+	
 
 @client.event
 async def on_message(message):
-	if message.content == "hello sobbot":
+	c = (message.content).lower()
+	#special interaction messages, do not require prefix
+	if c == "hello sobbot":
 		await message.channel.send("hi :pleading_face:")
+
+	#prefixed messages
+	if c.startswith('s!'):
+		#remove prefix from search
+		c = c[2:]
+
+		if c == "flipcoin":
+			await(message.channel.send(sob.flipCoin()))
+
+		if (c[0] == 'd'):
+			try:
+				n = (int(c[1:]))
+				await(message.channel.send(sob.die(n)))
+			except typeError:
+				pass
 
 client.run(TOKEN)
