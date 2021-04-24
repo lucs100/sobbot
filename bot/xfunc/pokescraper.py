@@ -4,7 +4,7 @@ pkmn = {}
 pokeCount = 898
 # DO NOT PULL FROM THE API 898 TIMES UNLESS JSON SAVING WORKS THAT WOULD BE SO STUPID  
 
-for n in range(1, 4):
+for n in range(1, pokeCount+1):
     current = requests.get(f"https://pokeapi.co/api/v2/pokemon/{n}/")
     current = json.loads(current.text)
 
@@ -16,7 +16,6 @@ for n in range(1, 4):
     }
 
     if nDictionary["typeCount"] == 1:
-        print("AAAAA")
         nDictionary["type1"] = (current["types"][0]["type"]["name"])
     elif nDictionary["typeCount"] == 2:
         nDictionary["type1"] = (current["types"][0]["type"]["name"])
@@ -26,4 +25,15 @@ for n in range(1, 4):
 
     pkmn[n] = nDictionary
 
-print(json.dumps(pkmn, indent=2))
+# print(json.dumps(pkmn, indent=2))
+
+with open('bot/xfunc/data/pkmn/pkmn.json', 'w', encoding="utf-8") as f:
+    json.dump(pkmn, f, ensure_ascii=False, indent=4)
+
+count = len(pkmn)
+
+if count == pokeCount:
+    print(f"Complete - {count}/{pokeCount}.")
+else:
+    print(f"Failed - {count}/{pokeCount}.")
+
