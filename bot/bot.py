@@ -1,11 +1,10 @@
 import os
 import discord
 import functions as sob
-import sobblepics
 from dotenv import load_dotenv
 
 load_dotenv()
-TOKEN = os.getenv('TOKEN')
+DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 
 client = discord.Client()
 
@@ -27,27 +26,38 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	c = (message.content).lower()
-	#special interaction messages, do not require prefix
-	if c == "hello sobbot":
-		await message.channel.send("hi :pleading_face:")
+	if message.author.id != 835251884104482907:
+		c = (message.content).lower()
+		
+		#special interaction messages, do not require prefix
+		if c == "hello sobbot":
+			await message.channel.send("hi :pleading_face:")
 
-	#prefixed messages
-	if c.startswith('s!'):
-		#remove prefix from search
-		c = c[2:]
+		#special channels
+		if message.channel.id == 835388133959794699:
+			content = sob.parseMath(c)
+			if content != None:
+				await(message.channel.send(content))
 
-		if c == "flipcoin":
-			await(message.channel.send(sob.flipCoin()))
+		#prefixed messages
+		if c.startswith('s!'):
+			#remove prefix from search
+			c = c[2:]
 
-		if c.startswith('d'):
-			try:
-				n = (int(c[1:]))
-				await(message.channel.send(sob.die(n)))
-			except typeError:
-				pass
+			if c == "coin":
+				await(message.channel.send(sob.flipCoin()))
 
-		if c == "sobbleimage":
-			await(message.channel.send(file = sob.sobbleImage()))
+			if c.startswith('d'):
+				try:
+					n = (int(c[1:]))
+					await(message.channel.send(sob.die(n)))
+				except typeError:
+					pass
 
-client.run(TOKEN)
+			if c == "sobbleimage":
+				await(message.channel.send(file = sob.sobbleImage()))
+
+			if c[:4] == "math":
+				await(message.channel.send(sob.parseMath(c[4:].strip())))
+
+client.run(DISCORDTOKEN)
