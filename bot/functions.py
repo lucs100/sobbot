@@ -115,11 +115,11 @@ def timeRunning(c):
     if d == h == m == s == 0:
         q = f"under a second!"
     if d == h == m == 0:
-        q = f":{s}!"
+        q = f"{s}s!"
     elif d == h == 0:
-        q = f"{m}:{s}!"
+        q = f"{m}m{s}s!"
     elif d == 0:
-        q = f"{h}:{m}:{s}!"
+        q = f"{h}h{m}m{s}s!"
     else:
-        q = f"{d}d {h}:{m}:{s}!"
+        q = f"{d}d {h}h{m}m{s}s!"
     return ("Sobbot has been online for " + q)

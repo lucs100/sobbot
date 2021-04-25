@@ -88,5 +88,6 @@ async def on_message(message):
 
 			if c == "starttime":
 				await(message.channel.send(time.ctime(startTime)))
+				#maybe format this a little nicer?
 
 client.run(DISCORDTOKEN)
