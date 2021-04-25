@@ -1,4 +1,5 @@
-import random, discord, os, decimal
+import random, discord, os, decimal, json
+# import xfunc.data.pkmn as pkmn
 
 def flipCoin():
     coin = random.randint(0, 1)
@@ -54,3 +55,53 @@ def parseMath(exp):
     except:
         pass
         # return "Parse failed - Exception caught. (Error 4)"
+
+def findDex(n):
+    # passes dex number to pkmnLookup if reverse search is successful
+    n = n.lower()
+    pkmn = open('bot/xfunc/data/pkmn.json')
+    data = json.load(pkmn)
+    for k in data:
+        if data[k]["name"] == n:
+            return int(k)
+    return -1
+
+def pkmnLookup(n):
+    final = None
+    try:
+        n = int(n)
+    except:
+        res = findDex(str(n))
+        if res != -1:
+            n = res
+        else:
+            return final 
+    finally:
+        if isinstance(n, int) and n >= 1 and n <= 898:
+            # should be done as a dictionary i think? but it ruins my fstrings so whatever
+            pkmn = open('bot/xfunc/data/pkmn.json')
+            data = json.load(pkmn)
+            localdata = {}
+            name = data[str(n)]["name"]
+            art = data[str(n)]["art"]
+
+            if data[str(n)]["typeCount"] == 1:
+                type1 = data[str(n)]["type1"]
+                final = discord.Embed(
+                    title=str(f"**{(name)}**, number {n}"),
+                    description=(type1),
+                    colour=discord.Colour.random()
+                    )
+
+            else:
+                type1 = data[str(n)]["type1"]
+                type2 = data[str(n)]["type2"]
+                final = discord.Embed(
+                    title=str(f"**{(name)}**, number {n}"),
+                    description=f"{(type1)}, {(type2)}",
+                    colour=discord.Colour.random()
+                    )
+
+            final.set_image(url=(art))
+            pkmn.close()
+        return final

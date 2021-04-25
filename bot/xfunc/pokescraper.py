@@ -27,7 +27,7 @@ for n in range(1, pokeCount+1):
 
 # print(json.dumps(pkmn, indent=2))
 
-with open('bot/xfunc/data/pkmn/pkmn.json', 'w', encoding="utf-8") as f:
+with open('bot/xfunc/data/pkmn.json', 'w', encoding="utf-8") as f:
     json.dump(pkmn, f, ensure_ascii=False, indent=4)
 
 count = len(pkmn)

@@ -57,7 +57,16 @@ async def on_message(message):
 			if c == "sobbleimage":
 				await(message.channel.send(file = sob.sobbleImage()))
 
-			if c[:4] == "math":
+			if c.startswith("math"):
 				await(message.channel.send(sob.parseMath(c[4:].strip())))
+			
+			if c.startswith("pkmn"):
+				data = c[4:].strip()
+				try:
+					data = int(data)
+				except ValueError:
+					pass
+				finally:
+					await(message.channel.send(embed=sob.pkmnLookup(data)))
 
 client.run(DISCORDTOKEN)
