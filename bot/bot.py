@@ -36,9 +36,12 @@ async def on_message(message):
 	if message.author.id != 835251884104482907:
 		c = (message.content).lower()
 		
-		#special interaction messages, do not require prefix
+		#special interaction/command messages, do not require prefix
 		if c == "hello sobbot":
 			await message.channel.send("hi :pleading_face:")
+			
+		if c == "ping":
+			await(message.channel.send("pong! ({0}ms)".format(int(client.latency*1000))))
 
 		#special channels
 		if message.channel.id == 835388133959794699:
@@ -65,7 +68,9 @@ async def on_message(message):
 				await(message.channel.send(file = sob.sobbleImage()))
 
 			if c.startswith("math"):
-				await(message.channel.send(sob.parseMath(c[4:].strip())))
+				content = sob.parseMath(c[4:].strip())
+				if content != None:
+					await(message.channel.send(content))
 			
 			if c.startswith("pkmn"):
 				data = c[4:].strip()      #data is query
@@ -74,8 +79,9 @@ async def on_message(message):
 				except ValueError:
 					pass
 				finally:
-					
-					await(message.channel.send(embed=sob.pkmnLookup(data)))      #is str by default, triggering reverse search mode, but when query is int, uses normal mode
+					embed = sob.pkmnLookup(data)
+					if embed != None: 	  #result found
+						await(message.channel.send(embed=sob.pkmnLookup(data)))
 			
 			if c == "onlineduration":
 				await(message.channel.send(sob.timeRunning(startTime)))
