@@ -112,11 +112,14 @@ def timeRunning(c):
     h, s = divmod(s, 3600)
     m, s = divmod(s, 60)
     d, h, m, s = int(d), int(h), int(m), int(s)
+    if d == h == m == s == 0:
+        q = f"under a second!"
     if d == h == m == 0:
-        return f"Sobbot has been online for :{s}!"
+        q = f":{s}!"
     elif d == h == 0:
-        return f"Sobbot has been online for {m}:{s}!"
+        q = f"{m}:{s}!"
     elif d == 0:
-        return f"Sobbot has been online for {h}:{m}:{s}!"
+        q = f"{h}:{m}:{s}!"
     else:
-        return f"Sobbot has been online for {d}d {h}:{m}:{s}!"
+        q = f"{d}d {h}:{m}:{s}!"
+    return ("Sobbot has been online for " + q)

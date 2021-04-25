@@ -83,7 +83,7 @@ async def on_message(message):
 					if embed != None: 	  #result found
 						await(message.channel.send(embed=sob.pkmnLookup(data)))
 			
-			if c == "onlineduration":
+			if c == "uptime":
 				await(message.channel.send(sob.timeRunning(startTime)))
 
 			if c == "starttime":

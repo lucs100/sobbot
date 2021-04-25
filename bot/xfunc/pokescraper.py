@@ -36,4 +36,3 @@ if count == pokeCount:
     print(f"Complete - {count}/{pokeCount}.")
 else:
     print(f"Failed - {count}/{pokeCount}.")
-
