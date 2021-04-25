@@ -61,12 +61,13 @@ async def on_message(message):
 				await(message.channel.send(sob.parseMath(c[4:].strip())))
 			
 			if c.startswith("pkmn"):
-				data = c[4:].strip()
+				data = c[4:].strip()      #data is query
 				try:
-					data = int(data)
+					data = int(data)      #rehashes as int if possible
 				except ValueError:
 					pass
 				finally:
-					await(message.channel.send(embed=sob.pkmnLookup(data)))
+					
+					await(message.channel.send(embed=sob.pkmnLookup(data)))      #is str by default, triggering reverse search mode, but when query is int, uses normal mode
 
 client.run(DISCORDTOKEN)
