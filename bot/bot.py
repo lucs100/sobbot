@@ -1,5 +1,6 @@
 import os
 import discord
+import time
 import functions as sob
 from dotenv import load_dotenv
 
@@ -7,6 +8,8 @@ load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 
 client = discord.Client()
+
+startTime = 0
 
 @client.event
 async def on_ready():
@@ -18,11 +21,15 @@ async def on_ready():
 		print(f"Connected to {guild.name} ({guild.id}).")
 		guildCount = guildCount + 1
 
+	global startTime
+	startTime = time.time()
+
 	print(f"{guildCount} total connected servers.")
 	print(f"{client.user} is ready!")
+	print(f"Time: {time.ctime(startTime)}")
 	channel = client.get_channel(835267335169245255)
 	await channel.send("im conected")
-	
+
 
 @client.event
 async def on_message(message):
@@ -69,5 +76,11 @@ async def on_message(message):
 				finally:
 					
 					await(message.channel.send(embed=sob.pkmnLookup(data)))      #is str by default, triggering reverse search mode, but when query is int, uses normal mode
+			
+			if c == "onlineduration":
+				await(message.channel.send(sob.timeRunning(startTime)))
+
+			if c == "starttime":
+				await(message.channel.send(time.ctime(startTime)))
 
 client.run(DISCORDTOKEN)
