@@ -12,7 +12,7 @@ def die(n):
     return random.randint(1, n)
 
 def sobbleImage():
-    return (discord.File(fp=("bot/pics/" + (random.choice(os.listdir("bot/pics")))), filename="sobble.png"))
+    return (discord.File(fp=("bot/pics/sobble/" + (random.choice(os.listdir("bot/pics/sobble")))), filename="sobble.png"))
 
 def parseMath(exp):
     try:
@@ -131,8 +131,9 @@ def randomBlue():
     g = int(random.randint(20, 50)*4) # 80, 200
     b = int(random.randint(52, 85)*3) # 156, 255
     color = f"rgb({r}, {g}, {b})"
-    path = f"bot/pics/colors/{color}.png"
+    colorhex = str(hex(r)[2:] + hex(g)[2:] + hex(b)[2:])
+    path = f"bot/pics/colors/{colorhex}.png"
     if not os.path.exists(path):
         img = Image.new(mode="RGB", size=(250, 250), color=color)
         img.save(fp=path, format="png")
-    return (discord.File(fp=path), color)
+    return (discord.File(fp=path), f"{color}, #{colorhex}")

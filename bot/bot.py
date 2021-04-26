@@ -29,6 +29,7 @@ async def on_ready():
 	print(f"Time: {time.ctime(startTime)}")
 	channel = client.get_channel(835267335169245255)
 	await channel.send("im conected")
+	await client.change_presence(activity=discord.Game(name="sobling"))
 
 
 @client.event
@@ -69,11 +70,10 @@ async def on_message(message):
 
 			if c.startswith("math"):
 				content = sob.parseMath(c[4:].strip())
-				if content != None:
-					await(message.channel.send(content))
+				await(message.channel.send(content))
 			
 			if c.startswith("pkmn"):
-				data = c[4:].strip()      #data is query
+				data = c[4:].strip()      #query
 				try:
 					data = int(data)      #rehashes as int if possible
 				except ValueError:
