@@ -93,5 +93,14 @@ async def on_message(message):
 			if c == "randblue" or c == "randbluw":
 				fp, content = (sob.randomBlue())
 				await(message.channel.send(file=fp, content=content))
+			
+			if c.startswith("startlink"):
+				channel = client.get_channel(c[10:].strip())
+				while True:
+					m = input()
+					if m == "s!endlink":
+						break
+					else:
+						await(channel.send())
 
 client.run(DISCORDTOKEN)
