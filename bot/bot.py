@@ -24,13 +24,13 @@ async def on_ready():
 	global startTime
 	startTime = time.time()
 
-	print(f"{guildCount} total connected servers.")
+	print(f"({guildCount}) total connected servers.")
 	print(f"{client.user} is ready!")
 	print(f"Time: {time.ctime(startTime)}")
 	channel = client.get_channel(835267335169245255)
 	await channel.send("im conected")
+	# await sob.setActivity(client) #not working yet
 	await client.change_presence(activity=discord.Game(name="sobling"))
-
 
 @client.event
 async def on_message(message):
@@ -97,37 +97,11 @@ async def on_message(message):
 			if c.startswith("link"):
 				try:
 					channelid = int(c[4:].strip())
+					channel = client.get_channel(channelid)
 				except:
 					return True
-				channel = client.get_channel(channelid)
-				name = channel.name
-				guild = channel.guild
 				print("Link successful.")
-				while True:
-					print()
-					print("You are in pipeline mode.")
-					print(f"Channel: {name}    Server:{guild}")
-					print()
-					print("Options:")
-					print("Type a message to send it as Sobbot.")
-					print("Send a newline to trigger a typing indicator.")
-					print("Type s!reply \{id\} to reply to a message.")
-					print("Type s!end to end pipeline mode.")
-					try:
-						content = sob.linkMessage()
-						if content == "":
-							await sob.typingIndicator(channel)
-						elif content == "s!end":
-							return True
-						elif content.startswith("s!reply"):
-							message = await(channel.fetch_message(int(content[7:].strip())))
-							messagecontent = message.content
-							sender = message.author
-							print(f"Replying to \"{messagecontent}\" from {sender}.")
-							await(message.reply(input()))
-						else:
-							await(channel.send(content))
-					except:
-						pass
-
+				await sob.pipeline(channel)
+				print("Link ended.")
+				
 client.run(DISCORDTOKEN)

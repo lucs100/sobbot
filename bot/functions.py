@@ -1,6 +1,6 @@
 import random, discord, os, decimal, json, time
+from datetime import datetime
 from PIL import Image
-# import xfunc.data.pkmn as pkmn
 
 def flipCoin():
     coin = random.randint(0, 1)
@@ -12,7 +12,7 @@ def die(n):
     return random.randint(1, n)
 
 def sobbleImage():
-    return (discord.File(fp=("bot/pics/sobble/" + (random.choice(os.listdir("bot/pics/sobble")))), filename="sobble.png"))
+    return (discord.File(fp=("bot/resources/pics/sobble/" + (random.choice(os.listdir("bot/resources/pics/sobble")))), filename="sobble.png"))
 
 def parseMath(exp):
     try:
@@ -60,7 +60,7 @@ def parseMath(exp):
 def findDex(n):
     # passes dex number to pkmnLookup if reverse search is successful
     n = n.lower()
-    pkmn = open('bot/xfunc/data/pkmn.json')
+    pkmn = open('bot/func/data/pkmn.json')
     data = json.load(pkmn)
     for k in data:
         if data[k]["name"] == n:
@@ -80,7 +80,7 @@ def pkmnLookup(n):
     finally:
         if isinstance(n, int) and n >= 1 and n <= 898:
             # should be done as a dictionary i think? but it ruins my fstrings so whatever
-            pkmn = open('bot/xfunc/data/pkmn.json')
+            pkmn = open('bot/func/data/pkmn.json')
             data = json.load(pkmn)
             localdata = {}
             name = data[str(n)]["name"]
@@ -132,16 +132,54 @@ def randomBlue():
     b = int(random.randint(52, 85)*3) # 156, 255
     color = f"rgb({r}, {g}, {b})"
     colorhex = str(hex(r)[2:] + hex(g)[2:] + hex(b)[2:])
-    path = f"bot/pics/colors/{colorhex}.png"
+    path = f"bot/resources/pics/colors/{colorhex}.png"
     if not os.path.exists(path):
         img = Image.new(mode="RGB", size=(250, 250), color=color)
         img.save(fp=path, format="png")
     return (discord.File(fp=path), f"{color}, #{colorhex}")
 
-def linkMessage():
-    content = str(input())
-    return content
+def printfile(fp):
+    textfile = open(fp, 'r')
+    lines = textfile.readlines()
+    for line in lines:
+        print("{}".format(line.strip()))
 
 async def typingIndicator(channel):
     await channel.trigger_typing()
     return True
+
+async def pipeline(channel):
+    name = channel.name
+    guild = channel.guild
+    while True:
+        for i in range(10):
+            print()
+        print(f"Channel: #{name}    Server: {guild}")
+        printfile("bot/func/pipeline/pipelineui.txt")
+        print()
+        try:
+            content = str(input())
+            if content == "":
+                await typingIndicator(channel)
+            elif content == "s!end":
+                return True
+            elif content.startswith("s!reply"):
+                print()
+                message = await(channel.fetch_message(int(content[7:].strip())))
+                messagecontent = message.content
+                sender = message.author
+                print(f"Replying to \"{messagecontent}\" from {sender}.")
+                await(message.reply(input()))
+                print()
+            else:
+                await(channel.send(content))
+        except:
+            pass
+
+# async def setActivity(client):
+#     name = "sobling"
+#     large_image = "bot/resources/status/sobblelook.png"
+#     large_image_text = "sobling"
+#     assets = {"large_image": large_image, "large_image_text":large_image_text}
+#     start = datetime.fromtimestamp(time.time())
+#     await client.change_presence(activity=discord.Activity(name="sobling", assets=assets, start=start))
