@@ -1,4 +1,5 @@
 import random, discord, os, decimal, json, time
+from PIL import Image
 # import xfunc.data.pkmn as pkmn
 
 def flipCoin():
@@ -123,3 +124,15 @@ def timeRunning(c):
     else:
         q = f"{d}d {h}h{m}m{s}s!"
     return ("Sobbot has been online for " + q)
+
+def randomBlue():
+    # incremented so that i don't generate 240k files
+    r = int(random.randint(20, 30)*2) # 40, 60
+    g = int(random.randint(20, 50)*4) # 80, 200
+    b = int(random.randint(52, 85)*3) # 156, 255
+    color = f"rgb({r}, {g}, {b})"
+    path = f"bot/pics/colors/{color}.png"
+    if not os.path.exists(path):
+        img = Image.new(mode="RGB", size=(250, 250), color=color)
+        img.save(fp=path, format="png")
+    return (discord.File(fp=path), color)

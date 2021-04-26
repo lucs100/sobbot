@@ -9,7 +9,7 @@ DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 
 client = discord.Client()
 
-startTime = 0
+startTime = time.time()
 
 @client.event
 async def on_ready():
@@ -89,5 +89,9 @@ async def on_message(message):
 			if c == "starttime":
 				await(message.channel.send(time.ctime(startTime)))
 				#maybe format this a little nicer?
+			
+			if c == "randblue" or c == "randbluw":
+				fp, content = (sob.randomBlue())
+				await(message.channel.send(file=fp, content=content))
 
 client.run(DISCORDTOKEN)
