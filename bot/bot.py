@@ -101,12 +101,18 @@ async def on_message(message):
 				guild = channel.guild
 				print(f"Started link to {name} (id:{channelid}) in {guild}.")
 				while True:
-					content = sob.linkMessage()
-					if content == "":
-						await sob.typingIndicator(channel)
-					elif content == "s!breaklink":
-						return True
-					else:
-						await(channel.send(content))
+					try:
+						content = sob.linkMessage()
+						if content == "":
+							await sob.typingIndicator(channel)
+						elif content == "s!breaklink":
+							return True
+						elif content.startswith("s!reply"):
+							message = await(channel.fetch_message(int(content[7:].strip())))
+							await(message.reply(input()))
+						else:
+							await(channel.send(content))
+					except:
+						pass
 
 client.run(DISCORDTOKEN)
