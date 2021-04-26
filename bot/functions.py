@@ -137,3 +137,11 @@ def randomBlue():
         img = Image.new(mode="RGB", size=(250, 250), color=color)
         img.save(fp=path, format="png")
     return (discord.File(fp=path), f"{color}, #{colorhex}")
+
+def linkMessage():
+    content = str(input())
+    return content
+
+async def typingIndicator(channel):
+    await channel.trigger_typing()
+    return True

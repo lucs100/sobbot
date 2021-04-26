@@ -93,5 +93,20 @@ async def on_message(message):
 			if c == "randblue" or c == "randbluw":
 				fp, content = (sob.randomBlue())
 				await(message.channel.send(file=fp, content=content))
+			
+			if c.startswith("link"):
+				channelid = int(c[4:].strip())
+				channel = client.get_channel(channelid)
+				name = channel.name
+				guild = channel.guild
+				print(f"Started link to {name} (id:{channelid}) in {guild}.")
+				while True:
+					content = sob.linkMessage()
+					if content == "":
+						await sob.typingIndicator(channel)
+					elif content == "s!breaklink":
+						return True
+					else:
+						await(channel.send(content))
 
 client.run(DISCORDTOKEN)
