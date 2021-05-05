@@ -111,6 +111,12 @@ async def on_message(message):
 				except:
 					return True
 				name, level = riotapi.getLevel(name)
-				await(message.channel.send(f"Summoner **{name}** is level **{level}**."))
+				if name != 200:
+					if name == 401:
+						await(message.channel.send(f"Summoner lookup failed. Is your key updated?"))
+					if name == 404:
+						await(message.channel.send(f"That account doesn't exist."))
+				else:
+					await(message.channel.send(f"Summoner **{name}** is level **{level}**."))
 				
 client.run(DISCORDTOKEN)

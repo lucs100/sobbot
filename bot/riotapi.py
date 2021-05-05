@@ -8,12 +8,15 @@ url = "https://na1.api.riotgames.com"
 
 def parseSpaces(s):
     return s.replace(" ", "%20")
-    
+
 def getLevel(s):
     s = parseSpaces(s)
     response = requests.get(
         (url + f"/lol/summoner/v4/summoners/by-name/{s}"),
         headers = headers
     )
-    summonerData = json.loads(response.text)
-    return summonerData["name"], int(summonerData["summonerLevel"])
+    code = (response.status_code)
+    if code == 200:
+        summonerData = json.loads(response.text)
+        return summonerData["name"], int(summonerData["summonerLevel"])
+    return response.status_code, -1
