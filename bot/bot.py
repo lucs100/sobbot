@@ -2,6 +2,7 @@ import os
 import discord
 import time
 import functions as sob
+import riotapi
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -103,5 +104,13 @@ async def on_message(message):
 				print("Link successful.")
 				await sob.pipeline(channel)
 				print("Link ended.")
+			
+			if c.startswith("lollevel"):
+				try:
+					name = c[8:].strip()
+				except:
+					return True
+				name, level = riotapi.getLevel(name)
+				await(message.channel.send(f"Summoner **{name}** is level **{level}**."))
 				
 client.run(DISCORDTOKEN)
