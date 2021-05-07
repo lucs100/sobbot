@@ -9,6 +9,13 @@ url = "https://na1.api.riotgames.com"
 def parseSpaces(s):
     return s.replace(" ", "%20")
 
+def checkKeyInvalid():
+    response = requests.get(
+        (url + f"/lol/status/v4/platform-data"),
+        headers = headers
+    )
+    return not (response.status_code != 401 and response.status_code != 403)
+
 def getSummonerData(s):
     s = parseSpaces(s)
     response = requests.get(
@@ -18,6 +25,8 @@ def getSummonerData(s):
     summonerData = json.loads(response.text)
     return summonerData
 
-def getLevel(s):
+def getNameAndLevel(s):
+    if checkKeyInvalid():
+        return False
     summonerData = getSummonerData(s)
-    return summonerData["name"], int(summonerData["summonerLevel"])
+    return {"name": summonerData["name"], "level": int(summonerData["summonerLevel"])}

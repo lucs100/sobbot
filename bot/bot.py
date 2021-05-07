@@ -108,10 +108,15 @@ async def on_message(message):
 			if c.startswith("lollevel"):
 				try:
 					name = c[8:].strip()
-					name, level = riotapi.getLevel(name)
+					data = riotapi.getNameAndLevel(name)
+					if data == False:
+						await(message.channel.send("Key expired."))
+						return True
+					name, level = data["name"], data["level"]
 					await(message.channel.send(f"Summoner **{name}** is level **{level}**."))
 				except:
-					print("Exception in s!lollevel - summoner not found or key expired.")
+					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
 					return True
+	return True
 				
 client.run(DISCORDTOKEN)
