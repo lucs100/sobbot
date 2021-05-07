@@ -76,11 +76,14 @@ def getTopMasteries(s):
     datajson = response.json()
     data = []
     for i in range(0, 3):
-        data.append({
-            "name": getChampNameById(datajson[i]["championId"]),
-            "level": datajson[i]["championLevel"],
-            "points": datajson[i]["championPoints"]
-            })
+        try:
+            data.append({
+                "name": getChampNameById(datajson[i]["championId"]),
+                "level": datajson[i]["championLevel"],
+                "points": datajson[i]["championPoints"]
+                })
+        except:
+            break
     return data
 
 def embedTopMasteries(s):
@@ -88,10 +91,9 @@ def embedTopMasteries(s):
         return False
     data = getTopMasteries(s)
     description = ""
-    for i in range(0, 3):
+    for i in range(0, len(data)):
         l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
         description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
         description += "\n"
     embed = discord.Embed(title=f"{s}  -  Top Masteries", description=description, color=0x2beafc)
     return embed
-    

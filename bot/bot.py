@@ -108,6 +108,9 @@ async def on_message(message):
 			if c.startswith("lollevel"):
 				try:
 					name = c[8:].strip()
+					if name.strip() == "":
+						await(message.channel.send("Type a summoner name after that command to view their summoner level!"))
+						return True
 					data = riotapi.getNameAndLevel(name)
 					if data == False:
 						await(message.channel.send("Key expired."))
@@ -121,6 +124,9 @@ async def on_message(message):
 			if c.startswith("lolmastery"):
 				try:
 					name = c[10:].strip()
+					if name.strip() == "":
+						await(message.channel.send("Type a summoner name after that command to view their highest masteries!"))
+						return True
 					embed = riotapi.embedTopMasteries(name)
 					if embed == False:
 						await(message.channel.send("Key expired."))
