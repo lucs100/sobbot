@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import requests, os, json
+import requests, os, json, discord
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
@@ -15,20 +15,22 @@ with open('bot/func/data/champs.json') as f:
 def getChampNameById(id):
     return champs[str(id)]
 
-def getChampIdByName(id):
+def getChampIdByName(q):
     for k in champs:
         n = data[k].lower()
-        if n == id.lower():
+        if n == q.lower():
             return k
-        elif n.replace('\'', " ") == id.lower():
+        elif n.replace('\'', " ") == q.lower():
             return k
-        elif n.replace('.', " ") == id.lower():
+        elif n.replace('.', " ") == q.lower():
             return k
-        elif n.replace('\'', "") == id.lower():
+        elif n.replace('\'', "") == q.lower():
             return k
-        elif n.replace('.', "") == id.lower():
+        elif n.replace('.', "") == q.lower():
             return k
-        elif id.lower() in n.lower():
+        elif n.replace(' ', "") == q.lower():
+            return k
+        elif q.lower() in n.lower():
             return k
     return -1
 
@@ -62,9 +64,34 @@ def getNameAndLevel(s):
     return {"name": summonerData["name"], "level": int(summonerData["summonerLevel"])}
 
 def getTopMasteries(s):
-    response = requests.get(
-        (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{getESID(parseSpaces(s))}"),
-        headers = headers
-    )
-    h = response.json()
-    print(json.dumps(h, indent=2))
+    if checkKeyInvalid():
+        return False
+    try:
+        response = requests.get(
+            (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{getESID(parseSpaces(s))}"),
+            headers = headers
+        )
+    except:
+        return False
+    datajson = response.json()
+    data = []
+    for i in range(0, 3):
+        data.append({
+            "name": getChampNameById(datajson[i]["championId"]),
+            "level": datajson[i]["championLevel"],
+            "points": datajson[i]["championPoints"]
+            })
+    return data
+
+def embedTopMasteries(s):
+    if checkKeyInvalid():
+        return False
+    data = getTopMasteries(s)
+    description = ""
+    for i in range(0, 3):
+        l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
+        description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
+        description += "\n"
+    embed = discord.Embed(title=f"{s}  -  Top Masteries", description=description, color=0x2beafc)
+    return embed
+    

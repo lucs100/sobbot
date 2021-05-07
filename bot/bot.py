@@ -117,6 +117,18 @@ async def on_message(message):
 				except:
 					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
 					return True
+
+			if c.startswith("lolmastery"):
+				try:
+					name = c[10:].strip()
+					embed = riotapi.embedTopMasteries(name)
+					if embed == False:
+						await(message.channel.send("Key expired."))
+						return True
+					await(message.channel.send(embed=embed))
+				except:
+					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
+					return True
 	return True
 				
 client.run(DISCORDTOKEN)
