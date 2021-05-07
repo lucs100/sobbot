@@ -12,6 +12,26 @@ with open('bot/func/data/champs.json') as f:
     data = json.loads(f.read())
     champs = data
 
+def getChampNameById(id):
+    return champs[str(id)]
+
+def getChampIdByName(id):
+    for k in champs:
+        n = data[k].lower()
+        if n == id.lower():
+            return k
+        elif n.replace('\'', " ") == id.lower():
+            return k
+        elif n.replace('.', " ") == id.lower():
+            return k
+        elif n.replace('\'', "") == id.lower():
+            return k
+        elif n.replace('.', "") == id.lower():
+            return k
+        elif id.lower() in n.lower():
+            return k
+    return -1
+
 def parseSpaces(s):
     return s.replace(" ", "%20")
 
@@ -48,4 +68,3 @@ def getTopMasteries(s):
     )
     h = response.json()
     print(json.dumps(h, indent=2))
-
