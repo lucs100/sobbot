@@ -25,8 +25,14 @@ def getSummonerData(s):
     summonerData = json.loads(response.text)
     return summonerData
 
+def getESID(s): #encrypted summoner id
+    if checkKeyInvalid():
+        return False
+    return getSummonerData["accoundId"]
+
 def getNameAndLevel(s):
     if checkKeyInvalid():
         return False
     summonerData = getSummonerData(s)
     return {"name": summonerData["name"], "level": int(summonerData["summonerLevel"])}
+
