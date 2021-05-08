@@ -3,5 +3,5 @@ Options:
 
 Type a message to send it as Sobbot.
 Send a newline to trigger a typing indicator.
-Type s!reply \{id\} to reply to a message.
+Type s!reply (id) to reply to a message.
 Type s!end to end pipeline mode.
