@@ -106,27 +106,32 @@ async def on_message(message):
 				print("Link ended.")
 			
 			if c.startswith("lollevel"):
-				try:
+				# try:
 					name = c[8:].strip()
 					if name.strip() == "":
-						await(message.channel.send("Type a summoner name after that command to view their summoner level!"))
-						return True
+						print(True)
+						name = riotapi.isUserRegistered(message.author.id) #bool or sname
+						if name == False:
+							await(message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!registerlol to add your summoner name. You can also specify a summoner name after this command to use it while unregistered."))
+							return True
 					data = riotapi.getNameAndLevel(name)
 					if data == False:
 						await(message.channel.send("Key expired."))
 						return True
 					name, level = data["name"], data["level"]
 					await(message.channel.send(f"Summoner **{name}** is level **{level}**."))
-				except:
-					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
-					return True
+				# except:
+				# 	await(message.channel.send(f"Summoner **{name}** doesn't exist."))
+				# 	return True
 
 			if c.startswith("lolmastery"):
 				try:
 					name = c[10:].strip()
 					if name.strip() == "":
-						await(message.channel.send("Type a summoner name after that command to view their highest masteries!"))
-						return True
+						name = riotapi.isUserRegistered(message.author.id) #bool or sname
+						if name == False:
+							await(message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!registerlol to add your summoner name. You can also specify a summoner name after this command to use it while unregistered."))
+							return True
 					embed = riotapi.embedTopMasteries(name)
 					if embed == False:
 						await(message.channel.send("Key expired."))
@@ -135,6 +140,23 @@ async def on_message(message):
 				except:
 					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
 					return True
+			
+			if c.startswith("registerlol"):
+				# newName = message.content[12:].strip()
+				newName = c[10:].strip()
+				if newName == "":
+					await message.channel.send("Enter your summoner name to register it to your account!")
+				if not riotapi.isUserRegistered(message.author.id):
+					ok = await riotapi.addRegistry(message.author.id, newName)
+				else:
+					ok = await riotapi.editRegistry(message.author.id, newName)
+				if ok:
+					await(message.channel.send(f"Set <@!{message.author.id}>'s summoner name to **{newName}**!"))
+				else:
+					await(message.channel.send(f"Failed. Try again in a few seconds!"))
+				return True
+
+
 	return True
 				
 client.run(DISCORDTOKEN)
