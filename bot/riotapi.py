@@ -7,10 +7,15 @@ headers = {"X-Riot-Token": RIOTTOKEN}
 url = "https://na1.api.riotgames.com"
 
 champs = {}
+users = {}
 
 with open('bot/func/data/champs.json') as f:
     data = json.loads(f.read())
     champs = data
+
+with open('bot/func/data/userdata.json') as f:
+    data = json.loads(f.read())
+    users = data
 
 def getChampNameById(id):
     return champs[str(id)]
@@ -97,3 +102,10 @@ def embedTopMasteries(s):
         description += "\n"
     embed = discord.Embed(title=f"{s}  -  Top Masteries", description=description, color=0x2beafc)
     return embed
+
+def isUserRegistered(id):
+    id = str(id)
+    if id in users:
+        return users[id]["lol"]
+    else:
+        return False
