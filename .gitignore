@@ -141,3 +141,5 @@ cython_debug/
 /priv
 /**/pics
 __pycache__/
+
+*.bat
