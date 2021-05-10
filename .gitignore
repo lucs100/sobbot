@@ -143,4 +143,4 @@ cython_debug/
 __pycache__/
 *.bat
 
-/**/userdata.json
+bot/resources/data/userdata.json
