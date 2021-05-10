@@ -3,6 +3,7 @@ import discord
 import time
 import functions as sob
 import riotapi
+import currency as coin
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -173,6 +174,17 @@ async def on_message(message):
 				except:
 					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 					return True
+				
+			if c.startswith("coin"):
+				c = c[4:].strip()
+
+				if c == "start":
+					ok = coin.addRegistration(message.author.id)
+					if ok:
+						await(message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins."))
+						return True
+						await(message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins."))
+					return False
 	return True
 				
 client.run(DISCORDTOKEN)
