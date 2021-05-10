@@ -144,3 +144,4 @@ __pycache__/
 *.bat
 
 bot/resources/data/userdata.json
+bot/resources/data/soblecoinTransactions.txt
