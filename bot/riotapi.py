@@ -96,10 +96,48 @@ def getRankedData(s):
         }
     return data
 
-def embedRankedData(s):
-    pass
+def parseRank(tier, div):
+    # divTable = {
+    #     "I": 1,
+    #     "II": 2,
+    #     "III": 3,
+    #     "IV": 4,
+    #     "V": 5
+    # }
+    apexTable = ["Master", "Grandmaster", "Challenger"]
+    tier = tier.capitalize()
+    if tier in apexTable:
+        return tier
+    return f"{tier} {div}"
 
-getRankedData("cowenchoses")
+def parseQueue(queue):
+    queueTable = {
+        "RANKED_SOLO_5x5": "Solo/Duo",
+        "RANKED_FLEX_SR": "Flex"
+    }
+    return queueTable[queue]
+
+def embedRankedData(s):
+    #THIS IS SLOW. REFACTOR.
+    data = getRankedData(s)
+    s = getNameAndLevel(s)["name"]
+    title=f"{s}  -  Ranked Status"
+    description = ""
+    for i in range(0, len(data)):
+        rank = parseRank(data[i]["tier"], data[i]["division"])
+        q = parseQueue(data[i]["queue"])
+        lp, w, wr = data[i]["lp"], data[i]["wins"], ((data[i]["wins"] * 100) / (data[i]["wins"] + data[i]["losses"]))
+        description += (f"**{q}** - **{rank}** - {lp} LP")
+        description += "\n"
+        description += (f"*({w} wins - {round(wr, 2)}% winrate)*")
+        description += "\n"
+        description += "\n"
+    if description == "":
+        description = "This summoner isn't ranked in any queues yet!"
+    embed = discord.Embed(title=title, description=description, color=0xFFDC00)
+    return embed
+
+embedRankedData("chielery")
 
 def getTopMasteries(s):
     if checkKeyInvalid():
@@ -128,12 +166,15 @@ def embedTopMasteries(s):
     if checkKeyInvalid():
         return False
     data = getTopMasteries(s)
+    title=f"{s}  -  Top Masteries"
     description = ""
     for i in range(0, len(data)):
         l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
         description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
         description += "\n"
-    embed = discord.Embed(title=f"{s}  -  Top Masteries", description=description, color=0x2beafc)
+    if descripton == "":
+        description = "This summoner hasn't earned any mastery points yet!"
+    embed = discord.Embed(title=title, description=description, color=0x2beafc)
     return embed
 
 def isUserRegistered(id):

@@ -137,26 +137,42 @@ async def on_message(message):
 						return True
 					await(message.channel.send(embed=embed))
 				except:
-					await(message.channel.send(f"Summoner **{name}** doesn't exist."))
+					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 					return True
 			
 			if c.startswith("lolregister"):
-				# newName = message.content[13:].strip()
-				newName = c[11:].strip()
+				# name = message.content[13:].strip()
+				name = c[11:].strip()
 				id = message.author.id
-				if newName == "":
+				if name == "":
 					await message.channel.send("Enter your summoner name to register it to your account!")
 					return True
 				if not riotapi.isUserRegistered(id):
-					ok = riotapi.addRegistration(id, newName)
+					ok = riotapi.addRegistration(id, name)
 				else:
-					ok = riotapi.editRegistration(id, newName)
+					ok = riotapi.editRegistration(id, name)
 				if ok != False:
 					await(message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!"))
 				else:
-					await(message.channel.send(f"Summoner **{newName}** doesn't exist, or your key expired. Try again!"))
+					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 				return True
 
+			if c.startswith("lolrank"):
+				try:
+					name = c[7:].strip()
+					if name.strip() == "":
+						name = riotapi.isUserRegistered(message.author.id) #bool or sname
+						if name == False:
+							await(message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered."))
+							return True
+					embed = riotapi.embedRankedData(name)
+					if embed == False:
+						await(message.channel.send("Key expired."))
+						return True
+					await(message.channel.send(embed=embed))
+				except:
+					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
+					return True
 	return True
 				
 client.run(DISCORDTOKEN)
