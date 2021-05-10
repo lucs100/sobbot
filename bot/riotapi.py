@@ -73,6 +73,34 @@ def getNameAndLevel(s):
     summonerData = getSummonerData(s)
     return {"name": summonerData["name"], "level": int(summonerData["summonerLevel"])}
 
+def getRankedData(s):
+    if checkKeyInvalid():
+        return False
+    try:
+        response = requests.get(
+            (url + f"/lol/league/v4/entries/by-summoner/{getESID(s)}"),
+            headers = headers
+        )
+    except:
+        return False
+    datajson = response.json()
+    data = {}
+    for i in range(len(datajson)):
+        data[i] = {
+            "queue": datajson[i]["queueType"],
+            "tier": datajson[i]["tier"],
+            "division": datajson[i]["rank"],
+            "lp": datajson[i]["leaguePoints"],
+            "wins": datajson[i]["wins"],
+            "losses": datajson[i]["losses"]
+        }
+    return data
+
+def embedRankedData(s):
+    pass
+
+getRankedData("cowenchoses")
+
 def getTopMasteries(s):
     if checkKeyInvalid():
         return False
