@@ -17,6 +17,11 @@ with open('bot/func/data/userdata.json') as f:
     data = json.loads(f.read())
     users = data
 
+def updateUserData():
+    with open('bot/func/data/userdata.json', 'w') as fp:
+        json.dump(users, fp,  indent=4)
+    return True
+
 def getChampNameById(id):
     return champs[str(id)]
 
@@ -109,3 +114,20 @@ def isUserRegistered(id):
         return users[id]["lol"]
     else:
         return False
+
+def addRegistration(id, name):
+    data = getNameAndLevel(name)
+    if data == False:
+        return False
+    users[str(id)] = {"lol": "placeholder"}
+    users[str(id)]["lol"] = str(data["name"])
+    updateUserData()
+    return data["name"]
+
+def editRegistration(id, name):
+    data = getNameAndLevel(name)
+    if data == False:
+        return False
+    users[str(id)]["lol"] = str(name)
+    updateUserData()
+    return data["name"]
