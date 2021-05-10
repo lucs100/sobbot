@@ -155,7 +155,7 @@ async def pipeline(channel):
         for i in range(10):
             print()
         print(f"Channel: #{name}    Server: {guild}")
-        printfile("bot/resources/pipeline/pipelineui.txt")
+        printfile("bot/resources/functions/pipeline/pipelineui.txt")
         print()
         try:
             content = str(input())

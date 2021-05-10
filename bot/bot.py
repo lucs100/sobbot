@@ -109,7 +109,6 @@ async def on_message(message):
 				# try:
 					name = c[8:].strip()
 					if name.strip() == "":
-						print(True)
 						name = riotapi.isUserRegistered(message.author.id) #bool or sname
 						if name == False:
 							await(message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered."))
