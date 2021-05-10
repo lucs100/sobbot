@@ -43,16 +43,16 @@ def parseMath(exp):
                     return str(a * b)
                 elif div != -1:
                     if b == 0:
-                        return "Even Sobble can't divide by zero!"
+                        return "Even Sobbot can't divide by zero!"
                     return str(a / b)
                 elif expo != -1:
                     if a * b > 1000:
-                        return "Those numbers overwhelmed poor Sobble - they're a little too big."
+                        return "Those numbers overwhelmed poor Sobbot - they're a little too big."
                     return str(a ** b)
                 else:
                     return "Major error - Get this checked out. (Error 3)"
             except Overflow:
-                return "Sobble lost count - your numbers were a little too big."
+                return "Sobbot lost count - your numbers were a little too big."
     except:
         pass
         # return "Parse failed - Exception caught. (Error 4)"

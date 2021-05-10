@@ -154,9 +154,8 @@ async def on_message(message):
 				if ok != False:
 					await(message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!"))
 				else:
-					await(message.channel.send(f"Summoner **{newName}** doesn't exist. Try again!"))
+					await(message.channel.send(f"Summoner **{newName}** doesn't exist, or your key expired. Try again!"))
 				return True
-
 
 	return True
 				
