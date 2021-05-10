@@ -9,16 +9,16 @@ url = "https://na1.api.riotgames.com"
 champs = {}
 users = {}
 
-with open('bot/func/data/champs.json') as f:
+with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read())
     champs = data
 
-with open('bot/func/data/userdata.json') as f:
+with open('bot/resources/data/userdata.json') as f:
     data = json.loads(f.read())
     users = data
 
 def updateUserData():
-    with open('bot/func/data/userdata.json', 'w') as fp:
+    with open('bot/resources/data/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
     return True
 

@@ -60,7 +60,7 @@ def parseMath(exp):
 def findDex(n):
     # passes dex number to pkmnLookup if reverse search is successful
     n = n.lower()
-    pkmn = open('bot/func/data/pkmn.json')
+    pkmn = open('bot/resources/data/pkmn.json')
     data = json.load(pkmn)
     for k in data:
         if data[k]["name"] == n:
@@ -80,7 +80,7 @@ def pkmnLookup(n):
     finally:
         if isinstance(n, int) and n >= 1 and n <= 898:
             # should be done as a dictionary i think? but it ruins my fstrings so whatever
-            pkmn = open('bot/func/data/pkmn.json')
+            pkmn = open('bot/resources/data/pkmn.json')
             data = json.load(pkmn)
             localdata = {}
             name = data[str(n)]["name"]
@@ -155,7 +155,7 @@ async def pipeline(channel):
         for i in range(10):
             print()
         print(f"Channel: #{name}    Server: {guild}")
-        printfile("bot/func/pipeline/pipelineui.txt")
+        printfile("bot/resources/pipeline/pipelineui.txt")
         print()
         try:
             content = str(input())
