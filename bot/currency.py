@@ -11,6 +11,8 @@ with open('bot/resources/data/userdata.json') as f:
 def updateUserData(info):
     with open('bot/resources/data/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
+    with open('bot/resources/data/soblecoinTransactions.txt', 'a') as fp:
+        fp.write(f"{info}  -  {str(time.ctime(time.time()))}\n")
     return True
 
 def getUserCoins(id):
@@ -28,7 +30,7 @@ def addRegistration(id):
         return False
     users[id]["coins"] = 0
     users[id]["coins"] = startingCoins
-    updateUserData()
+    updateUserData(f"{id} - created soblecoin wallet with {startingCoins}")
     return True
 
 def give(sender, recipient, value):
@@ -49,6 +51,6 @@ def give(sender, recipient, value):
 
     users[sender]["coins"] -= value
     users[recipient]["coins"] += value
-    updateUserData()
+    updateUserData(f"{sender} sent {value} coins to {recipient}")
     return 0
 
