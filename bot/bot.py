@@ -174,17 +174,36 @@ async def on_message(message):
 				except:
 					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 					return True
-				
-			if c.startswith("coin"):
-				c = c[4:].strip()
 
-				if c == "start":
-					ok = coin.addRegistration(message.author.id)
-					if ok:
-						await(message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins."))
-						return True
-						await(message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins."))
-					return False
+			if c == "coinstart":
+				ok = coin.addRegistration(message.author.id)
+				if ok:
+					await(message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins."))
+					return True
+					await(message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins."))
+				return False
+			
+			if c.startswith("give"):
+				# try:
+				sender = message.author.id
+				recipient, value = c[4:].split()
+				recipient = recipient[3:-1]
+				value = int(value)
+				ok = coin.give(sender, recipient, value)
+				if ok == 0:
+					await message.channel.send(f"Sent **{value}** soblecoins to <@!{recipient}>!")
+				if ok == 1:
+					await message.channel.send(f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.")
+				if ok == 2:
+					await message.channel.send(f"Soblecoins not sent! You don't have enough soblecoins.")
+				if ok == 3:
+					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+				if ok == 4:
+					await message.channel.send(f"You can't send coins to yourself!")
+				# except:
+					# await(message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!"))
+				return True
+
 	return True
 				
 client.run(DISCORDTOKEN)

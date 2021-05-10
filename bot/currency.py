@@ -1,4 +1,4 @@
-import json
+import json, time
 
 startingCoins = 1000
 
@@ -8,7 +8,7 @@ with open('bot/resources/data/userdata.json') as f:
     data = json.loads(f.read())
     users = data
     
-def updateUserData():
+def updateUserData(info):
     with open('bot/resources/data/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
     return True
@@ -30,3 +30,25 @@ def addRegistration(id):
     users[id]["coins"] = startingCoins
     updateUserData()
     return True
+
+def give(sender, recipient, value):
+    sender, recipient = str(sender), str(recipient)
+    if sender == recipient:
+        return 4 #sender = reciever
+    if sender not in users:
+        return 3 #sender error
+    elif "coins" not in users[str(sender)]:
+        return 3 #sender error
+    elif recipient not in users:
+        return 1 #recipient error
+    elif "coins" not in users[str(recipient)]:
+        return 1 #recipient error
+
+    if users[sender]["coins"] < value:
+        return 2 #insufficient soblecoins
+
+    users[sender]["coins"] -= value
+    users[recipient]["coins"] += value
+    updateUserData()
+    return 0
+
