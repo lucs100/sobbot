@@ -46,7 +46,7 @@ def give(sender, recipient, value):
     elif "coins" not in users[str(recipient)]:
         return 1 #recipient error
 
-    if users[sender]["coins"] < value:
+    if users[sender]["coins"] < value or value <= 0:
         return 2 #insufficient soblecoins
 
     users[sender]["coins"] -= value
