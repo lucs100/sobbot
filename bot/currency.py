@@ -18,7 +18,8 @@ def updateUserData(info):
 def getUserCoins(id):
     id = str(id)
     if id in users:
-        return users[id]["coins"]
+        if "coins" in users[id]:
+            return users[id]["coins"]
     else:
         return False
 

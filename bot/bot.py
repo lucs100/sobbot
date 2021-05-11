@@ -203,6 +203,14 @@ async def on_message(message):
 				# except:
 					# await(message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!"))
 				return True
+			
+			if c == "coinbalance":
+				value = coin.getUserCoins(message.author.id)
+				if value == None:
+					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+				else:
+					await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+				return True
 
 	return True
 				
