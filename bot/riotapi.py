@@ -170,7 +170,7 @@ def embedTopMasteries(s):
         l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
         description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
         description += "\n"
-    if descripton == "":
+    if description == "":
         description = "This summoner hasn't earned any mastery points yet!"
     embed = discord.Embed(title=title, description=description, color=0x2beafc)
     return embed
