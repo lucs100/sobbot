@@ -94,7 +94,8 @@ def getRankedData(s):
             "wins": datajson[i]["wins"],
             "losses": datajson[i]["losses"]
         }
-    return data
+    name = datajson[i]["summonerName"]
+    return data, name
 
 def parseRank(tier, div):
     # divTable = {
@@ -118,9 +119,9 @@ def parseQueue(queue):
     return queueTable[queue]
 
 def embedRankedData(s):
-    #THIS IS SLOW. REFACTOR.
-    data = getRankedData(s)
-    s = getNameAndLevel(s)["name"]
+    data, s = getRankedData(s)
+    # if data == False or s == False:
+    #     return False
     title=f"{s}  -  Ranked Status"
     description = ""
     for i in range(0, len(data)):
@@ -134,10 +135,7 @@ def embedRankedData(s):
         description += "\n"
     if description == "":
         description = "This summoner isn't ranked in any queues yet!"
-    embed = discord.Embed(title=title, description=description, color=0xFFDC00)
-    return embed
-
-embedRankedData("chielery")
+    return discord.Embed(title=title, description=description, color=0xFFDC00)
 
 def getTopMasteries(s):
     if checkKeyInvalid():
