@@ -65,7 +65,7 @@ async def on_message(message):
 				try:
 					n = (int(c[1:]))
 					await(message.channel.send(sob.die(n)))
-				except typeError:
+				except:
 					pass
 
 			if c == "sobbleimage":
