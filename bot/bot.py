@@ -36,8 +36,9 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	if message.author.id != 835251884104482907:
+	if message.author.id != 835251884104482907: #not from sobbot
 		c = (message.content).lower()
+		coin.messageBonus(message.author.id)
 		
 		#special interaction/command messages, do not require prefix
 		if c == "hello sobbot":

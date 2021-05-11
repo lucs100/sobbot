@@ -71,4 +71,15 @@ def claimHourly(id):
         updateUserData(f"{id} claimed {value} coins")
         return True, value
     else:
-        return False, time.ctime(currentTime + (claimCooldown - timeElapsed)) #time not passed
+        return False, time.ctime(last + claimCooldown) #time not passed
+
+def messageBonus(id):
+    id = str(id)
+    x = 3 # 1/x chance to drop a coin each message
+    coinsOnMessage = 1
+    if isinstance(getUserCoins(id), int):
+        if random.randint(1, x) == 1:
+            users[id]["coins"] += coinsOnMessage
+            updateUserData(f"{id} earned {coinsOnMessage}")
+    return True
+    
