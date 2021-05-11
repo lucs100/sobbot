@@ -4,6 +4,7 @@ import time
 import functions as sob
 import riotapi
 import currency as coin
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,10 +26,11 @@ async def on_ready():
 
 	global startTime
 	startTime = time.time()
+	timeFormatted = datetime.fromtimestamp(startTime).strftime("%I:%M %p, %B %d %Y")
 
 	print(f"({guildCount}) total connected servers.")
 	print(f"{client.user} is ready!")
-	print(f"Time: {time.ctime(startTime)}")
+	print(f"Time: {timeFormatted}")
 	channel = client.get_channel(835267335169245255)
 	await channel.send("im conected")
 	# await sob.setActivity(client) #not working yet
@@ -90,7 +92,8 @@ async def on_message(message):
 				await(message.channel.send(sob.timeRunning(startTime)))
 
 			if c == "starttime":
-				await(message.channel.send(time.ctime(startTime)))
+				startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
+				await(message.channel.send(f"Sobbot has been online since {startingTime}!"))
 				#maybe format this a little nicer?
 			
 			if c == "randblue" or c == "randbluw":
@@ -221,7 +224,7 @@ async def on_message(message):
 					if str(data[1]) == str(-1):
 						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
 					else:
-						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again at {data[1]}.")
+						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {data[1]}.")
 
 	return True
 				

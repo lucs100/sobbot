@@ -1,4 +1,5 @@
 import json, time, random
+from datetime import datetime
 
 startingCoins = 1000
 
@@ -64,6 +65,7 @@ def claimHourly(id):
     
     currentTime = time.time()
     timeElapsed = currentTime - last
+
     if timeElapsed >= claimCooldown:
         value = (random.randint(50, 100) + (((random.randint(3, 10)) + (random.randint(3, 10))) ** 2))
         users[id]["coins"] += value
@@ -71,7 +73,13 @@ def claimHourly(id):
         updateUserData(f"{id} claimed {value} coins")
         return True, value
     else:
-        return False, time.ctime(last + claimCooldown) #time not passed
+        availableTime = datetime.fromtimestamp(last + claimCooldown)#.strftime("%B %d at %I:%M %p")
+        currentTime = datetime.fromtimestamp(currentTime)
+        nextTimeString = availableTime.strftime("%I:%M %p").lstrip("0")
+        nextTimeString = "at " + nextTimeString
+        if availableTime.day != currentTime.day:
+            nextTimeString = "tomorrow" + nextTimeString
+        return False, nextTimeString #time not passed
 
 def messageBonus(id):
     id = str(id)
