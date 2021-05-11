@@ -1,4 +1,4 @@
-import json, time
+import json, time, random
 
 startingCoins = 1000
 
@@ -38,13 +38,10 @@ def give(sender, recipient, value):
     sender, recipient = str(sender), str(recipient)
     if sender == recipient:
         return 4 #sender = reciever
-    if sender not in users:
+
+    if sender not in users or "coins" not in users[sender]:
         return 3 #sender error
-    elif "coins" not in users[str(sender)]:
-        return 3 #sender error
-    elif recipient not in users:
-        return 1 #recipient error
-    elif "coins" not in users[str(recipient)]:
+    elif recipient not in users or "coins" not in users[recipient]:
         return 1 #recipient error
 
     if users[sender]["coins"] < value or value <= 0:
@@ -55,3 +52,23 @@ def give(sender, recipient, value):
     updateUserData(f"{sender} sent {value} coins to {recipient}")
     return 0
 
+def claimHourly(id):
+    claimCooldown = float(2 * 60 * 60)  # 2 hours
+    value = 0
+    id = str(id)
+    if id not in users or "coins" not in users[id]:
+        return False, -1 #recipient error
+    if "coinsLastClaimed" not in users[id]:
+        users[id]["coinsLastClaimed"] = float(0)
+    last = users[id]["coinsLastClaimed"]
+    
+    currentTime = time.time()
+    timeElapsed = currentTime - last
+    if timeElapsed >= claimCooldown:
+        value = (random.randint(50, 100) + (((random.randint(3, 10)) + (random.randint(3, 10))) ** 2))
+        users[id]["coins"] += value
+        users[id]["coinsLastClaimed"] = currentTime
+        updateUserData(f"{id} claimed {value} coins")
+        return True, value
+    else:
+        return False, time.ctime(currentTime + (claimCooldown - timeElapsed)) #time not passed

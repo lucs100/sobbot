@@ -204,13 +204,23 @@ async def on_message(message):
 					# await(message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!"))
 				return True
 			
-			if c == "coinbalance":
+			if c == "balance":
 				value = coin.getUserCoins(message.author.id)
 				if value == None:
 					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
 				else:
 					await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
 				return True
+			
+			if c == "claim":
+				data = coin.claimHourly(message.author.id)
+				if data[0] == True:
+					await message.channel.send(f"<@!{message.author.id}> claimed **{data[1]}** soblecoins!")
+				else:
+					if str(data[1]) == str(-1):
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+					else:
+						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again at {data[1]}.")
 
 	return True
 				
