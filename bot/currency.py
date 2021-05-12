@@ -88,6 +88,7 @@ def messageBonus(id):
     if id not in users:
         if "coins" not in users[id]:
             return False
+        return False
     if isinstance(getUserCoins(id), int):
         if random.randint(1, x) == 1:
             users[id]["coins"] += coinsOnMessage
