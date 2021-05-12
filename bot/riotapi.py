@@ -10,30 +10,30 @@ champs = {}
 users = {}
 
 with open('bot/resources/data/champs.json') as f:
-    data = json.loads(f.read())
+    data = json.loads(f.read()) # unpacking data
     champs = data
 
 with open('bot/resources/data/userdata.json') as f:
-    data = json.loads(f.read())
+    data = json.loads(f.read()) # unpacking data
     users = data
 
 def checkKeyInvalid():
     response = requests.get(
-        (url + f"/lol/status/v4/platform-data"),
+        (url + f"/lol/status/v4/platform-data"), # quick response to see if both key ok and api ok
         headers = headers
     )
-    return not (response.status_code != 401 and response.status_code != 403)
+    return not (response.status_code != 401 and response.status_code != 403) 
 
 async def updateAPIKey():
-    load_dotenv(override=True)
+    load_dotenv(override=True) # allows overriding envs from an updated .env file
     global RIOTTOKEN
     global headers
     RIOTTOKEN = os.getenv('RIOTTOKEN')
-    headers = {"X-Riot-Token": RIOTTOKEN}
+    headers = {"X-Riot-Token": RIOTTOKEN} # pushes update to global headers
     return True
 
 def updateUserData():
-    with open('bot/resources/data/userdata.json', 'w') as fp:
+    with open('bot/resources/data/userdata.json', 'w') as fp: # updates .json of all user data
         json.dump(users, fp,  indent=4)
     return True
 
@@ -43,7 +43,7 @@ def getChampNameById(id):
 def getChampIdByName(q):
     for k in champs:
         n = data[k].lower()
-        if n == q.lower():
+        if n == q.lower(): # quick and dirty algorithm to search for champ id by name
             return k
         elif n.replace('\'', " ") == q.lower():
             return k
@@ -57,10 +57,10 @@ def getChampIdByName(q):
             return k
         elif q.lower() in n.lower():
             return k
-    return -1
+    return -1 # returns -1 if no match
 
 def parseSpaces(s):
-    return s.replace(" ", "%20")
+    return s.replace(" ", "%20") # used in urls
 
 def getSummonerData(s):
     response = requests.get(
@@ -68,11 +68,11 @@ def getSummonerData(s):
         headers = headers
     )
     summonerData = json.loads(response.text)
-    return summonerData
+    return summonerData # loads basic summoner data
 
-def getESID(s): #encrypted summoner id
+def getESID(s): # encrypted summoner id
     if checkKeyInvalid():
-        return False, False
+        return False, False  # what
     return getSummonerData(s)["id"]
 
 def getNameAndLevel(s):
@@ -116,7 +116,7 @@ def parseRank(tier, div):
     apexTable = ["Master", "Grandmaster", "Challenger"]
     tier = tier.capitalize()
     if tier in apexTable:
-        return tier
+        return tier   # apex ranks do not have divs but are coded as (rank) (div1)
     return f"{tier} {div}"
 
 def parseQueue(queue):
@@ -127,11 +127,11 @@ def parseQueue(queue):
     return queueTable[queue]
 
 def embedRankedData(s):
-    data = getRankedData(s)
-    if checkKeyInvalid():
-        return 1
+    data = getRankedData(s) # either False, for error 2, or {data, s}
+    if checkKeyInvalid():   
+        return 1 # key invalid error
     if data == False:
-        return 2
+        return 2 # summoner does not exist
     data, s = data[0], data[1]
     title=f"{s}  -  Ranked Status"
     description = ""
@@ -144,7 +144,7 @@ def embedRankedData(s):
         description += (f"*({w} wins - {round(wr, 2)}% winrate)*")
         description += "\n"
         description += "\n"
-    if description == "":
+    if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=0xFFDC00)
 
@@ -162,7 +162,7 @@ def getTopMasteries(s):
         return False
     datajson = response.json()
     data = []
-    for i in range(0, 3):
+    for i in range(0, 3): #top three masteries, can be altered
         try:
             data.append({
                 "name": getChampNameById(datajson[i]["championId"]),
@@ -170,7 +170,7 @@ def getTopMasteries(s):
                 "points": datajson[i]["championPoints"]
                 })
         except:
-            break
+            break # if none left, ie. two or less champs
     return data
 
 def embedTopMasteries(s):
@@ -183,7 +183,7 @@ def embedTopMasteries(s):
         l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
         description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
         description += "\n"
-    if description == "":
+    if description == "": #no loops, ie. no data
         description = "This summoner hasn't earned any mastery points yet!"
     embed = discord.Embed(title=title, description=description, color=0x2beafc)
     return embed
@@ -191,23 +191,23 @@ def embedTopMasteries(s):
 def isUserRegistered(id):
     id = str(id)
     if id in users:
-        return users[id]["lol"]
-    else:
-        return False
+        if "lol" in users[id]:
+            return users[id]["lol"]  # if lol name in user data
+    return False
 
 def addRegistration(id, name):
     data = getNameAndLevel(name)
     if data == False:
-        return False
+        return False  # summoner does not exist
     users[str(id)] = {"lol": "placeholder"}
     users[str(id)]["lol"] = str(data["name"])
     updateUserData()
-    return data["name"]
+    return data["name"] # confirms with properly capitalized name
 
 def editRegistration(id, name):
     data = getNameAndLevel(name)
     if data == False:
-        return False
-    users[str(id)]["lol"] = str(name)
+        return False  # summoner does not exist
+    users[str(id)]["lol"] = str(data["name"])
     updateUserData()
-    return data["name"]
+    return data["name"] # confirms with properly capitalized name
