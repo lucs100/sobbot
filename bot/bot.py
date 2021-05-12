@@ -40,7 +40,7 @@ async def on_ready():
 async def on_message(message):
 	if message.author.id != 835251884104482907: #not from sobbot
 		c = (message.content).lower()
-		coin.messageBonus(message.author.id)
+		coin.messageBonus(message.author.id) #check droprate for passive coin earning
 		
 		#special interaction/command messages, do not require prefix
 		if c == "hello sobbot":
