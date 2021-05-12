@@ -60,7 +60,11 @@ async def on_message(message):
 			#remove prefix from search
 			c = c[2:]
 
-			if c == "coin":
+
+			# Miscellaneous Functions
+
+
+			if c == "flipcoin":
 				await(message.channel.send(sob.flipCoin()))
 
 			if c.startswith('d'):
@@ -110,6 +114,10 @@ async def on_message(message):
 				await sob.pipeline(channel)
 				print("Link ended.")
 			
+
+			# LoL Functions
+			
+
 			if c.startswith("lollevel"):
 				# try:
 					name = c[8:].strip()
@@ -178,6 +186,10 @@ async def on_message(message):
 				except:
 					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 					return True
+
+
+			# Currency Functions
+
 
 			if c == "coinstart":
 				ok = coin.addRegistration(message.author.id)
