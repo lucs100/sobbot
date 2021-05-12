@@ -140,7 +140,7 @@ async def on_message(message):
 				try:
 					name = c[10:].strip()
 					if name.strip() == "":
-						name = riotapi.isUserRegistered(message.author.id) #bool or sname
+						name = riotapi.isUserRegistered(message.author.id) #bool or summoner name
 						if name == False:
 							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
@@ -179,12 +179,16 @@ async def on_message(message):
 							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
 					embed = riotapi.embedRankedData(name)
-					if embed == False:
-						await message.channel.send("Key expired.")
-						return True
+					if isinstance(embed, int):
+						if embed == 1:
+							await message.channel.send("Key expired.")
+							return True
+						elif embed == 2:
+							await message.channel.send(f"Summoner **{name}** doesn't exist.")
+							return True
 					await message.channel.send(embed=embed)
+					return True
 				except:
-					await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
 					return True
 
 			if c == "lolapireload":
@@ -194,7 +198,7 @@ async def on_message(message):
 					else:
 						await message.channel.send("Key update failed.")
 				else:
-					await message.channel.send("Only the bot owner can do this.")
+					await message.channel.send("You don't have the permissions to do this.")
 					
 
 

@@ -30,7 +30,7 @@ async def updateAPIKey():
     global headers
     RIOTTOKEN = os.getenv('RIOTTOKEN')
     headers = {"X-Riot-Token": RIOTTOKEN}
-    return not checkKeyInvalid()
+    return True
 
 def updateUserData():
     with open('bot/resources/data/userdata.json', 'w') as fp:
@@ -72,7 +72,7 @@ def getSummonerData(s):
 
 def getESID(s): #encrypted summoner id
     if checkKeyInvalid():
-        return False
+        return False, False
     return getSummonerData(s)["id"]
 
 def getNameAndLevel(s):
@@ -127,10 +127,12 @@ def parseQueue(queue):
     return queueTable[queue]
 
 def embedRankedData(s):
-    print(RIOTTOKEN)
-    data, s = getRankedData(s)
-    # if data == False or s == False:
-    #     return False
+    data = getRankedData(s)
+    if checkKeyInvalid():
+        return 1
+    if data == False:
+        return 2
+    data, s = data[0], data[1]
     title=f"{s}  -  Ranked Status"
     description = ""
     for i in range(0, len(data)):
@@ -145,6 +147,8 @@ def embedRankedData(s):
     if description == "":
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=0xFFDC00)
+
+embedRankedData("shsl death lotus")
 
 def getTopMasteries(s):
     if checkKeyInvalid():
