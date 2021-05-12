@@ -187,6 +187,17 @@ async def on_message(message):
 					await(message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!"))
 					return True
 
+			if c == "lolapireload":
+				if message.author.id == 312012475761688578:
+					if await riotapi.updateAPIKey():
+						await message.channel.send("Successfully set key!")
+					else:
+						await message.channel.send("Key update failed.")
+				else:
+					await message.channel.send("Only the bot owner can do this.")
+					
+
+
 
 			# Currency Functions
 

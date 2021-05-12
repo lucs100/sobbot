@@ -17,6 +17,21 @@ with open('bot/resources/data/userdata.json') as f:
     data = json.loads(f.read())
     users = data
 
+def checkKeyInvalid():
+    response = requests.get(
+        (url + f"/lol/status/v4/platform-data"),
+        headers = headers
+    )
+    return not (response.status_code != 401 and response.status_code != 403)
+
+async def updateAPIKey():
+    load_dotenv(override=True)
+    global RIOTTOKEN
+    global headers
+    RIOTTOKEN = os.getenv('RIOTTOKEN')
+    headers = {"X-Riot-Token": RIOTTOKEN}
+    return not checkKeyInvalid()
+
 def updateUserData():
     with open('bot/resources/data/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
@@ -46,13 +61,6 @@ def getChampIdByName(q):
 
 def parseSpaces(s):
     return s.replace(" ", "%20")
-
-def checkKeyInvalid():
-    response = requests.get(
-        (url + f"/lol/status/v4/platform-data"),
-        headers = headers
-    )
-    return not (response.status_code != 401 and response.status_code != 403)
 
 def getSummonerData(s):
     response = requests.get(
@@ -119,6 +127,7 @@ def parseQueue(queue):
     return queueTable[queue]
 
 def embedRankedData(s):
+    print(RIOTTOKEN)
     data, s = getRankedData(s)
     # if data == False or s == False:
     #     return False
