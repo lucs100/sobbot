@@ -86,8 +86,8 @@ def messageBonus(id):
     x = 3 # 1/x chance to drop a coin each message
     coinsOnMessage = 1
     if id not in users:
-        if "coins" not in users[id]:
-            return False
+        return False
+    if "coins" not in users[id]:
         return False
     if isinstance(getUserCoins(id), int):
         if random.randint(1, x) == 1:
