@@ -51,7 +51,7 @@ def parseMath(exp):
                     return str(a ** b)
                 else:
                     return "Major error - Get this checked out. (Error 3)"
-            except Overflow:
+            except:
                 return "Sobbot lost count - your numbers were a little too big."
     except:
         pass
