@@ -142,10 +142,13 @@ def embedRankedData(s):
     for i in range(0, len(data)):
         rank = parseRank(data[i]["tier"], data[i]["division"])
         q = parseQueue(data[i]["queue"])
-        lp, w, l, wr = data[i]["lp"], data[i]["wins"], data[i]["losses"], ((data[i]["wins"] * 100) / (data[i]["gp"]))
+        lp, w, l, gp, wr = data[i]["lp"], data[i]["wins"], data[i]["losses"], data[i]["gp"], ((data[i]["wins"] * 100) / (data[i]["gp"]))
+        rs = int((w**3 * wr) / gp)
         description += (f"**{q}** - **{rank}** - {lp} LP")
         description += "\n"
         description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
+        description += "\n"
+        description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
     if description == "": #no data returned
