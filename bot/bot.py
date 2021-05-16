@@ -22,19 +22,19 @@ async def on_ready():
 
 	for guild in client.guilds:
 		print(f"Connected to {guild.name} ({guild.id}).")
-		guildCount = guildCount + 1
+		guildCount = guildCount + 1 # print all connected guilds 
 
 	global startTime
-	startTime = time.time()
+	startTime = time.time() # show time connected in console
 	timeFormatted = datetime.fromtimestamp(startTime).strftime("%I:%M %p, %B %d %Y")
 
 	print(f"({guildCount}) total connected servers.")
 	print(f"{client.user} is ready!")
 	print(f"Time: {timeFormatted}")
-	channel = client.get_channel(835267335169245255)
+	channel = client.get_channel(835267335169245255) # sobblelink channel
 	await channel.send("im conected")
 	# await sob.setActivity(client) #not working yet
-	await client.change_presence(activity=discord.Game(name="sobling"))
+	await client.change_presence(activity=discord.Game(name="sobling")) # placeholder until i set up activity
 
 @client.event
 async def on_message(message):
@@ -199,8 +199,6 @@ async def on_message(message):
 						await message.channel.send("Key update failed.")
 				else:
 					await message.channel.send("You don't have the permissions to do this.")
-					
-
 
 
 			# Currency Functions

@@ -13,7 +13,7 @@ def updateUserData(info):
     with open('bot/resources/data/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
     with open('bot/resources/data/soblecoinTransactions.txt', 'a') as fp:
-        fp.write(f"{info}  -  {str(time.ctime(time.time()))}\n") #logs transaction
+        fp.write(f"{info}  -  {str(time.ctime(time.time()))}\n") # logs transaction
     return True
 
 def getUserCoins(id):
@@ -27,9 +27,9 @@ def getUserCoins(id):
 def addRegistration(id):
     id = str(id)
     if id not in users:
-        users[id] = {} #add id to userlist
+        users[id] = {} # add id to userlist
     if "coins" in users[str(id)]:
-        return False #already created
+        return False # already created
     users[id]["coins"] = 0
     users[id]["coins"] = startingCoins
     updateUserData(f"{id} - created soblecoin wallet with {startingCoins}")
@@ -38,15 +38,15 @@ def addRegistration(id):
 def give(sender, recipient, value):
     sender, recipient = str(sender), str(recipient)
     if sender == recipient:
-        return 4 #sender = reciever
+        return 4 # sender = reciever
 
     if sender not in users or "coins" not in users[sender]:
-        return 3 #sender error
+        return 3 # sender error
     elif recipient not in users or "coins" not in users[recipient]:
-        return 1 #recipient error
+        return 1 # recipient error
 
     if users[sender]["coins"] < value or value <= 0:
-        return 2 #insufficient soblecoins
+        return 2 # insufficient soblecoins
 
     users[sender]["coins"] -= value
     users[recipient]["coins"] += value
@@ -58,9 +58,9 @@ def claimHourly(id):
     value = 0
     id = str(id)
     if id not in users or "coins" not in users[id]:
-        return False, -1 #recipient error
+        return False, -1 # recipient error
     if "coinsLastClaimed" not in users[id]:
-        users[id]["coinsLastClaimed"] = float(0) #create field
+        users[id]["coinsLastClaimed"] = float(0) # create field
     last = users[id]["coinsLastClaimed"]
     
     currentTime = time.time()
@@ -73,13 +73,13 @@ def claimHourly(id):
         updateUserData(f"{id} claimed {value} coins")
         return True, value
     else:
-        availableTime = datetime.fromtimestamp(last + claimCooldown) #date magic to show the user when next claim ready
+        availableTime = datetime.fromtimestamp(last + claimCooldown) # date magic to show the user when next claim ready
         currentTime = datetime.fromtimestamp(currentTime)
         nextTimeString = availableTime.strftime("%I:%M %p").lstrip("0")
         nextTimeString = "at " + nextTimeString
         if availableTime.day != currentTime.day:
             nextTimeString = "tomorrow " + nextTimeString
-        return False, nextTimeString #time not passed
+        return False, nextTimeString # time not passed
 
 def messageBonus(id):
     id = str(id)
