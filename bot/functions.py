@@ -77,7 +77,7 @@ def pkmnLookup(n):
     try:
         n = int(n) # if n is an int, directly search entries
     except:
-        res = findDex(str(n)) # otherwise, check if findDex returns a result
+        res = int(findDex(str(n))) # otherwise, check if findDex returns a result
         if res != -1:
             n = res # n is now found number
         else:
@@ -111,7 +111,7 @@ def pkmnLookup(n):
             final.set_image(url=(art))
             pkmn.close()
         return final
-
+        
 def timeRunning(c):
     s = time.time() - c
     d, s = divmod(s, 86400)
