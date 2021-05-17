@@ -119,7 +119,7 @@ async def on_message(message):
 			
 
 			if c.startswith("lollevel"):
-				# try:
+				try:
 					name = c[8:].strip()
 					if name.strip() == "":
 						name = riotapi.isUserRegistered(message.author.id) #bool or sname
@@ -132,9 +132,9 @@ async def on_message(message):
 						return True
 					name, level = data["name"], data["level"]
 					await message.channel.send(f"Summoner **{name}** is level **{level}**.")
-				# except:
-				# 	await message.channel.send(f"Summoner **{name}** doesn't exist.")
-				# 	return True
+				except:
+					await message.channel.send(f"Summoner **{name}** doesn't exist.")
+					return True
 
 			if c.startswith("lolmastery"):
 				try:
