@@ -251,6 +251,23 @@ async def on_message(message):
 					else:
 						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {data[1]}.")
 
+			if c.startswith("roll"):
+				value = c[4:].strip()
+				status, change, multi = coin.luckyRoll(message.author.id, value)
+				if status == "int":
+					await message.channel.send(f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!")
+				if status == "reg":
+					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+				elif status == "insuff":
+					await message.channel.send(f"<@!{message.author.id}>, you only have {change} soblecoins!")
+				elif status == "ok":
+					if multi > 1:
+						await message.channel.send(f"<@!{message.author.id}>, you rolled a x{multi} and won {change} soblecoins!")
+					if multi == 1:
+						await message.channel.send(f"<@!{message.author.id}>, you rolled a x{multi}! You didn't win or lose soblecoins.")
+					if multi < 1:
+						await message.channel.send(f"<@!{message.author.id}>, you rolled a x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+# 5264
 	return True
 				
 client.run(DISCORDTOKEN)

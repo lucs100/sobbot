@@ -94,4 +94,28 @@ def messageBonus(id):
             users[id]["coins"] += coinsOnMessage
             updateUserData(f"{id} earned {coinsOnMessage}")
     return True
+
+def luckyRoll(id, value):
+    try:
+        value = int(value)
+    except:
+        return "int", 0, 0    # errors return a code and two placeholders
+    prizeDict = [0, 0, 0, 0.1, 0.1, 0.1, 0.2, 0.2, 0.25, 
+    0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
+    0.9, 1, 1.1, 1.25, 1.5, 2, 2, 2.5, 3, 5, 10, 100] # random set of prize multipliers
+    id = str(id)
+    balance = getUserCoins(id)
+    if id not in users:
+        return "reg", 0, 0
+    if "coins" not in users[id]:
+        return "reg", 0, 0
+    if balance < value:
+        return "insuff", balance, 0
+    multi = random.choice(prizeDict)
+    change = int(value * multi)
+    if isinstance(getUserCoins(id), int):
+        users[id]["coins"] += change - value
+        updateUserData(f"{id} wagered {value} for a change of {change}")
+    return "ok", change, multi
+
     
