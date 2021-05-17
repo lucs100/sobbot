@@ -143,7 +143,7 @@ def randomBlue():
     path = f"bot/resources/pics/colors/{colorhex}.png"
     if not os.path.exists(path): # if file not already saved, create and save
         img = Image.new(mode="RGB", size=(250, 250), color=color)
-        img.save(fp=path, format="png") # is this even neccesary? test speed someday
+        img.save(fp=path, format="png") # not sure how to do it without saving, would be easier
     return (discord.File(fp=path), f"{color}, #{colorhex}") # return final file
 
 def printfile(fp):
