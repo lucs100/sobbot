@@ -16,6 +16,13 @@ def updateUserData(info):
         fp.write(f"{info}  -  {str(time.ctime(time.time()))}\n") # logs transaction
     return True
 
+def isUserRegistered(id):
+    id = str(id)
+    if id in users:
+        if "coins" in users[id]:
+            return users[id]["coins"]  # if lol name in user data
+    return False
+
 def getUserCoins(id):
     id = str(id)
     if id in users:
@@ -40,9 +47,9 @@ def give(sender, recipient, value):
     if sender == recipient:
         return 4 # sender = reciever
 
-    if sender not in users or "coins" not in users[sender]:
+    if not isUserRegistered(sender):
         return 3 # sender error
-    elif recipient not in users or "coins" not in users[recipient]:
+    elif not isUserRegistered(recipient):
         return 1 # recipient error
 
     if users[sender]["coins"] < value or value <= 0:
@@ -57,7 +64,7 @@ def claimHourly(id):
     claimCooldown = float(2 * 60 * 60)  # 2 hours
     value = 0
     id = str(id)
-    if id not in users or "coins" not in users[id]:
+    if not isUserRegistered(id):
         return False, -1 # recipient error
     if "coinsLastClaimed" not in users[id]:
         users[id]["coinsLastClaimed"] = float(0) # create field
@@ -91,9 +98,7 @@ def messageBonus(id):
     id = str(id)
     x = 3 # 1/x chance to drop a coin each message
     coinsOnMessage = 1
-    if id not in users:
-        return False
-    if "coins" not in users[id]:
+    if not isUserRegistered(id):
         return False
     if isinstance(getUserCoins(id), int):
         if random.randint(1, x) == 1:
@@ -111,9 +116,7 @@ def luckyRoll(id, value):
     0.9, 1, 1.1, 1.25, 1.5, 2, 2, 2.5, 3, 5, 10, 100] # random set of prize multipliers
     id = str(id)
     balance = getUserCoins(id)
-    if id not in users:
-        return "reg", 0, 0
-    if "coins" not in users[id]:
+    if not isUserRegistered(id):
         return "reg", 0, 0
     if balance < value:
         return "insuff", balance, 0
