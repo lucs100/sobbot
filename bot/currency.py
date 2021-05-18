@@ -112,10 +112,10 @@ def luckyRoll(id, value):
     if balance < value:
         return "insuff", balance, 0
     multi = random.choice(prizeDict)
-    change = int(value * multi)
+    change = int(value * multi) - value
     if isinstance(getUserCoins(id), int):
-        users[id]["coins"] += change - value
+        users[id]["coins"] += change
         updateUserData(f"{id} wagered {value} for a change of {change}")
-    return "ok", change, multi
+    return "ok", abs(change), multi
 
     
