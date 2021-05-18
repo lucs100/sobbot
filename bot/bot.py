@@ -242,14 +242,17 @@ async def on_message(message):
 				return True
 			
 			if c == "claim":
-				data = coin.claimHourly(message.author.id)
-				if data[0] == True:
-					await message.channel.send(f"<@!{message.author.id}> claimed **{data[1]}** soblecoins!")
+				ok, value = coin.claimHourly(message.author.id)
+				if ok:
+					if value == 1000:
+						await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
+					else:
+						await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
 				else:
-					if str(data[1]) == str(-1):
+					if value == -1:
 						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
 					else:
-						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {data[1]}.")
+						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
 
 			if c.startswith("roll"):
 				value = c[4:].strip()
@@ -267,7 +270,6 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
 					if multi < 1:
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
-# 5264
 	return True
 				
 client.run(DISCORDTOKEN)

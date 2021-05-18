@@ -65,13 +65,19 @@ def claimHourly(id):
     
     currentTime = time.time()
     timeElapsed = currentTime - last
+    value = (random.randint(50, 100) + (random.randint(3, 10) + random.randint(3, 10)) ** 2) 
 
     if timeElapsed >= claimCooldown:
-        value = (random.randint(50, 100) + (((random.randint(3, 10)) + (random.randint(3, 10))) ** 2)) 
-        users[id]["coins"] += value
-        users[id]["coinsLastClaimed"] = currentTime
-        updateUserData(f"{id} claimed {value} coins")
-        return True, value
+        if (getUserCoins(id) + value) <= 1000:
+            users[id]["coins"] = 1000
+            users[id]["coinsLastClaimed"] = currentTime
+            updateUserData(f"{id} reset to 1000 coins")
+            return True, 1000
+        else:
+            users[id]["coins"] += value
+            users[id]["coinsLastClaimed"] = currentTime
+            updateUserData(f"{id} claimed {value} coins")
+            return True, value
     else:
         availableTime = datetime.fromtimestamp(last + claimCooldown) # date magic to show the user when next claim ready
         currentTime = datetime.fromtimestamp(currentTime)
