@@ -1,4 +1,4 @@
-import random, discord, os, decimal, json, time
+import random, discord, os, decimal, json, time, io
 from datetime import datetime
 from PIL import Image
 
@@ -140,15 +140,17 @@ def randomBlue():
     b = int(random.randint(52, 85)*3) # 156, 255
     color = f"rgb({r}, {g}, {b})"
     colorhex = str(hex(r)[2:] + hex(g)[2:] + hex(b)[2:]) # generate a blue colour randomly
-    path = f"bot/resources/pics/colors/{colorhex}.png"
-    if not os.path.exists(path): # if file not already saved, create and save
-        img = Image.new(mode="RGB", size=(250, 250), color=color)
-        img.save(fp=path, format="png") # not sure how to do it without saving, would be easier
-    file = discord.File(path, filename="bluw.png")
+
+    img = Image.new(mode="RGB", size=(250, 250), color=color)
+    arr = io.BytesIO() # save image as datastream to avoid local saving
+    img.save(arr, format='PNG')
+    arr.seek(0)
+
+    file = discord.File(arr, filename="bluw.png") # pass stream to discord.File
     title = (f"{color}, #{colorhex}")
     embed = discord.Embed(title=title, color=discord.Colour.from_rgb(r, g, b))
-    embed.set_image(url="attachment://bluw.png")
-
+    embed.set_image(url="attachment://bluw.png") 
+    # discord requires embeds with nonurl files to be sent separately
     return embed, file
 
 def printfile(fp):
