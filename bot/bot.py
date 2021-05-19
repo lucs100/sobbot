@@ -101,8 +101,8 @@ async def on_message(message):
 				#maybe format this a little nicer?
 			
 			if c == "randblue" or c == "randbluw":
-				fp, content = (sob.randomBlue())
-				await message.channel.send(file=fp, content=content)
+				embed, file = (sob.randomBlue())
+				await message.channel.send(embed=embed, file=file)
 			
 			if c.startswith("link"):
 				try:

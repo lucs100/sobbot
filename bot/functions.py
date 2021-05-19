@@ -144,7 +144,12 @@ def randomBlue():
     if not os.path.exists(path): # if file not already saved, create and save
         img = Image.new(mode="RGB", size=(250, 250), color=color)
         img.save(fp=path, format="png") # not sure how to do it without saving, would be easier
-    return (discord.File(fp=path), f"{color}, #{colorhex}") # return final file
+    file = discord.File(path, filename="bluw.png")
+    title = (f"{color}, #{colorhex}")
+    embed = discord.Embed(title=title, color=discord.Colour.from_rgb(r, g, b))
+    embed.set_image(url="attachment://bluw.png")
+
+    return embed, file
 
 def printfile(fp):
     textfile = open(fp, 'r')
