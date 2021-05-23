@@ -273,6 +273,19 @@ async def on_message(message):
 			
 			if c == "shop":
 				await message.channel.send(embed = coin.getShop())
+			
+			if c.startswith("buy"):
+				c = c[3:].strip()
+				code, num = coin.buyFromShop(c, message.author.id)
+				messages = {
+					"exist": f"<@!{message.author.id}>, no item with the id {c} exists!",
+					"reg": f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
+					"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!"
+				}
+				if code in messages:
+					await message.channel.send(messages[code])
+				else:
+					await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
 	
 	return True
 				

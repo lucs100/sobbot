@@ -133,6 +133,18 @@ def luckyRoll(id, value):
         updateUserData(f"{id} wagered {value} for a change of {change}")
     return "ok", abs(change), multi
 
+def setupUserInventory(id):
+    id = str(id)
+    if "inventory" not in users[id]:
+        users[id]["inventory"] = {}
+    return True
+
+def itemInInventory(itemID, userID):
+    itemID, userID = str(itemID), str(userID)
+    setupUserInventory(userID)
+    if itemID in users[userID]["inventory"]:
+        return users[userID]["inventory"][itemID]["count"]
+    return 0
 
 def getShop():
     #CAREFUL, this is gonna get hard to maintain if there are too many items
@@ -141,9 +153,29 @@ def getShop():
     shopDescription = ""
     for i in range(1, len(shop)+1):
         n = str(i)
-        shopDescription += f"**{shop[n]['name']}** (s!purchase {shop[n]['id']})\n"
+        shopDescription += f"**{shop[n]['name']}** (s!buy {shop[n]['id']})\n"
         shopDescription += f"Price - {shop[n]['price']} soblecoins\n"
         shopDescription += f"*{shop[n]['description']}*\n"
         shopDescription += "\n"
     embed.description = shopDescription
     return embed
+
+def buyFromShop(itemID, userID):
+    itemID, userID = str(itemID), str(userID)
+    if itemID not in shop:
+        return "exist", 0 #id doesnt exist error
+    if not isUserRegistered(userID):
+        return "reg", 0 #user not registered error
+    setupUserInventory(userID)
+    price = shop[itemID]["price"]
+    if price > getUserCoins(userID):
+        return "broke", getUserCoins(userID) #insufficient funds error
+    else:
+        users[userID]["coins"] -= price
+    countOwned = itemInInventory(itemID, userID)
+    if countOwned == 0:
+        users[userID]["inventory"][itemID] = {"count": 1}
+    else:
+        users[userID]["inventory"][itemID]["count"] += 1
+    updateUserData(f"{userID} purchased {shop[itemID]['name']} for {price}")
+    return shop[itemID]["name"], countOwned + 1 
