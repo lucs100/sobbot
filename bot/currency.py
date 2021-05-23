@@ -1,9 +1,15 @@
-import json, time, random
+import json, time, random, discord
 from datetime import datetime
 
 startingCoins = 1000
 
 users = {}
+
+shop = {}
+
+with open('bot/resources/data/shop.json') as f:
+    data = json.loads(f.read())
+    shop = data
 
 with open('bot/resources/data/userdata.json') as f:
     data = json.loads(f.read())
@@ -127,4 +133,17 @@ def luckyRoll(id, value):
         updateUserData(f"{id} wagered {value} for a change of {change}")
     return "ok", abs(change), multi
 
-    
+
+def getShop():
+    #CAREFUL, this is gonna get hard to maintain if there are too many items
+    #pagination?
+    embed = discord.Embed(title="Sobble Shop", color=0xf42069)
+    shopDescription = ""
+    for i in range(1, len(shop)+1):
+        n = str(i)
+        shopDescription += f"**{shop[n]['name']}** (s!purchase {shop[n]['id']})\n"
+        shopDescription += f"Price - {shop[n]['price']} soblecoins\n"
+        shopDescription += f"*{shop[n]['description']}*\n"
+        shopDescription += "\n"
+    embed.description = shopDescription
+    return embed

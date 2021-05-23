@@ -270,6 +270,10 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
 					if multi < 1:
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+			
+			if c == "shop":
+				await message.channel.send(embed = coin.getShop())
+	
 	return True
 				
 client.run(DISCORDTOKEN)
