@@ -185,10 +185,9 @@ def addCustomProperty(name, value, userID):
     return True
     
 def setCustomItemProperties(itemID, userID):
-    if itemID == "1": #clover level 1
-        addCustomProperty("luck", 1, userID)
-    if itemID == "2": #clover level 2
-        addCustomProperty("luck", 2, userID)
+    if "properties" in shop[itemID]:
+        for key, value in shop[itemID]["properties"].items():
+            addCustomProperty(key, value, userID)
     return True
 
 def checkPrereqs(itemID, userID):
