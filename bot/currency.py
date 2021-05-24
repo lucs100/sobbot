@@ -171,11 +171,11 @@ def buyFromShop(itemID, userID):
     if price > getUserCoins(userID):
         return "broke", getUserCoins(userID) #insufficient funds error
     else:
-        users[userID]["coins"] -= price
+        users[userID]["coins"] -= price  #subtract price from balance
     countOwned = itemInInventory(itemID, userID)
     if countOwned == 0:
-        users[userID]["inventory"][itemID] = {"count": 1}
+        users[userID]["inventory"][itemID] = {"count": 1} #new entry for the item
     else:
-        users[userID]["inventory"][itemID]["count"] += 1
+        users[userID]["inventory"][itemID]["count"] += 1 #item count increased by 1
     updateUserData(f"{userID} purchased {shop[itemID]['name']} for {price}")
     return shop[itemID]["name"], countOwned + 1 
