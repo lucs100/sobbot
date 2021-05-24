@@ -165,6 +165,13 @@ def addCustomProperty(name, value, userID):
         users[userID]["properties"] = {}
     users[userID]["properties"][name] = value
     return True
+    
+def setCustomItemProperties(itemID, userID):
+    if itemID == "1": #clover level 1
+        addCustomProperty("luck", 1, userID)
+    if itemID == "2": #clover level 2
+        addCustomProperty("luck", 2, userID)
+    return True
 
 def getShop():
     #CAREFUL, this is gonna get hard to maintain if there are too many items
