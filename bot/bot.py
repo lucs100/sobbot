@@ -278,7 +278,7 @@ async def on_message(message):
 				c = c[3:].strip()
 				code, num = coin.buyFromShop(c, message.author.id)
 				messages = {
-					"exist": f"<@!{message.author.id}>, no item with the id {c} exists!",
+					"exist": f"<@!{message.author.id}>, no item with the ID {c} exists!",
 					"reg": f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
 					"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
 					"limit": f"<@!{message.author.id}>, you already own that limited item.",
