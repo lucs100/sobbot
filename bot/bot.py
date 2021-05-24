@@ -213,24 +213,24 @@ async def on_message(message):
 				return False
 			
 			if c.startswith("give"):
-				# try:
-				sender = message.author.id
-				recipient, value = c[4:].split()
-				recipient = recipient[3:-1]
-				value = int(value)
-				ok = coin.give(sender, recipient, value)
-				if ok == 0:
-					await message.channel.send(f"Sent **{value}** soblecoins to <@!{recipient}>!")
-				if ok == 1:
-					await message.channel.send(f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.")
-				if ok == 2:
-					await message.channel.send(f"Soblecoins not sent! You don't have enough soblecoins.")
-				if ok == 3:
-					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
-				if ok == 4:
-					await message.channel.send(f"You can't send coins to yourself!")
-				# except:
-					# await message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!")
+				try:
+					sender = message.author.id
+					recipient, value = c[4:].split()
+					recipient = recipient[3:-1]
+					value = int(value)
+					ok = coin.give(sender, recipient, value)
+					messages = {
+						#indexed by error code
+						0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
+						1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
+						2: f"Soblecoins not sent! You don't have enough soblecoins.",
+						3: f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
+						4: f"You can't send coins to yourself!"
+					}
+					if ok in messages:
+						await message.channel.send(messages[ok])
+				except:
+					await message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!")
 				return True
 			
 			if c == "balance":
