@@ -143,10 +143,13 @@ def embedRankedData(s):
         rank = parseRank(data[i]["tier"], data[i]["division"])
         q = parseQueue(data[i]["queue"])
         lp, w, l, gp, wr = data[i]["lp"], data[i]["wins"], data[i]["losses"], data[i]["gp"], ((data[i]["wins"] * 100) / (data[i]["gp"]))
+        awr = (w+10)*100 / (gp+20) # 3b1b's method of review checking, applied to winrate
         rs = int((w**3 * wr) / gp)
         description += (f"**{q}** - **{rank}** - {lp} LP")
         description += "\n"
         description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
+        description += "\n"
+        description += (f"*{round(awr, 2)}% adjusted winrate*")
         description += "\n"
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
