@@ -4,7 +4,10 @@
         "name": "Dying Clover",
         "price": 77,
         "description": "increases a user's luck. it's falling apart.",
-        "limited": true
+        "limited": true,
+        "properties": {
+            "luck": 1
+        }
     },
     "2": {
         "id": "2",
@@ -12,12 +15,26 @@
         "price": 777,
         "description": "increases a user's luck a little more. it's a pleasant green.",
         "limited": true,
-        "prereq": "1"
+        "prereq": "1",
+        "properties": {
+            "luck": 2
+        }
     },
     "3": {
         "id": "3",
+        "name": "Lucky Charm",
+        "price": 77777,
+        "description": "increases a user's luck by a lot. it's a golden pendant.",
+        "limited": true,
+        "prereq": "2",
+        "properties": {
+            "luck": 3
+        }
+    },
+    "4": {
+        "id": "4",
         "name": "real life sople",
-        "price": 100000,
+        "price": 1000000,
         "description": "its actual real i proimise"
     }
 }
