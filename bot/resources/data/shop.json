@@ -2,7 +2,7 @@
     "1": {
         "id": "1",
         "name": "Dying Clover",
-        "price": 77,
+        "price": 777,
         "description": "increases a user's luck. it's falling apart.",
         "limited": true,
         "properties": {
@@ -12,7 +12,7 @@
     "2": {
         "id": "2",
         "name": "Clover",
-        "price": 777,
+        "price": 7777,
         "description": "increases a user's luck a little more. it's a pleasant green.",
         "limited": true,
         "prereq": "1",
