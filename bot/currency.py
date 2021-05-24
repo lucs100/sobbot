@@ -173,6 +173,14 @@ def setCustomItemProperties(itemID, userID):
         addCustomProperty("luck", 2, userID)
     return True
 
+def checkPrereqs(itemID, userID):
+    if itemID == "2": #clover level 2
+        if itemInInventory(1, userID):
+            return True
+        else:
+            return False
+    return True
+
 def getShop():
     #CAREFUL, this is gonna get hard to maintain if there are too many items
     #pagination?
