@@ -66,6 +66,13 @@ def give(sender, recipient, value):
     updateUserData(f"{sender} sent {value} coins to {recipient}")
     return 0
 
+def getUserLuck(id):
+    id = str(id)
+    try:
+        return users[id]["properties"]["luck"]
+    except: #key error
+        return 0
+
 def claimHourly(id):
     claimCooldown = float(2 * 60 * 60)  # 2 hours
     value = 0
@@ -78,7 +85,8 @@ def claimHourly(id):
     
     currentTime = time.time()
     timeElapsed = currentTime - last
-    value = (random.randint(50, 100) + (random.randint(3, 10) + random.randint(3, 10)) ** 2) 
+    luck = getUserLuck(id)
+    value = (random.randint(50, 100) + (random.randint(3+luck, 10) + random.randint(3+luck, 10)) ** 2) 
 
     if timeElapsed >= claimCooldown:
         if (getUserCoins(id) + value) <= 1000:
@@ -102,12 +110,14 @@ def claimHourly(id):
 
 def messageBonus(id):
     id = str(id)
-    x = 3 # 1/x chance to drop a coin each message
+    x = 3 #numerator
+    y = 10 #denominator
     coinsOnMessage = 1
     if not isUserRegistered(id):
         return False
     if isinstance(getUserCoins(id), int):
-        if random.randint(1, x) == 1:
+        luck = getUserLuck(id)
+        if random.randint(x+luck, y) == 1:
             users[id]["coins"] += coinsOnMessage
             updateUserData(f"{id} earned {coinsOnMessage}")
     return True
@@ -126,7 +136,11 @@ def luckyRoll(id, value):
         return "reg", 0, 0
     if balance < value:
         return "insuff", balance, 0
-    multi = random.choice(prizeDict)
+    chances = 1 + getUserLuck(id)
+    pulled = []
+    for i in range(chances):
+        pulled.append(random.choice(prizeDict)) #multiple draws for each level of luck
+    multi = max(pulled)
     change = int(value * multi) - value
     if isinstance(getUserCoins(id), int):
         users[id]["coins"] += change
@@ -146,6 +160,12 @@ def itemInInventory(itemID, userID):
         return users[userID]["inventory"][itemID]["count"]
     return 0
 
+def addCustomProperty(name, value, userID):
+    if "properties" not in users[userID]:
+        users[userID]["properties"] = {}
+    users[userID]["properties"][name] = value
+    return True
+
 def getShop():
     #CAREFUL, this is gonna get hard to maintain if there are too many items
     #pagination?
@@ -156,11 +176,14 @@ def getShop():
         shopDescription += f"**{shop[n]['name']}** (s!buy {shop[n]['id']})\n"
         shopDescription += f"Price - {shop[n]['price']} soblecoins\n"
         shopDescription += f"*{shop[n]['description']}*\n"
+        if "prereq" in shop[n]:
+            shopDescription += f"`Requires {shop[shop[n]['prereq']]['name']}.`\n"
         shopDescription += "\n"
     embed.description = shopDescription
     return embed
 
 def buyFromShop(itemID, userID):
+    #may need to add custom item properties someday
     itemID, userID = str(itemID), str(userID)
     if itemID not in shop:
         return "exist", 0 #id doesnt exist error
@@ -170,12 +193,16 @@ def buyFromShop(itemID, userID):
     price = shop[itemID]["price"]
     if price > getUserCoins(userID):
         return "broke", getUserCoins(userID) #insufficient funds error
+    if not checkPrereqs(itemID, userID):
+        return "prereq", 0 #prerequisite item required
     else:
         users[userID]["coins"] -= price  #subtract price from balance
     countOwned = itemInInventory(itemID, userID)
     if countOwned == 0:
         users[userID]["inventory"][itemID] = {"count": 1} #new entry for the item
+        setCustomItemProperties(itemID, userID)
     else:
         users[userID]["inventory"][itemID]["count"] += 1 #item count increased by 1
+        setCustomItemProperties(itemID, userID)
     updateUserData(f"{userID} purchased {shop[itemID]['name']} for {price}")
     return shop[itemID]["name"], countOwned + 1 
