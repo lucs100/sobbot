@@ -160,6 +160,18 @@ def itemInInventory(itemID, userID):
         return users[userID]["inventory"][itemID]["count"]
     return 0
 
+def getInventoryEmbed(userID):
+    userID = str(userID)
+    #primitive, implement this as an embed in the future
+    message = f"**<@!{userID}>'s Inventory:**\n"
+    if "inventory" in users[userID]:
+        inventory = users[userID]["inventory"]
+        for i in inventory:
+            message += f"{getItemName(i)} - *{str(inventory[i]['count'])} owned*\n"
+    else:
+        message += "No items owned yet!"
+    return message
+
 def getItemName(itemID):
     itemID = str(itemID)
     if itemID in shop:

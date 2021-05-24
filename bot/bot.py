@@ -287,7 +287,10 @@ async def on_message(message):
 					await message.channel.send(messages[code])
 				else:
 					await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
-	
+
+			if c == "inventory":
+				await message.channel.send(coin.getInventoryEmbed(message.author.id))
+				
 	return True
 				
 client.run(DISCORDTOKEN)
