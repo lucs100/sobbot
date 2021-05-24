@@ -192,11 +192,19 @@ def setCustomItemProperties(itemID, userID):
     return True
 
 def checkPrereqs(itemID, userID):
-    if itemID == "2": #clover level 2
-        if itemInInventory(1, userID):
+    if "prereq" in shop[itemID]:
+        if itemInInventory(shop[itemID]["prereq"], userID):
             return True
         else:
             return False
+    return True
+
+def checkLimited(itemID, userID):
+    if "limited" in shop[itemID]:
+        if itemInInventory(itemID, userID) != 0:
+            return False #owned already
+        else:
+            return True
     return True
 
 def getShop():
@@ -206,7 +214,10 @@ def getShop():
     shopDescription = ""
     for i in range(1, len(shop)+1):
         n = str(i)
-        shopDescription += f"**{shop[n]['name']}** (s!buy {shop[n]['id']})\n"
+        shopDescription += f"**{shop[n]['name']}** (s!buy {shop[n]['id']})   "
+        if "limited" in shop[n]:
+            shopDescription += f"`Limited item.`"
+        shopDescription += "\n"
         shopDescription += f"Price - {shop[n]['price']} soblecoins\n"
         shopDescription += f"*{shop[n]['description']}*\n"
         if "prereq" in shop[n]:
@@ -228,6 +239,8 @@ def buyFromShop(itemID, userID):
         return "broke", getUserCoins(userID) #insufficient funds error
     if not checkPrereqs(itemID, userID):
         return "prereq", 0 #prerequisite item required
+    if not checkLimited(itemID, userID):
+        return "limit", 0 #limited item already owned
     else:
         users[userID]["coins"] -= price  #subtract price from balance
     countOwned = itemInInventory(itemID, userID)

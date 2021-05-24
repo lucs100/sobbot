@@ -3,13 +3,15 @@
         "id": "1",
         "name": "Dying Clover",
         "price": 77,
-        "description": "increases a user's luck. it's falling apart."
+        "description": "increases a user's luck. it's falling apart.",
+        "limited": true
     },
     "2": {
         "id": "2",
         "name": "Clover",
         "price": 777,
         "description": "increases a user's luck a little more. it's a pleasant green.",
+        "limited": true,
         "prereq": "1"
     },
     "3": {

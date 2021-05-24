@@ -281,6 +281,7 @@ async def on_message(message):
 					"exist": f"<@!{message.author.id}>, no item with the id {c} exists!",
 					"reg": f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
 					"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
+					"limit": f"<@!{message.author.id}>, you already own that limited item.",
 					"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
 				}
 				if code in messages:
