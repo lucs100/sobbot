@@ -1,15 +1,16 @@
 {
     "1": {
         "id": "1",
-        "name": "twizzler",
-        "price": 100,
-        "description": "licorish"
+        "name": "Dying Clover",
+        "price": 77,
+        "description": "increases a user's luck. it's falling apart."
     },
     "2": {
         "id": "2",
-        "name": "spotify premiun",
-        "price": 200,
-        "description": "music (not real)"
+        "name": "Clover",
+        "price": 777,
+        "description": "increases a user's luck a little more. it's a pleasant green.",
+        "prereq": "1"
     },
     "3": {
         "id": "3",
