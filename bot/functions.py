@@ -134,10 +134,9 @@ def timeRunning(c):
     return (f"Sobbot has been online for {q}!")
 
 def randomBlue():
-    # incremented so that i don't generate 240k files
-    r = int(random.randint(20, 30)*2) # 40, 60
-    g = int(random.randint(20, 50)*4) # 80, 200
-    b = int(random.randint(52, 85)*3) # 156, 255
+    r = random.randint(40, 60)
+    g = random.randint(80, 180)
+    b = random.randint(156, 255)
     color = f"rgb({r}, {g}, {b})"
     colorhex = str(hex(r)[2:] + hex(g)[2:] + hex(b)[2:]) # generate a blue colour randomly
 
