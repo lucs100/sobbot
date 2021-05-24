@@ -130,7 +130,7 @@ def timeRunning(c):
         if value != 0:
             q += f"{value}{key}" # if a unit is not 0, append it to the string
     if q == "":
-        q = " under a second!"
+        q = "under a second"
     return (f"Sobbot has been online for {q}!")
 
 def randomBlue():
