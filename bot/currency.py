@@ -131,9 +131,8 @@ def luckyRoll(id, value):
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 
-    1.1, 1.1, 1.1, 1.1, 1.25, 1.5, 2, 2, 2.5, 3, 5, 10, 20] # random set of prize multipliers
+    1, 1, 1, 1, 1, 1, 1, 1, 1.05, 1.05, 1.05, 1.05, 1.05, 
+    1.1, 1.1, 1.25, 1.5, 2, 2.5, 3, 5, 10, 20] # random set of prize multipliers
     id = str(id)
     balance = getUserCoins(id)
     if not isUserRegistered(id):
@@ -144,6 +143,8 @@ def luckyRoll(id, value):
     pulled = []
     for i in range(chances):
         pulled.append(random.choice(prizeDict)) #multiple draws for each level of luck
+    if chances != 1:
+        if random()
     multi = max(pulled)
     change = int(value * multi) - value
     if isinstance(getUserCoins(id), int):
