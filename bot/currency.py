@@ -131,7 +131,7 @@ def luckyRoll(id, value):
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
-    1, 1.05, 1.1, 1.1, 1.25, 1.5, 2, 2.5, 3, 5, 10, 20] # random set of prize multipliers
+    1, 1.05, 1.1, 1.1, 1.25, 1.5, 2, 2.5, 3, 5, 10] # random set of prize multipliers
     id = str(id)
     balance = getUserCoins(id)
     if not isUserRegistered(id):
