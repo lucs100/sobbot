@@ -129,7 +129,11 @@ def luckyRoll(id, value):
         return "int", 0, 0    # errors return a code and two placeholders
     prizeDict = [0, 0, 0, 0.1, 0.1, 0.1, 0.2, 0.2, 0.25, 
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
-    0.9, 1, 1.1, 1.25, 1.5, 2, 2, 2.5, 3, 5, 10, 100] # random set of prize multipliers
+    0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
+    0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 
+    1.1, 1.1, 1.1, 1.1, 1.25, 1.5, 2, 2, 2.5, 3, 5, 10, 20] # random set of prize multipliers
     id = str(id)
     balance = getUserCoins(id)
     if not isUserRegistered(id):
