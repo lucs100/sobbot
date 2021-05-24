@@ -160,6 +160,12 @@ def itemInInventory(itemID, userID):
         return users[userID]["inventory"][itemID]["count"]
     return 0
 
+def getItemName(itemID):
+    itemID = str(itemID)
+    if itemID in shop:
+        return shop[itemID]["name"]
+    return "Null item"
+
 def addCustomProperty(name, value, userID):
     if "properties" not in users[userID]:
         users[userID]["properties"] = {}
