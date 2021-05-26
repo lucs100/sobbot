@@ -138,11 +138,18 @@ def luckyRoll(id, value):
         return "reg", 0, 0
     if balance < value:
         return "insuff", balance, 0
-    chances = 1 + getUserLuck(id)
+    luck = getUserLuck(id)
+    chances = 1 + luck
     pulled = []
     for i in range(chances):
         pulled.append(random.choice(prizeDict)) #multiple draws for each level of luck
-    multi = max(pulled)
+    bonusRoll = random.randint(1, 6-luck) #luck has a CHANCE to give best draw
+    if bonusRoll == 1:
+        multi = max(pulled) #if bonus rolled, multi is max drawed
+    else:
+        if len(pulled) > 2: #otherwise, drop the lowest multi if 3 or more and pick random
+            pulled.remove(min(pulled))
+        multi = random.choice(pulled)
     change = int(value * multi) - value
     if isinstance(getUserCoins(id), int):
         users[id]["coins"] += change
