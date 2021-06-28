@@ -1,7 +1,20 @@
+from numpy.lib.arraysetops import isin
 import yfinance as yf
 from datetime import datetime
 
-#class??????
+class Stock:
+    def __init__(self, symbol):
+        data = yf.Ticker(symbol)
+        self.symbol = data.info["symbol"]
+        self.name = data.info["shortName"]
+        self.currentPrice = float(data.info["regularMarketPrice"])
+        self.openPrice = float(data.info["open"])
+        self.change = round(self.currentPrice - self.openPrice, 2)
+        self.changePercent = round(((self.change*100)/self.openPrice), 2)
+        self.volume = int(data.info["volume"])
+        self.averageVolume = int(data.info["averageVolume"])
+        self.relativeVolume = self.volume / self.averageVolume
+
 
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
@@ -20,23 +33,7 @@ def getMarketPhase(now = datetime.now()):
     else:
         return("Market closed")
 
-def getTicker(symbol):
-    return yf.Ticker(symbol)
-
-def getBasicData(ticker):
-    data = dict([])
-    data["symbol"] = ticker.info["symbol"]
-    data["name"] = ticker.info["shortName"]
-    data["price"] = float(ticker.info["regularMarketPrice"])
-    data["open"] = float(ticker.info["open"])
-    data["change"] = round(data["price"] - data["open"], 2)
-    data["changePercent"] = round(((data["change"]*100)/data["open"]), 2)
-    data["volume"] = int(ticker.info["volume"])
-    data["avgVolume"] = int(ticker.info["averageVolume"])
-    data["relativeVolume"] = data["volume"] / data["avgVolume"]
-    return data
-
-gme = getTicker("gme")
-print(getBasicData(gme))
+gme = Stock("gme")
+print(gme)
 
 print(getMarketPhase())
