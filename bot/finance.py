@@ -92,7 +92,6 @@ def createStockEmbed(stock):
             return stock
     title = f"**{stock.symbol}** - {stock.name}"
     phase = getMarketPhase()
-    timeUntilChange = (getPhaseChangeTiming(phase)).strftime("%Hh:%Mm:%Ss")
     phases = {
         [0]: ["The market is currently closed.", "premarket"],
         [1]: ["It's currently premarket.", "market open"],
@@ -106,6 +105,6 @@ def createStockEmbed(stock):
     description += f"{stock.symbol} opened at {stock.openingPrice}.\n"
     description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
     image = stock.logo
-    footer = f"*{timeUntilChange} until {phases[phase][1]}.*"
+    footer = f"*{(getPhaseChangeTiming(phase))} until {phases[phase][1]}.*"
     embed = discord.Embed(title=title, description=description, image=image, footer=footer)
     return embed
