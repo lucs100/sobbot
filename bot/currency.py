@@ -11,14 +11,14 @@ with open('bot/resources/data/shop.json') as f:
     data = json.loads(f.read())
     shop = data
 
-with open('bot/resources/data/userdata.json') as f:
+with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read())
     users = data
     
 def updateUserData(info):
-    with open('bot/resources/data/userdata.json', 'w') as fp:
+    with open('bot/resources/data/private/userdata.json', 'w') as fp:
         json.dump(users, fp,  indent=4)
-    with open('bot/resources/data/soblecoinTransactions.txt', 'a') as fp:
+    with open('bot/resources/data/private/soblecoinTransactions.txt', 'a') as fp:
         fp.write(f"{info}  -  {str(time.ctime(time.time()))}\n") # logs transaction
     return True
 

@@ -13,7 +13,7 @@ with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
     champs = data
 
-with open('bot/resources/data/userdata.json') as f:
+with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
     users = data
 
@@ -33,7 +33,7 @@ async def updateAPIKey():
     return True
 
 def updateUserData():
-    with open('bot/resources/data/userdata.json', 'w') as fp: # updates .json of all user data
+    with open('bot/resources/data/private/userdata.json', 'w') as fp: # updates .json of all user data
         json.dump(users, fp,  indent=4)
     return True
 
