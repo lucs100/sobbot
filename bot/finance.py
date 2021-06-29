@@ -41,11 +41,12 @@ def parseChange(change, percent, open):
         if percent > 5:
             if percent > 10:
                 if percent > 20:
-                    return f"{time} {change} gain. (+{percent}%!!!)\n"    
-            return f"{time} {change} gain. (+{percent}%!!)\n"
-        return f"{time} {change} gain. (+{percent}%!)\n"
+                    return "{} {} point gain. (+{:.2f}%!!!)\n"    .format(time, change, percent)
+                return "{} {} point gain. (+{:.2f}%!!)\n".format(time, change, percent)
+            return "{} {} point gain. (+{:.2f}%!)\n".format(time, change, percent)
+        return "{} {} point gain. (+{:.2f}%)\n".format(time, change, percent)
     elif percent < 0:
-        return f"{time} {change} loss. (-{percent}%)\n"
+        return "{} {} point loss. (-{:.2f}%)\n".format(time, change, percent)
     elif percent == 0:
         return f"{time} change of 0 from open."
 
@@ -92,19 +93,19 @@ def createStockEmbed(stock):
             return stock
     title = f"**{stock.symbol}** - {stock.name}"
     phase = getMarketPhase()
-    phases = {
-        [0]: ["The market is currently closed.", "premarket"],
-        [1]: ["It's currently premarket.", "market open"],
-        [2]: ["Markets are open.", "market close"],
-        [3]: ["It's currently after hours.", "after-hours ends"]
-    }
+    phases = [
+        ("The market is currently closed.", "premarket begins"),
+        ("It's currently premarket.", "market open"),
+        ("Markets are open.", "market close"),
+        ("It's currently after hours.", "after-hours ends")
+    ]
     description = f"*{phases[phase][0]}* "
     if phase != 2:
-        description += "Data might not be too accurate :("
-    description += f"\n{stock.symbol} last traded at **{stock.currentPrice}**\n"
-    description += f"{stock.symbol} opened at {stock.openingPrice}.\n"
+        description += "Data might not be too accurate :frowning:"
+    description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
+    description += f"and opened at {stock.openingPrice}.\n"
     description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
-    image = stock.logo
-    footer = f"*{(getPhaseChangeTiming(phase))} until {phases[phase][1]}.*"
-    embed = discord.Embed(title=title, description=description, image=image, footer=footer)
+    embed = discord.Embed(title=title, description=description)
+    embed.set_footer(text=(f"{(getPhaseChangeTiming(phase))} until {phases[phase][1]}."), icon_url=stock.logo)
+    #embed.set_image(url=stock.logo)
     return embed

@@ -303,7 +303,7 @@ async def on_message(message):
 				if embed != None:
 					await message.channel.send(embed=embed)
 				else:
-					await message.channel.send(f"Symbol {c} doesn't seem to exist :(")
+					await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist :(")
 
 				
 	return True
