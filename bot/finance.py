@@ -79,6 +79,10 @@ def getMarketPhase(now = datetime.now()):
         return 4 # Market closed
 
 def createStockEmbed(stock):
+    if not isinstance(stock, Stock):
+        stock = safelyCreateStock(stock)
+        if stock == None:
+            return stock
     title = f"**{stock.symbol}** - {stock.name}"
     phase = getMarketPhase()
     timeUntilChange = (getPhaseChangeTiming(phase)).strftime("%Hh:%Mm:%Ss")
