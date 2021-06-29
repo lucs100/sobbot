@@ -142,7 +142,5 @@ cython_debug/
 /**/pics
 __pycache__/
 *.bat
-
-bot/resources/data/userdata.json
-bot/resources/data/soblecoinTransactions.txt
 *.code-workspace
+/bot/resources/data/private
