@@ -145,3 +145,4 @@ __pycache__/
 
 bot/resources/data/userdata.json
 bot/resources/data/soblecoinTransactions.txt
+*.code-workspace
