@@ -5,6 +5,8 @@ import functions as sob
 import riotapi
 import currency as coin
 import finance
+import admin
+from re import match
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -49,6 +51,9 @@ async def on_message(message):
 			
 		if c == "ping":
 			await message.channel.send("pong! ({0}ms)".format(int(client.latency*1000)))
+		
+		if match("<@!?835251884104482907>", c) is not None:
+			await message.channel.send(f"My current prefix in this server is `{admin.getGuildPrefix(message.guild.id)}`.")
 
 		#special channels
 		if message.channel.id == 835388133959794699:
@@ -57,9 +62,9 @@ async def on_message(message):
 				await message.channel.send(content)
 
 		#prefixed messages
-		if c.startswith('s!'):
+		if c.startswith(admin.getGuildPrefix(message.guild.id)):
 			#remove prefix from search
-			c = c[2:]
+			c = c[len(admin.getGuildPrefix(message.guild.id)):]
 
 
 			# Miscellaneous Functions
