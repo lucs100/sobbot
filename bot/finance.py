@@ -1,6 +1,6 @@
 from numpy.lib.arraysetops import isin
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
 import discord
 
 class Stock:
@@ -11,8 +11,8 @@ class Stock:
             self.name = data.info["shortName"]
             self.currentPrice = float(data.info["regularMarketPrice"])
             self.openingPrice = float(data.info["open"])
-            self.change = round(self.currentPrice - self.openPrice, 2)
-            self.changePercent = round(((self.change*100)/self.openPrice), 2)
+            self.change = round(self.currentPrice - self.openingPrice, 2)
+            self.changePercent = round(((self.change*100)/self.openingPrice), 2)
             self.volume = int(data.info["volume"])
             self.averageVolume = int(data.info["averageVolume"])
             self.relativeVolume = self.volume / self.averageVolume
@@ -59,7 +59,14 @@ def getPhaseChangeTiming(phase):
         comp = now.replace(hour=16, minute=0, second=0, microsecond=0)
     else:
         comp = now.replace(hour=20, minute=0, second=0, microsecond=0)
-    return (comp - now)
+    totalSeconds = int((comp-now).total_seconds())
+    hours, remainder = divmod(totalSeconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours == 0:
+        if minutes == 0:
+            return f"{seconds}s"
+        return f"{minutes}m:{seconds}s"
+    return f"{hours}h:{minutes}m:{seconds}s"
 
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
