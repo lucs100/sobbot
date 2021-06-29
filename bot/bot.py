@@ -4,6 +4,7 @@ import time
 import functions as sob
 import riotapi
 import currency as coin
+import finance
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -291,6 +292,19 @@ async def on_message(message):
 
 			if c == "inventory":
 				await message.channel.send(coin.getInventoryEmbed(message.author.id))
+			
+
+			# Finance Functions
+
+
+			if c.startswith("ticker"):
+				c = c[6:].strip()
+				embed = finance.createStockEmbed(c)
+				if embed != None:
+					await message.channel.send(embed=embed)
+				else:
+					await message.channel.send(f"Symbol {c} doesn't seem to exist :(")
+
 				
 	return True
 				
