@@ -66,6 +66,33 @@ async def on_message(message):
 			#remove prefix from search
 			c = c[len(admin.getGuildPrefix(message.guild.id)):]
 
+			
+			# Admin Functions
+				# check perms before letting these functions proceed!!
+
+
+			if c.startswith("prefix"):
+				if not (message.author.guild_permissions.manage_guild):
+					await message.channel.send("You don't have permission to do that.")
+					return False
+				id = message.guild.id
+				c = c[6:].strip()
+				if c == "" or c == None:
+					ok = admin.resetGuildPrefix(id)
+					if ok == "ok":
+						await message.channel.send(f"Prefix reset to `{admin.getGuildPrefix(id)}`!")
+					elif ok == "nop":
+						await message.channel.send(f"This server is already using the default prefix (`{admin.getGuildPrefix(id)}`)!")
+					elif ok == "error":
+						await message.channel.send("Something went wrong.")
+					return True
+				ok = admin.updateGuildPrefix(id, c)
+				if ok:
+					if c == admin.getGuildPrefix(id):
+						await message.channel.send(f"Server prefix is now `{c}`!")
+						return True
+				await message.channel.send(f"Something went wrong. Server prefix unchanged.")
+
 
 			# Miscellaneous Functions
 
