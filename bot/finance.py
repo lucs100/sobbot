@@ -1,6 +1,7 @@
 from numpy.lib.arraysetops import isin
 import yfinance as yf
 from datetime import datetime
+import discord
 
 class Stock:
     def __init__(self, symbol):
@@ -9,14 +10,16 @@ class Stock:
             self.symbol = data.info["symbol"]
             self.name = data.info["shortName"]
             self.currentPrice = float(data.info["regularMarketPrice"])
-            self.openPrice = float(data.info["open"])
+            self.openingPrice = float(data.info["open"])
             self.change = round(self.currentPrice - self.openPrice, 2)
             self.changePercent = round(((self.change*100)/self.openPrice), 2)
             self.volume = int(data.info["volume"])
             self.averageVolume = int(data.info["averageVolume"])
             self.relativeVolume = self.volume / self.averageVolume
+            self.logo = data.info["logo_url"]
         except KeyError:
-            raise ValueError(f"The symbol {symbol} doesn't exist.")
+            raise ValueError(f"The symbol {symbol} doesn't exist." +
+            "Try using the safelyCreateStock pseudoconstructor.")
 
 def safelyCreateStock(symbol):
     data = yf.Ticker(symbol)
@@ -25,6 +28,38 @@ def safelyCreateStock(symbol):
     except KeyError:
         return None
     return Stock(symbol)
+
+def parseMarketPhase(phase):
+    pass
+
+def parseChange(change, percent, open):
+    if open:
+        time = "This is a"
+    else:
+        time = "Today represented a"
+    if percent > 0:
+        if percent > 5:
+            if percent > 10:
+                if percent > 20:
+                    return f"{time} {change} gain. (+{percent}%!!!)\n"    
+            return f"{time} {change} gain. (+{percent}%!!)\n"
+        return f"{time} {change} gain. (+{percent}%!)\n"
+    elif percent < 0:
+        return f"{time} {change} loss. (-{percent}%)\n"
+    elif percent == 0:
+        return f"{time} change of 0 from open."
+
+def getPhaseChangeTiming(phase):
+    now = datetime.now()
+    if phase == 0:
+        comp = now.replace(hour=3, minute=30, second=0, microsecond=0)
+    elif phase == 1:
+        comp = now.replace(hour=9, minute=30, second=0, microsecond=0)
+    elif phase == 2: 
+        comp = now.replace(hour=16, minute=0, second=0, microsecond=0)
+    else:
+        comp = now.replace(hour=20, minute=0, second=0, microsecond=0)
+    return (comp - now)
 
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
@@ -42,3 +77,24 @@ def getMarketPhase(now = datetime.now()):
         return 3 # After hours
     else:
         return 4 # Market closed
+
+def createStockEmbed(stock):
+    title = f"**{stock.symbol}** - {stock.name}"
+    phase = getMarketPhase()
+    timeUntilChange = (getPhaseChangeTiming(phase)).strftime("%Hh:%Mm:%Ss")
+    phases = {
+        [0]: ["The market is currently closed.", "premarket"],
+        [1]: ["It's currently premarket.", "market open"],
+        [2]: ["Markets are open.", "market close"],
+        [3]: ["It's currently after hours.", "after-hours ends"]
+    }
+    description = f"*{phases[phase][0]}* "
+    if phase != 2:
+        description += "Data might not be too accurate :("
+    description += f"\n{stock.symbol} last traded at **{stock.currentPrice}**\n"
+    description += f"{stock.symbol} opened at {stock.openingPrice}.\n"
+    description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
+    image = stock.logo
+    footer = f"*{timeUntilChange} until {phases[phase][1]}.*"
+    embed = discord.Embed(title=title, description=description, image=image, footer=footer)
+    return embed
