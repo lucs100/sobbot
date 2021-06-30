@@ -4,7 +4,7 @@ guilds = dict({})
 
 DefaultPrefix = "s!"
 
-with open('bot/resources/data/guilds.json') as f:
+with open('bot/resources/data/private/guilds.json') as f:
     guilds = json.loads(f.read())
 
 def getGuildPrefix(id):
@@ -18,7 +18,7 @@ def checkUserAdmin(user):
         return True
     
 def updateGuildData():
-    with open('bot/resources/data/guilds.json', 'w') as fp:
+    with open('bot/resources/data/private/guilds.json', 'w') as fp:
         json.dump(guilds, fp, indent=4)
     return True
 
