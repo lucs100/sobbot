@@ -41,19 +41,19 @@ def parseChange(change, percent, open):
         if percent > 5:
             if percent > 10:
                 if percent > 20:
-                    return "{} {} point gain. (+{:.2f}%!!!)\n"    .format(time, change, percent)
-                return "{} {} point gain. (+{:.2f}%!!)\n".format(time, change, percent)
-            return "{} {} point gain. (+{:.2f}%!)\n".format(time, change, percent)
-        return "{} {} point gain. (+{:.2f}%)\n".format(time, change, percent)
+                    return "{} {:.2f} point gain. (+{:.2f}%!!!)\n"    .format(time, change, percent)
+                return "{} {:.2f} point gain. (+{:.2f}%!!)\n".format(time, change, percent)
+            return "{} {:.2f} point gain. (+{:.2f}%!)\n".format(time, change, percent)
+        return "{} {:.2f} point gain. (+{:.2f}%)\n".format(time, change, percent)
     elif percent < 0:
-        return "{} {} point loss. (-{:.2f}%)\n".format(time, change, percent)
+        return "{} {:.2f} point loss. (-{:.2f}%)\n".format(time, change, percent)
     elif percent == 0:
         return f"{time} change of 0 from open."
 
 def getPhaseChangeTiming(phase):
     now = datetime.now()
     if phase == 0:
-        comp = now.replace(hour=3, minute=30, second=0, microsecond=0)
+        comp = now.replace(hour=4, minute=0, second=0, microsecond=0)
     elif phase == 1:
         comp = now.replace(hour=9, minute=30, second=0, microsecond=0)
     elif phase == 2: 
