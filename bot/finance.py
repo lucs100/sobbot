@@ -105,7 +105,13 @@ def createStockEmbed(stock):
     description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
     description += f"and opened at {stock.openingPrice}.\n"
     description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
-    embed = discord.Embed(title=title, description=description)
+    if stock.change < 0:
+        color = "0xbc4545"
+    elif stock.change > 0:
+        color = "0x5fc86d"
+    else:
+        color = "0xadadad"
+    embed = discord.Embed(title=title, description=description, color=color)
     embed.set_footer(text=(f"{(getPhaseChangeTiming(phase))} until {phases[phase][1]}."), icon_url=stock.logo)
     #embed.set_image(url=stock.logo)
     return embed
