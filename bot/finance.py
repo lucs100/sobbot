@@ -37,37 +37,19 @@ def parseChange(change, percent, open):
         time = "This is a"
     else:
         time = "Today represented a"
+    formatTuple = (time, abs(change), abs(percent))
     if percent > 0:
         if percent > 5:
             if percent > 10:
                 if percent > 20:
-                    return "{} {:.2f} point gain. (+{:.2f}%!!!)\n"    .format(time, change, percent)
-                return "{} {:.2f} point gain. (+{:.2f}%!!)\n".format(time, change, percent)
-            return "{} {:.2f} point gain. (+{:.2f}%!)\n".format(time, change, percent)
-        return "{} {:.2f} point gain. (+{:.2f}%)\n".format(time, change, percent)
+                    return "{} {:.2f} point gain. (+{:.2f}%!!!)\n"    .format(*formatTuple)
+                return "{} {:.2f} point gain. (+{:.2f}%!!)\n".format(*formatTuple)
+            return "{} {:.2f} point gain. (+{:.2f}%!)\n".format(*formatTuple)
+        return "{} {:.2f} point gain. (+{:.2f}%)\n".format(*formatTuple)
     elif percent < 0:
-        return "{} {:.2f} point loss. (-{:.2f}%)\n".format(time, change, percent)
+        return "{} {:.2f} point loss. (-{:.2f}%)\n".format(*formatTuple)
     elif percent == 0:
         return f"{time} change of 0 from open."
-
-def getPhaseChangeTiming(phase):
-    now = datetime.now()
-    if phase == 0:
-        comp = now.replace(hour=4, minute=0, second=0, microsecond=0)
-    elif phase == 1:
-        comp = now.replace(hour=9, minute=30, second=0, microsecond=0)
-    elif phase == 2: 
-        comp = now.replace(hour=16, minute=0, second=0, microsecond=0)
-    else:
-        comp = now.replace(hour=20, minute=0, second=0, microsecond=0)
-    totalSeconds = int((comp-now).total_seconds())
-    hours, remainder = divmod(totalSeconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    if hours == 0:
-        if minutes == 0:
-            return f"{seconds}s"
-        return f"{minutes}m:{seconds}s"
-    return f"{hours}h:{minutes}m:{seconds}s"
 
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
@@ -86,6 +68,29 @@ def getMarketPhase(now = datetime.now()):
     else:
         return 4 # Market closed
 
+def getPhaseChangeTiming(phase=(getMarketPhase())):
+    now = datetime.now()
+    if phase == 0:
+        comp = now.replace(hour=4, minute=0, second=0, microsecond=0)
+    elif phase == 1:
+        comp = now.replace(hour=9, minute=30, second=0, microsecond=0)
+    elif phase == 2: 
+        comp = now.replace(hour=16, minute=0, second=0, microsecond=0)
+    elif phase == 3: 
+        comp = now.replace(hour=20, minute=0, second=0, microsecond=0)
+    else:
+        comp = now.replace(hour=4, minute=0, second=0, microsecond=0)
+    totalSeconds = int((comp-now).total_seconds())
+    if totalSeconds < 0:
+        totalSeconds += 24*60*60 #timedeltas become negative sometimes
+    hours, remainder = divmod(totalSeconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    if hours == 0:
+        if minutes == 0:
+            return f"{seconds}s"
+        return f"{minutes}m {seconds}s"
+    return f"{hours}h {minutes}m {seconds}s"
+
 def createStockEmbed(stock):
     if not isinstance(stock, Stock):
         stock = safelyCreateStock(stock)
@@ -97,11 +102,12 @@ def createStockEmbed(stock):
         ("The market is currently closed.", "premarket begins"),
         ("It's currently premarket.", "market open"),
         ("Markets are open.", "market close"),
-        ("It's currently after hours.", "after-hours ends")
+        ("It's currently after hours.", "after-hours ends"),
+        ("The market is currently closed.", "premarket begins")
     ]
     description = f"*{phases[phase][0]}* "
     if phase != 2:
-        description += "Data might not be too accurate :frowning:"
+        description += "*Data as of 4pm :frowning:*"
     description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
     description += f"and opened at {stock.openingPrice}.\n"
     description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
