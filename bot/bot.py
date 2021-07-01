@@ -157,7 +157,7 @@ async def on_message(message):
 					if name.strip() == "":
 						name = riotapi.isUserRegistered(message.author.id) #bool or sname
 						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
 					data = riotapi.getNameAndLevel(name)
 					if data == False:
@@ -175,7 +175,7 @@ async def on_message(message):
 					if name.strip() == "":
 						name = riotapi.isUserRegistered(message.author.id) #bool or summoner name
 						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
 					embed = riotapi.embedTopMasteries(name)
 					if embed == False:
@@ -209,7 +209,7 @@ async def on_message(message):
 					if name.strip() == "":
 						name = riotapi.isUserRegistered(message.author.id) #bool or sname
 						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!lolregister to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
 					embed = riotapi.embedRankedData(name)
 					if isinstance(embed, int):
@@ -257,19 +257,19 @@ async def on_message(message):
 						0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
 						1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
 						2: f"Soblecoins not sent! You don't have enough soblecoins.",
-						3: f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
+						3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 						4: f"You can't send coins to yourself!"
 					}
 					if ok in messages:
 						await message.channel.send(messages[ok])
 				except:
-					await message.channel.send("Use s!give (recipient) (value) to send a friend soblecoins!")
+					await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
 				return True
 			
 			if c == "balance":
 				value = coin.getUserCoins(message.author.id)
 				if value == None:
-					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 				else:
 					await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
 				return True
@@ -283,7 +283,7 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
 				else:
 					if value == -1:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 					else:
 						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
 
@@ -293,7 +293,7 @@ async def on_message(message):
 				if status == "int":
 					await message.channel.send(f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!")
 				if status == "reg":
-					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.")
+					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 				elif status == "insuff":
 					await message.channel.send(f"<@!{message.author.id}>, you only have {change} soblecoins!")
 				elif status == "ok":
@@ -312,7 +312,7 @@ async def on_message(message):
 				code, num = coin.buyFromShop(c, message.author.id)
 				messages = {
 					"exist": f"<@!{message.author.id}>, no item with the ID {c} exists!",
-					"reg": f"<@!{message.author.id}>, you aren't registered! Use s!coinstart to start using soblecoins.",
+					"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 					"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
 					"limit": f"<@!{message.author.id}>, you already own that limited item.",
 					"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
