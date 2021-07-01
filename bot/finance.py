@@ -179,8 +179,26 @@ def updatePortfolio(stock, id, count):
         updateUserData()
         return "ok"
 
+def getChangeValue(change, annotation, hasBrackets):
+    if hasBrackets:
+        if change == 0:
+            return f"(±0 {annotation})"
+        elif change > 0:
+            return f"(+{change} {annotation})"
+        elif change < 0:
+            return f"({change} {annotation})"
+    else:
+        if change == 0:
+            return f"±0 {annotation}"
+        elif change > 0:
+            return f"+{change} {annotation}"
+        elif change < 0:
+            return f"{change} {annotation}"
+
 def getUserPortfolioEmbed(user): 
-    id = str(user.id)
+    id = str(user.id) 
+    total = 0
+    dailyChange = 0
     name = user.nick
     if name == None:
         name = user.name
@@ -191,8 +209,25 @@ def getUserPortfolioEmbed(user):
         return "empty"
     description = ""
     for sym, shares in data.items():
-        description += f"**{sym}** - **{shares}** shares (currently *{getStockPrice(sym)}*)"
-    title = f"{name}'s Portfolio" # show current value later
+        stock = Stock(sym)
+        description += f"**{stock.symbol}** - **{shares}** shares (currently *{stock.currentPrice:.2f}*, "
+        if stock.dailyChange == 0:
+            description += "±0 today)\n"
+        elif stock.dailyChange > 0:
+            description += f"+{stock.dailyChangePercent} today)\n"
+        elif stock.dailyChange < 0:
+            description += f"{stock.dailyChangePercent} today)\n"
+        total += (shares * stock.currentPrice)
+        dailyChange += (shares * stock.dailyChange)
+    title = f"Current Value: **${total:,.2f}** "
+    dailyChangePercent = (dailyChange - total)/total
+    if dailyChangePercent == 0:
+        title += "(±0 today)"
+    if dailyChangePercent < 0:
+        title += f"({dailyChange} today)"
+    if dailyChangePercent > 0:
+        title += f"(+{dailyChange} today)"
     embed = discord.Embed(title=title, description=description)
     embed.set_footer(text=f"{name}'s portfolio", icon_url=user.avatar_url)
     return embed
+
