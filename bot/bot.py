@@ -1,6 +1,8 @@
 import os
 import discord
 import time
+
+from numpy.lib.arraysetops import isin
 import functions as sob
 import riotapi
 import currency as coin
@@ -337,7 +339,33 @@ async def on_message(message):
 				else:
 					await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist :(")
 
-				
+			if c == "pfstart":
+				ok = finance.createPortfolio(message.author.id)
+				if ok:
+					await message.channel.send("Portfolio created successfully!")
+				else:
+					await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
+				return True #required to avoid next condition being hit
+
+			if c.startswith("pf"):
+				id = message.author.id
+				symbol, count = c[2:].split()
+				count = int(count) # locked to int for now
+				print(symbol)
+				print(count)
+				if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
+					return True # type error
+				status = finance.updatePortfolio(symbol, id, count)
+				codes = {
+					"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
+					"sym": f"{symbol.upper()} isn't a valid symbol!",
+					"neg": "You can't have negative shares!",
+					"delS": f"Symbol {symbol.upper()} removed successfully!",
+					"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
+					"ok": f"**{count}** shares of {symbol.upper()} were added to your portfolio."
+				}
+				await message.channel.send(codes[status])
+
 	return True
 				
 client.run(DISCORDTOKEN)
