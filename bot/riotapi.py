@@ -109,6 +109,24 @@ def getRankedData(s):
         name = getNameAndLevel(s)["name"]
     return data, name
 
+def getTierColor(tier):
+    tier = tier.capitalize()
+    colorTable = {
+        "Iron": 0x5E5858,
+        "Bronze": 0xA16147,
+        "Silver": 0x859FA9,
+        "Gold": 0xCC9C3F,
+        "Platinum": 0x1699A0,
+        "Diamond": 0x806CE7,
+        "Master": 0xB40FCB,
+        "Grandmaster": 0xFC3D39,
+        "Challenger": 0x4FEDFF
+    }
+    try:
+        return colorTable[tier]
+    except:
+        return 0x64686e
+
 def parseRank(tier, div):
     # divTable = {
     #     "I": 1,
@@ -139,6 +157,7 @@ def embedRankedData(s):
     data, s = data[0], data[1]
     title=f"{s}  -  Ranked Status"
     description = ""
+    color = 0x64686e
     for i in range(0, len(data)):
         rank = parseRank(data[i]["tier"], data[i]["division"])
         q = parseQueue(data[i]["queue"])
@@ -154,9 +173,11 @@ def embedRankedData(s):
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
+        if color == 0x64686e:
+            color = getTierColor(data[i]["tier"])
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
-    return discord.Embed(title=title, description=description, color=0xFFDC00)
+    return discord.Embed(title=title, description=description, color=color)
 
 def getTopMasteries(s):
     if checkKeyInvalid():
