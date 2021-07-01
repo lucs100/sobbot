@@ -168,15 +168,13 @@ def updatePortfolio(stock, id, count):
     if count < 0:
         return "neg"
     elif count == 0:
-        if existsInPortfolio(stock.name, id):
-            users[id]["portfolio"].pop(stock.name)
+        if existsInPortfolio(stock.symbol, id):
+            users[id]["portfolio"].pop(stock.symbol)
             updateUserData()
             return "delS"
         else:
             return "delF"
     else:
-        users[id]["portfolio"][stock.name] = count
+        users[id]["portfolio"][stock.symbol] = count
         updateUserData()
         return "ok"
-
-print(createPortfolio(312012475761688578))
