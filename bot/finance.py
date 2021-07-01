@@ -62,7 +62,15 @@ def parseChange(change, percent, open):
         return "{} {:.2f} point loss. (-{:.2f}%)\n".format(*formatTuple)
     elif percent == 0:
         return f"{time} change of 0 from open."
-        
+
+def parseChangeColor(value): # eventually make this change saturation based on magnitude
+    if value < 0:
+        return discord.Color.from_rgb(188, 69, 69)
+    elif value > 0:
+        return discord.Color.from_rgb(95, 200, 109)
+    else:
+        return discord.Color.from_rgb(173, 173, 173)
+
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
     marketOpen = now.replace(hour=9, minute=30, second=0, microsecond=0)
