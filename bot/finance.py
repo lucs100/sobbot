@@ -1,7 +1,7 @@
-from numpy.lib.arraysetops import isin
-import yfinance as yf
 from datetime import datetime, timedelta
-import discord
+
+import discord, json
+import yfinance as yf
 
 class Stock:
     def __init__(self, symbol):
@@ -11,8 +11,8 @@ class Stock:
             self.name = data.info["shortName"]
             self.currentPrice = float(data.info["regularMarketPrice"])
             self.openingPrice = float(data.info["open"])
-            self.change = round(self.currentPrice - self.openingPrice, 2)
-            self.changePercent = round(((self.change*100)/self.openingPrice), 2)
+            self.dailyChange = round(self.currentPrice - self.openingPrice, 2)
+            self.dailyChangePercent = round(((self.dailyChange*100)/self.openingPrice), 2)
             self.volume = int(data.info["volume"])
             self.averageVolume = int(data.info["averageVolume"])
             self.relativeVolume = self.volume / self.averageVolume
@@ -20,6 +20,17 @@ class Stock:
         except KeyError:
             raise ValueError(f"The symbol {symbol} doesn't exist." +
             "Try using the safelyCreateStock pseudoconstructor.")
+
+users = {}
+
+with open('bot/resources/data/private/userdata.json') as f:
+    data = json.loads(f.read())
+    users = data
+    
+def updateUserData():
+    with open('bot/resources/data/private/userdata.json', 'w') as fp:
+        json.dump(users, fp,  indent=4)
+    return True
 
 def safelyCreateStock(symbol):
     data = yf.Ticker(symbol)
@@ -107,13 +118,13 @@ def createStockEmbed(stock):
     ]
     description = f"*{phases[phase][0]}* "
     if phase != 2:
-        description += "*Data as of 4pm :frowning:*"
+        description += "*Data as of 4pm.*"
     description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
     description += f"and opened at {stock.openingPrice}.\n"
-    description += parseChange(stock.change, stock.changePercent, (phase==2)) + "\n"
-    if stock.change < 0:
+    description += parseChange(stock.dailyChange, stock.dailyChangePercent, (phase==2)) + "\n"
+    if stock.dailyChange < 0:
         color = discord.Color.from_rgb(188, 69, 69)
-    elif stock.change > 0:
+    elif stock.dailyChange > 0:
         color = discord.Color.from_rgb(95, 200, 109)
     else:
         color = discord.Color.from_rgb(173, 173, 173)
@@ -121,3 +132,45 @@ def createStockEmbed(stock):
     embed.set_footer(text=(f"{(getPhaseChangeTiming(phase))} until {phases[phase][1]}."), icon_url=stock.logo)
     #embed.set_image(url=stock.logo)
     return embed
+
+def addRegistration(id):
+    id = str(id)
+    if id not in users:
+        users[id] = {} # add id to userlist
+    if "portfolio" in users[str(id)]:
+        return False # already created
+    return True
+
+def userPortfolioExists(id):
+    if "portfolio" in users[str(id)]:
+        return True
+    return False
+
+def createPortfolio(id):
+    id = str(id)
+    if "portfolio" in users[id]:
+        return False
+    users[id]["portfolio"] = {}
+    return True
+
+def existsInPortfolio(name, id):
+    return (userPortfolioExists(str(id)) and (name in users[str(id)]["portfolio"]))
+
+def updatePortfolio(stock, id, count):
+    id = str(id)
+    if not userPortfolioExists(id):
+        return "reg"
+    stock = safelyCreateStock(stock)
+    if stock == None:
+        return "sym"
+    if count < 0:
+        return "neg"
+    elif count == 0:
+        if existsInPortfolio(stock.name, id):
+            users[id]["portfolio"].pop(stock.name)
+            return "delS"
+        else:
+            return "delF"
+    else:
+        users[id]["portfolio"][stock.name] = count
+        return "ok"
