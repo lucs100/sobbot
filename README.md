@@ -16,7 +16,7 @@ Instructions for repurposing Sobbot's code as your own bot:
 
 Use s!help for help with Sobbot's commands. (coming soon)
 
-Sobbot's default prefix is s!, which is currently immutable.
+Sobbot's default prefix is s!, which can be changed using s!prefix `yourprefixhere`.
 
 ## Disclaimer, due to repository name and content:
 
