@@ -109,6 +109,35 @@ def getRankedData(s):
         name = getNameAndLevel(s)["name"]
     return data, name
 
+def getMaxRank(list):
+    rankSet = set()
+    ranks = {
+        "IRON": 0,
+        "BRONZE": 1,
+        "SILVER": 2,
+        "GOLD": 3,
+        "PLATINUM": 4,
+        "DIAMOND": 5,
+        "MASTER": 6,
+        "GRANDMASTER": 7,
+        "CHALLENGER": 8
+    }
+    ranksReverse = [
+        "IRON",
+        "BRONZE",
+        "SILVER",
+        "GOLD",
+        "PLATINUM",
+        "DIAMOND",
+        "MASTER",
+        "GRANDMASTER",
+        "CHALLENGER"
+    ]
+    for i in range(len(list)):
+        rankSet.add(ranks[list[i]])
+    maxRank = max(rankSet)
+    return ranksReverse[maxRank]
+
 def getTierColor(tier):
     tier = tier.capitalize()
     colorTable = {
@@ -156,7 +185,7 @@ def embedRankedData(s):
         return 2 # summoner does not exist
     data, s = data[0], data[1]
     title=f"{s}  -  Ranked Status"
-    description = ""
+    description, rankDict = "", []
     color = 0x64686e
     for i in range(0, len(data)):
         rank = parseRank(data[i]["tier"], data[i]["division"])
@@ -173,11 +202,24 @@ def embedRankedData(s):
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
-        if color == 0x64686e:
-            color = getTierColor(data[i]["tier"])
+        rankDict.append(data[i]["tier"])
+    if len(rankDict) > 0:
+        color = getTierColor(getMaxRank(rankDict))
+    else:
+        color = 0x64686e
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
+
+data = embedRankedData("s8 is so fun")
+if isinstance(data, discord.Embed):
+    print(data.title)
+    print("")
+    print(data.description)
+    print("")
+    print(data.color)
+else:
+    print(data)
 
 def getTopMasteries(s):
     if checkKeyInvalid():
