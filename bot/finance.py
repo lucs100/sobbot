@@ -139,6 +139,7 @@ def addRegistration(id):
         users[id] = {} # add id to userlist
     if "portfolio" in users[str(id)]:
         return False # already created
+    updateUserData()
     return True
 
 def userPortfolioExists(id):
@@ -151,6 +152,7 @@ def createPortfolio(id):
     if "portfolio" in users[id]:
         return False
     users[id]["portfolio"] = {}
+    updateUserData()
     return True
 
 def existsInPortfolio(name, id):
@@ -168,9 +170,13 @@ def updatePortfolio(stock, id, count):
     elif count == 0:
         if existsInPortfolio(stock.name, id):
             users[id]["portfolio"].pop(stock.name)
+            updateUserData()
             return "delS"
         else:
             return "delF"
     else:
         users[id]["portfolio"][stock.name] = count
+        updateUserData()
         return "ok"
+
+print(createPortfolio(312012475761688578))
