@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+from forex_python.converter import CurrencyRates as fx
 import discord, json
 import yfinance as yf
 
@@ -17,6 +17,7 @@ class Stock:
             self.averageVolume = int(data.info["averageVolume"])
             self.relativeVolume = self.volume / self.averageVolume
             self.logo = data.info["logo_url"]
+            self.currency = data.info["currency"]
         except KeyError:
             raise ValueError(f"The symbol {symbol} doesn't exist." +
             "Try using the safelyCreateStock pseudoconstructor.")
@@ -61,7 +62,7 @@ def parseChange(change, percent, open):
         return "{} {:.2f} point loss. (-{:.2f}%)\n".format(*formatTuple)
     elif percent == 0:
         return f"{time} change of 0 from open."
-
+        
 def getMarketPhase(now = datetime.now()):
     preOpen = now.replace(hour=3, minute=30, second=0, microsecond=0)
     marketOpen = now.replace(hour=9, minute=30, second=0, microsecond=0)
@@ -122,12 +123,7 @@ def createStockEmbed(stock):
     description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
     description += f"and opened at {stock.openingPrice}.\n"
     description += parseChange(stock.dailyChange, stock.dailyChangePercent, (phase==2)) + "\n"
-    if stock.dailyChange < 0:
-        color = discord.Color.from_rgb(188, 69, 69)
-    elif stock.dailyChange > 0:
-        color = discord.Color.from_rgb(95, 200, 109)
-    else:
-        color = discord.Color.from_rgb(173, 173, 173)
+    color = parseChangeColor(stock.dailyChange)
     embed = discord.Embed(title=title, description=description, color=color)
     embed.set_footer(text=(f"{(getPhaseChangeTiming(phase))} until {phases[phase][1]}."), icon_url=stock.logo)
     #embed.set_image(url=stock.logo)
@@ -179,21 +175,21 @@ def updatePortfolio(stock, id, count):
         updateUserData()
         return "ok"
 
-def getChangeValue(change, annotation, hasBrackets):
+def parseChangeValue(change, annotation="", hasBrackets=True, roundTo=2, prefix=""):
     if hasBrackets:
         if change == 0:
-            return f"(±0 {annotation})"
+            return f"(±{prefix}0{annotation})"
         elif change > 0:
-            return f"(+{change} {annotation})"
+            return f"(+{prefix}{change:.2f}{annotation})"
         elif change < 0:
-            return f"({change} {annotation})"
+            return f"(-{prefix}{abs(change):.2f}{annotation})"
     else:
         if change == 0:
-            return f"±0 {annotation}"
+            return f"±{prefix}0{annotation}"
         elif change > 0:
-            return f"+{change} {annotation}"
+            return f"+{prefix}{change:.2f}{annotation}"
         elif change < 0:
-            return f"{change} {annotation}"
+            return f"-{prefix}{abs(change):.2f}{annotation}"
 
 def getUserPortfolioEmbed(user): 
     id = str(user.id) 
@@ -210,24 +206,14 @@ def getUserPortfolioEmbed(user):
     description = ""
     for sym, shares in data.items():
         stock = Stock(sym)
-        description += f"**{stock.symbol}** - **{shares}** shares (currently *{stock.currentPrice:.2f}*, "
-        if stock.dailyChange == 0:
-            description += "±0 today)\n"
-        elif stock.dailyChange > 0:
-            description += f"+{stock.dailyChangePercent} today)\n"
-        elif stock.dailyChange < 0:
-            description += f"{stock.dailyChangePercent} today)\n"
-        total += (shares * stock.currentPrice)
+        description += f"**{stock.symbol}** - **{shares}** shares (currently *{stock.currentPrice:.2f}* {stock.currency}, "
+        description += f"{parseChangeValue(stock.dailyChange, ' today', False)})\n"
+        total += round((shares * stock.currentPrice) * fx().get_rate("USD", "CAD"), 2)
         dailyChange += (shares * stock.dailyChange)
-    title = f"Current Value: **${total:,.2f}** "
-    dailyChangePercent = (dailyChange - total)/total
-    if dailyChangePercent == 0:
-        title += "(±0 today)"
-    if dailyChangePercent < 0:
-        title += f"({dailyChange} today)"
-    if dailyChangePercent > 0:
-        title += f"(+{dailyChange} today)"
+    title = f"Current Value: **${total:,.2f}**\t"
+    dailyChangePercent = round((dailyChange - total)/total, 2)
+    title += f"({parseChangeValue(dailyChange, ' today', False, prefix='$')}, {parseChangeValue(dailyChangePercent, '%', False)})"
     embed = discord.Embed(title=title, description=description)
-    embed.set_footer(text=f"{name}'s portfolio", icon_url=user.avatar_url)
+    embed.set_footer(text=f"{name}'s portfolio, title values in CAD", icon_url=user.avatar_url) # hardcoded to CAD for now
+    embed.color = parseChangeColor(dailyChange)
     return embed
-
