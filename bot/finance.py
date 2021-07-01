@@ -160,13 +160,13 @@ def existsInPortfolio(name, id):
 
 def updatePortfolio(stock, id, count):
     id = str(id)
+    if count < 0:
+        return "neg"
     if not userPortfolioExists(id):
         return "reg"
     stock = safelyCreateStock(stock)
     if stock == None:
         return "sym"
-    if count < 0:
-        return "neg"
     elif count == 0:
         if existsInPortfolio(stock.symbol, id):
             users[id]["portfolio"].pop(stock.symbol)
