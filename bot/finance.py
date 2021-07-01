@@ -26,6 +26,9 @@ users = {}
 with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read())
     users = data
+
+def getStockPrice(symbol):
+    return yf.Ticker(symbol).info["regularMarketPrice"]
     
 def updateUserData():
     with open('bot/resources/data/private/userdata.json', 'w') as fp:
@@ -39,9 +42,6 @@ def safelyCreateStock(symbol):
     except KeyError:
         return None
     return Stock(symbol)
-
-def parseMarketPhase(phase):
-    pass
 
 def parseChange(change, percent, open):
     if open:
@@ -178,3 +178,21 @@ def updatePortfolio(stock, id, count):
         users[id]["portfolio"][stock.symbol] = count
         updateUserData()
         return "ok"
+
+def getUserPortfolioEmbed(user): 
+    id = str(user.id)
+    name = user.nick
+    if name == None:
+        name = user.name
+    if not userPortfolioExists(id):
+        return "reg"
+    data = users[id]["portfolio"]
+    if data == {}:
+        return "empty"
+    description = ""
+    for sym, shares in data.items():
+        description += f"**{sym}** - **{shares}** shares (currently *{getStockPrice(sym)}*)"
+    title = f"{name}'s Portfolio" # show current value later
+    embed = discord.Embed(title=title, description=description)
+    embed.set_footer(text=f"{name}'s portfolio", icon_url=user.avatar_url)
+    return embed
