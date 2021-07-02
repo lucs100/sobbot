@@ -231,11 +231,12 @@ async def getUserPortfolioEmbed(message):
 
         pfEmbed.description = description
         await sobMessage.edit(embed=pfEmbed)
+        del stock
 
     pfEmbed.title = f"Current Value: **${total:,.2f}**\t"
     dailyChangePercent = (dailyChange*100)/total
     pfEmbed.title += f"({parseChangeValue(dailyChange, ' today', False, prefix='$')}, {parseChangeValue(dailyChangePercent, '%', False)})"
-    pfEmbed.set_footer(text=f"{name}'s portfolio, title values in CAD", icon_url=user.avatar_url) # hardcoded to CAD for now
+    pfEmbed.set_footer(text=f"{name}'s portfolio, title values in CAD.\nData may be incorrect, API upgrade coming soon.", icon_url=user.avatar_url) # hardcoded to CAD for now
     pfEmbed.color = parseChangeColor(dailyChange)
     await sobMessage.edit(embed=pfEmbed)
     return True
