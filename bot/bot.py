@@ -348,19 +348,17 @@ async def on_message(message):
 				return True #required to avoid next condition being hit
 			
 			if c == "pfshow":
-				data = finance.getUserPortfolioEmbed(message.author)
+				data = await finance.getUserPortfolioEmbed(message)
 				codes = {
 					"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
 					"empty": f"<@!{message.author.id}>, your portfolio is empty!"
 				}
 				if data in codes:
 					await message.channel.send(codes[data])
-				else:
-					await message.channel.send(embed=data)
 				return True
 
 			if c.startswith("pf"):
-				#long
+				#slow
 				id = message.author.id
 				symbol, count = c[2:].split()
 				count = int(count) # locked to int for now
@@ -373,11 +371,11 @@ async def on_message(message):
 					"neg": "You can't have negative shares!",
 					"delS": f"Symbol {symbol.upper()} removed successfully!",
 					"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
-					"ok": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
+					"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
+					"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
 				}
 				await message.channel.send(codes[status])
 				
-
 	return True
 				
 client.run(DISCORDTOKEN)

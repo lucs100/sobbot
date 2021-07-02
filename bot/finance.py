@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from forex_python.converter import CurrencyRates as fx
 import discord, json
+import asyncio
 import yfinance as yf
 
 class Stock:
@@ -163,25 +164,28 @@ def existsInPortfolio(name, id):
     return (userPortfolioExists(str(id)) and (name in users[str(id)]["portfolio"]))
 
 def updatePortfolio(stock, id, count):
+    stock = stock.upper()
     id = str(id)
     if count < 0:
         return "neg"
     if not userPortfolioExists(id):
         return "reg"
-    stock = safelyCreateStock(stock)
     if stock == None:
         return "sym"
     elif count == 0:
-        if existsInPortfolio(stock.symbol, id):
-            users[id]["portfolio"].pop(stock.symbol)
+        if existsInPortfolio(stock, id):
+            users[id]["portfolio"].pop(stock)
             updateUserData()
             return "delS"
         else:
             return "delF"
     else:
+        stock = safelyCreateStock(stock)
         users[id]["portfolio"][stock.symbol] = count
         updateUserData()
-        return "ok"
+        if count == 1:
+            return "ok"
+        return "ok2"
 
 def parseChangeValue(change, annotation="", hasBrackets=True, roundTo=2, prefix=""):
     if hasBrackets:
@@ -199,7 +203,8 @@ def parseChangeValue(change, annotation="", hasBrackets=True, roundTo=2, prefix=
         elif change < 0:
             return f"-{prefix}{abs(change):.2f}{annotation}"
 
-def getUserPortfolioEmbed(user): 
+async def getUserPortfolioEmbed(message):
+    user = message.author
     id = str(user.id) 
     total = 0
     dailyChange = 0
@@ -211,17 +216,26 @@ def getUserPortfolioEmbed(user):
     data = users[id]["portfolio"]
     if data == {}:
         return "empty"
+
+    title = "Fetching data..."
     description = ""
+    pfEmbed = discord.Embed(description=description, title=title)
+    sobMessage = await message.channel.send(embed=pfEmbed)
+
     for sym, shares in data.items():
         stock = Stock(sym)
         description += f"**{stock.symbol}** - **{shares}** shares (currently *{stock.currentPrice:.2f}* {stock.currency}, "
         description += f"{parseChangeValue(stock.dailyChange, ' today', False)})\n"
-        total += round((shares * stock.currentPrice) * fx().get_rate("USD", "CAD"), 2)
-        dailyChange += (shares * stock.dailyChange)
-    title = f"Current Value: **${total:,.2f}**\t"
-    dailyChangePercent = round((dailyChange - total)/total, 2)
-    title += f"({parseChangeValue(dailyChange, ' today', False, prefix='$')}, {parseChangeValue(dailyChangePercent, '%', False)})"
-    embed = discord.Embed(title=title, description=description)
-    embed.set_footer(text=f"{name}'s portfolio, title values in CAD", icon_url=user.avatar_url) # hardcoded to CAD for now
-    embed.color = parseChangeColor(dailyChange)
-    return embed
+        total += (shares * stock.currentPrice) * fx().get_rate("USD", "CAD")
+        dailyChange += (shares * stock.dailyChange) * fx().get_rate("USD", "CAD")
+
+        pfEmbed.description = description
+        await sobMessage.edit(embed=pfEmbed)
+
+    pfEmbed.title = f"Current Value: **${total:,.2f}**\t"
+    dailyChangePercent = (dailyChange*100)/total
+    pfEmbed.title += f"({parseChangeValue(dailyChange, ' today', False, prefix='$')}, {parseChangeValue(dailyChangePercent, '%', False)})"
+    pfEmbed.set_footer(text=f"{name}'s portfolio, title values in CAD", icon_url=user.avatar_url) # hardcoded to CAD for now
+    pfEmbed.color = parseChangeColor(dailyChange)
+    await sobMessage.edit(embed=pfEmbed)
+    return True
