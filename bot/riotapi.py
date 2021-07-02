@@ -211,16 +211,6 @@ def embedRankedData(s):
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
 
-data = embedRankedData("s8 is so fun")
-if isinstance(data, discord.Embed):
-    print(data.title)
-    print("")
-    print(data.description)
-    print("")
-    print(data.color)
-else:
-    print(data)
-
 def getTopMasteries(s):
     if checkKeyInvalid():
         return False
