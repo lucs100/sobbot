@@ -187,6 +187,26 @@ def getTierColor(tier):
         return colorTable[tier]
     except:
         return 0x64686e
+    
+def calculateRankMultiplier(tier, div):
+    tierDex = {
+        "IRON": 0.1,
+        "BRONZE": 0.35,
+        "SILVER": 0.8,
+        "GOLD": 1.5,
+        "PLATINUM": 3,
+        "DIAMOND": 10,
+        "MASTER": 25,
+        "GRANDMASTER": 50,
+        "CHALLENGER": 100
+    }
+    divDex = {
+        "IV": 1,
+        "III": 1.4,
+        "II": 1.6,
+        "I": 1.8,
+    }
+    return round((tierDex[tier] * divDex[div])**2, 2)
 
 def parseRank(tier, div):
     # divTable = {
@@ -224,7 +244,8 @@ def embedRankedData(s):
         q = parseQueue(data[i]["queue"])
         lp, w, l, gp, wr = data[i]["lp"], data[i]["wins"], data[i]["losses"], data[i]["gp"], ((data[i]["wins"] * 100) / (data[i]["gp"]))
         awr = (w+10)*100 / (gp+20) # 3b1b's method of review checking, applied to winrate
-        rs = int((w**3 * wr) / gp)
+        rmx = calculateRankMultiplier(data[i]["tier"], data[i]["division"]) # rank multiplier
+        rs = int((w**2.5 * wr)*rmx / gp)
         description += (f"**{q}** - **{rank}** - {lp} LP")
         description += "\n"
         description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
@@ -242,7 +263,7 @@ def embedRankedData(s):
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
-
+    
 def getTopMasteries(s):
     if checkKeyInvalid():
         return False
