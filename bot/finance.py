@@ -123,14 +123,14 @@ def createStockEmbed(stock):
         ("The market is currently closed.", "premarket begins"),
         ("It's currently premarket.", "market open"),
         ("Markets are open.", "market close"),
-        ("It's currently after hours.", "after-hours ends"),
+        ("It's currently after hours.", "after hours ends"),
         ("The market is currently closed.", "premarket begins")
     ]
     description = f"*{phases[phase][0]}* "
     if phase != 2:
         description += "*Data as of 4pm.*"
-    description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice}**, "
-    description += f"and opened at {stock.openingPrice}.\n"
+    description += f"\n\n{stock.symbol} last traded at **{stock.currentPrice:.2f}**, "
+    description += f"and opened at {stock.openingPrice:.2f}.\n"
     description += parseChange(stock.dailyChange, stock.dailyChangePercent, (phase==2)) + "\n"
     color = parseChangeColor(stock.dailyChange)
     embed = discord.Embed(title=title, description=description, color=color)
