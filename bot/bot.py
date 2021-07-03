@@ -234,6 +234,30 @@ async def on_message(message):
 						await message.channel.send("Key update failed.")
 				else:
 					await message.channel.send("You don't have the permissions to do this.")
+			
+			if c.startswith("lastmatch"):
+				summoner = c[9:].strip()
+				response = riotapi.timeSinceLastMatch(summoner)
+				codes = {
+					"key": "Key expired.",
+					"sum": f"Summoner {summoner} doesn't exist."
+				}
+				if isinstance(response, str):
+					await message.channel.send(codes[response])
+				else:
+					await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
+
+			if c.startswith("lastrmatch"):
+				summoner = c[10:].strip()
+				response = riotapi.timeSinceLastMatch(summoner, True)
+				codes = {
+					"key": "Key expired.",
+					"sum": f"Summoner {summoner} doesn't exist."
+				}
+				if isinstance(response, str):
+					await message.channel.send(codes[response])
+				else:
+					await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
 
 
 			# Currency Functions

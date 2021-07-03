@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import requests, os, json, discord
+from datetime import datetime
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
@@ -16,26 +17,6 @@ with open('bot/resources/data/champs.json') as f:
 with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
     users = data
-
-def checkKeyInvalid():
-    response = requests.get(
-        (url + f"/lol/status/v4/platform-data"), # quick response to see if both key ok and api ok
-        headers = headers
-    )
-    return not (response.status_code != 401 and response.status_code != 403) 
-
-async def updateAPIKey():
-    load_dotenv(override=True) # allows overriding envs from an updated .env file
-    global RIOTTOKEN
-    global headers
-    RIOTTOKEN = os.getenv('RIOTTOKEN')
-    headers = {"X-Riot-Token": RIOTTOKEN} # pushes update to global headers
-    return True
-
-def updateUserData():
-    with open('bot/resources/data/private/userdata.json', 'w') as fp: # updates .json of all user data
-        json.dump(users, fp,  indent=4)
-    return True
 
 def getChampNameById(id):
     return champs[str(id)]
@@ -59,6 +40,49 @@ def getChampIdByName(q):
             return k
     return -1 # returns -1 if no match
 
+def getRole(role, lane):
+    if role == "SOLO":
+        if lane == "MID_LANE":
+            return 3
+        elif lane == "TOP_LANE":
+            return 1
+    elif role == "JUNGLE":
+        return 2
+    elif role == "DUO_CARRY":
+        return 4
+    elif role == "DUO_SUPPORT":
+        return 5
+
+class Match:
+    def __init__(self, matchData):
+        self.gameID = matchData["gameId"]
+        self.champID = int(matchData["champion"])
+        self.champ = getChampNameById(self.champID)
+        self.queue = int(matchData["queue"])
+        self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
+        self.role = getRole(matchData["role"], matchData["lane"])
+
+
+def checkKeyInvalid():
+    response = requests.get(
+        (url + f"/lol/status/v4/platform-data"), # quick response to see if both key ok and api ok
+        headers = headers
+    )
+    return not (response.status_code != 401 and response.status_code != 403) 
+
+async def updateAPIKey():
+    load_dotenv(override=True) # allows overriding envs from an updated .env file
+    global RIOTTOKEN
+    global headers
+    RIOTTOKEN = os.getenv('RIOTTOKEN')
+    headers = {"X-Riot-Token": RIOTTOKEN} # pushes update to global headers
+    return True
+
+def updateUserData():
+    with open('bot/resources/data/private/userdata.json', 'w') as fp: # updates .json of all user data
+        json.dump(users, fp,  indent=4)
+    return True
+
 def parseSpaces(s):
     return s.replace(" ", "%20") # used in urls
 
@@ -74,6 +98,14 @@ def getESID(s): # encrypted summoner id
     if checkKeyInvalid():
         return False, False  # what
     return getSummonerData(s)["id"]
+
+def getEAID(s): # encrypted summoner id
+    if checkKeyInvalid():
+        return False, False  # what
+    try:
+        return getSummonerData(s)["accountId"]
+    except KeyError:
+        return False
 
 def getNameAndLevel(s):
     if checkKeyInvalid():
@@ -272,3 +304,60 @@ def editRegistration(id, name):
     users[str(id)]["lol"] = str(data["name"])
     updateUserData()
     return data["name"] # confirms with properly capitalized name
+
+def getMatchHistory(name, ranked=True):
+    if checkKeyInvalid():
+        return "key"
+    data = requests.get(
+            (url + f"/lol/match/v4/matchlists/by-account/{getEAID(parseSpaces(name))}"),
+            headers = headers
+        )
+    if data.status_code == 400:
+        return "sum"
+    #datajson = json.dumps(data.json(), indent=4)
+    matchList = []
+    for matches in data.json()["matches"]:
+        if ranked:
+            currentMatch = Match(matches)
+            if currentMatch.queue == 420:
+                matchList.append(Match(matches))
+        else:
+            matchList.append(Match(matches))
+    return matchList
+
+def getLastMatch(name, ranked=True):
+    data = (getMatchHistory(name, ranked)[0])
+    return data
+    
+
+def timeSinceLastMatch(name, ranked=True):
+    try:
+        name = getNameAndLevel(name)["name"]
+    except KeyError:
+        return "sum"
+    codes = ["key", "sum"]
+    now = datetime.now()
+    lastMatch = getLastMatch(name, ranked)
+    if lastMatch in codes:
+        return lastMatch
+    lastMatchTime = lastMatch.time
+    totalSeconds = int((now-lastMatchTime).total_seconds())
+    # while totalSeconds < 0:
+    #     totalSeconds += 24*60*60 #timedeltas become negative sometimes
+    days, remainder = divmod(totalSeconds, 24*60*60)
+    hours, remainder = divmod(remainder, 60*60)
+    minutes, seconds = divmod(remainder, 60)
+    def p(value, annotation): #parse
+        if value == 1:
+            return f"{value} {annotation}"
+        return f"{value} {annotation}s"
+    if days == 0:
+        if hours == 0:
+            if minutes == 0:
+                return {"name":name, "time":f"{p(seconds, 'second')}"}
+            return {"name":name, "time":f"{p(minutes, 'minute')}, {p(seconds, 'second')}"}
+        return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
+    return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
+# match = getLastMatch("SHSL DEATH LOTUS")
+# time = datetime.fromtimestamp(match.time)
+# print(time.strftime("%m/%d/%Y, %H:%M:%S"))
