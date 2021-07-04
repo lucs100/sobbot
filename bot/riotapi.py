@@ -1,3 +1,4 @@
+from sys import prefix
 from dotenv import load_dotenv
 import requests, os, json, discord
 from datetime import datetime
@@ -47,7 +48,7 @@ def getRole(role, lane):
         return "Top"
     elif lane == "JUNGLE":
         return "Jungle"
-    elif role == "DUO_CARRY":
+    elif role == "DUO_CARRY" or (role == "SOLO" and lane == "BOTTOM"):
         return "Bottom"
     elif role == "DUO_SUPPORT":
         return "Support"
@@ -352,6 +353,8 @@ def getLastMatch(name, ranked=False):
     return data
 
 def timeSinceLastMatch(name, ranked=False):
+    if checkKeyInvalid():
+        return "key"
     try:
         name = getNameAndLevel(name)["name"]
     except KeyError:
@@ -380,12 +383,13 @@ def timeSinceLastMatch(name, ranked=False):
         return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
     return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
 
-def getRoleHistory(name, ranked=False):
+def getRoleHistory(name, ranked=False, weightedMode=False):
     try:
         name = getNameAndLevel(name)["name"]
     except KeyError:
         return "sum"
     matchHistory = getMatchHistory(name, ranked)
+    gp = len(matchHistory)
     roleDict = {
         "Top": 0,
         "Jungle": 0,
@@ -393,12 +397,56 @@ def getRoleHistory(name, ranked=False):
         "Bottom": 0,
         "Support": 0,
         "Unknown": 0,
-        "Total": 0
     }
-    for match in matchHistory:
-        if match.role == "Unknown":
-            print(match.debugData)
-        roleDict[match.role] += 1
-        roleDict["Total"] += 1
-    return {"name": name, "roles": roleDict}
+    for i in range(len(matchHistory)):
+        match = matchHistory[i]
+        # if match.role == "Unknown":
+        #     print(match.debugData)
+        if weightedMode:
+            roleDict[match.role] += (1 - ((i/gp)**2))
+        else:
+            roleDict[match.role] += 1
+    if weightedMode:
+        for role in roleDict:
+            roleDict[role] = 100*roleDict[role]/gp
+    return {"name": name, "roles": roleDict, "games": gp}
 
+def getTopRoles(data):
+    primary, secondary = None, None
+    temp = dict(data) # pass by sharing workaround
+    temp = dict(temp)
+    temp.pop("Unknown")
+    primary = max(temp, key=temp.get)
+    temp.pop(primary)
+    secondary = max(temp, key=temp.get)
+    return primary, secondary
+
+def getRolesEmbed(name, ranked=False):
+    try:
+        name = getNameAndLevel(name)["name"]
+    except KeyError:
+        return "sum"
+    codes = ["key", "sum"]
+    rh = getRoleHistory(name, ranked=ranked, weightedMode=True)
+    if rh in codes:
+        return rh
+    name, data, gp = rh["name"], rh["roles"], rh["games"] 
+    primary, secondary = getTopRoles(data)
+    description = ""
+    for role in data:
+        freq = data[role]
+        if role == primary:
+            decoration = "**"
+        elif role == secondary:
+            decoration = "*"
+        else:
+            decoration = ""
+        description += f"{decoration}{freq:.2f}% {role}{decoration}\n"
+    print(description)
+    return True
+
+
+
+    embed = discord.Embed
+
+getRolesEmbed("SHSL Death Lotus")
