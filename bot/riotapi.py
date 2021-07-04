@@ -391,6 +391,7 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
         return "sum"
     matchHistory = getMatchHistory(name, ranked)
     gp = len(matchHistory)
+    totalWeight = 0
     roleDict = {
         "Top": 0,
         "Jungle": 0,
@@ -404,12 +405,14 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
         # if match.role == "Unknown":
         #     print(match.debugData)
         if weightedMode:
-            roleDict[match.role] += (1 - ((i/gp)**2))
+            value = (1 - ((i/gp)**2))
+            roleDict[match.role] += value
+            totalWeight += value
         else:
             roleDict[match.role] += 1
     if weightedMode:
         for role in roleDict:
-            roleDict[role] = 100*roleDict[role]/gp
+            roleDict[role] = 100*roleDict[role]/totalWeight
     return {"name": name, "roles": roleDict, "games": gp}
 
 def getTopRoles(data):
