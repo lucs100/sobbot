@@ -1,3 +1,4 @@
+from random import Random
 from sys import prefix
 from dotenv import load_dotenv
 import requests, os, json, discord
@@ -421,7 +422,7 @@ def getTopRoles(data):
     secondary = max(temp, key=temp.get)
     return primary, secondary
 
-def getRolesEmbed(name, ranked=False):
+def getRolePlayDataEmbed(name, ranked=False):
     try:
         name = getNameAndLevel(name)["name"]
     except KeyError:
@@ -436,17 +437,17 @@ def getRolesEmbed(name, ranked=False):
     for role in data:
         freq = data[role]
         if role == primary:
-            decoration = "**"
+            format = "**"
         elif role == secondary:
-            decoration = "*"
+            format = "*"
         else:
-            decoration = ""
-        description += f"{decoration}{freq:.2f}% {role}{decoration}\n"
-    print(description)
-    return True
-
-
-
-    embed = discord.Embed
-
-getRolesEmbed("SHSL Death Lotus")
+            format = ""
+        description += f"{format}{freq:.2f}% {role}{format}\n"
+    title = f"{name} likely queues for **{primary}**/*{secondary}*."
+    rt = ""
+    if ranked:
+        rt = "ranked "
+    footertext = f"{gp} {rt}games analyzed."
+    embed = discord.Embed(title=title, description=description, color=discord.Color.random())
+    embed.set_footer(text=footertext)
+    return embed

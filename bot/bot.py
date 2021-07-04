@@ -249,6 +249,11 @@ async def on_message(message):
 
 			if c.startswith("lastrmatch"):
 				summoner = c[10:].strip()
+				if summoner == "":
+					summoner = riotapi.isUserRegistered(message.author.id)
+					if summoner == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+						return True
 				response = riotapi.timeSinceLastMatch(summoner, True)
 				codes = {
 					"key": "Key expired.",
@@ -258,7 +263,40 @@ async def on_message(message):
 					await message.channel.send(codes[response])
 				else:
 					await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
-
+			
+			if c.startswith("lolrole"):
+				summoner = c[7:].strip()
+				if summoner == "":
+					summoner = riotapi.isUserRegistered(message.author.id)
+					if summoner == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+						return True
+				response = riotapi.getRolePlayDataEmbed(summoner)
+				codes = {
+					"key": "Key expired.",
+					"sum": f"Summoner {summoner} doesn't exist."
+				}
+				if isinstance(response, str):
+					await message.channel.send(codes[response])
+				else:
+					await message.channel.send(embed=response)
+			
+			if c.startswith("lolrrole"):
+				summoner = c[8:].strip()
+				if summoner == "":
+					summoner = riotapi.isUserRegistered(message.author.id)
+					if summoner == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+						return True
+				response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
+				codes = {
+					"key": "Key expired.",
+					"sum": f"Summoner {summoner} doesn't exist."
+				}
+				if isinstance(response, str):
+					await message.channel.send(codes[response])
+				else:
+					await message.channel.send(embed=response)
 
 			# Currency Functions
 
@@ -399,7 +437,8 @@ async def on_message(message):
 					"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
 				}
 				await message.channel.send(codes[status])
-				
+
+
 	return True
 				
 client.run(DISCORDTOKEN)
