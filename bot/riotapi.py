@@ -327,7 +327,7 @@ def editRegistration(id, name):
     updateUserData()
     return data["name"] # confirms with properly capitalized name
 
-def getMatchHistory(name, ranked=True):
+def getMatchHistory(name, ranked=False):
     if checkKeyInvalid():
         return "key"
     data = requests.get(
@@ -347,12 +347,11 @@ def getMatchHistory(name, ranked=True):
             matchList.append(Match(matches))
     return matchList
 
-def getLastMatch(name, ranked=True):
+def getLastMatch(name, ranked=False):
     data = (getMatchHistory(name, ranked)[0])
     return data
-    
 
-def timeSinceLastMatch(name, ranked=True):
+def timeSinceLastMatch(name, ranked=False):
     try:
         name = getNameAndLevel(name)["name"]
     except KeyError:
@@ -381,7 +380,7 @@ def timeSinceLastMatch(name, ranked=True):
         return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
     return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
 
-def getRoleHistory(name, ranked=True):
+def getRoleHistory(name, ranked=False):
     try:
         name = getNameAndLevel(name)["name"]
     except KeyError:
@@ -401,4 +400,5 @@ def getRoleHistory(name, ranked=True):
             print(match.debugData)
         roleDict[match.role] += 1
         roleDict["Total"] += 1
-    return roleDict
+    return {"name": name, "roles": roleDict}
+
