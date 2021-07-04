@@ -41,17 +41,17 @@ def getChampIdByName(q):
     return -1 # returns -1 if no match
 
 def getRole(role, lane):
-    if role == "SOLO":
-        if lane == "MID_LANE":
-            return 3
-        elif lane == "TOP_LANE":
-            return 1
-    elif role == "JUNGLE":
-        return 2
+    if lane == "MID":
+        return "Middle"
+    elif lane == "TOP":
+        return "Top"
+    elif lane == "JUNGLE":
+        return "Jungle"
     elif role == "DUO_CARRY":
-        return 4
+        return "Bottom"
     elif role == "DUO_SUPPORT":
-        return 5
+        return "Support"
+    return "Unknown"
 
 class Match:
     def __init__(self, matchData):
@@ -61,6 +61,7 @@ class Match:
         self.queue = int(matchData["queue"])
         self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
         self.role = getRole(matchData["role"], matchData["lane"])
+        self.debugData = (matchData["role"], matchData["lane"])
 
 
 def checkKeyInvalid():
@@ -340,7 +341,7 @@ def getMatchHistory(name, ranked=True):
     for matches in data.json()["matches"]:
         if ranked:
             currentMatch = Match(matches)
-            if currentMatch.queue == 420:
+            if currentMatch.queue == 420: # ranked solo/duo queue id
                 matchList.append(Match(matches))
         else:
             matchList.append(Match(matches))
@@ -379,6 +380,25 @@ def timeSinceLastMatch(name, ranked=True):
             return {"name":name, "time":f"{p(minutes, 'minute')}, {p(seconds, 'second')}"}
         return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
     return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
-# match = getLastMatch("SHSL DEATH LOTUS")
-# time = datetime.fromtimestamp(match.time)
-# print(time.strftime("%m/%d/%Y, %H:%M:%S"))
+
+def getRoleHistory(name, ranked=True):
+    try:
+        name = getNameAndLevel(name)["name"]
+    except KeyError:
+        return "sum"
+    matchHistory = getMatchHistory(name, ranked)
+    roleDict = {
+        "Top": 0,
+        "Jungle": 0,
+        "Middle": 0,
+        "Bottom": 0,
+        "Support": 0,
+        "Unknown": 0,
+        "Total": 0
+    }
+    for match in matchHistory:
+        if match.role == "Unknown":
+            print(match.debugData)
+        roleDict[match.role] += 1
+        roleDict["Total"] += 1
+    return roleDict
