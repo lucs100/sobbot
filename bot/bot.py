@@ -8,6 +8,7 @@ import riotapi
 import currency as coin
 import finance
 import admin
+import helpDir
 from re import match
 from datetime import datetime
 from dotenv import load_dotenv
@@ -69,10 +70,15 @@ async def on_message(message):
 			c = c[len(admin.getGuildPrefix(message.guild.id)):]
 
 
-			# if c.startswith("help"):
-			# 	topic = c[4:].strip()
-			# 	response = helpDir.getHelpEmbed(message)
-			# 	await message.channel.send(f"test {c}")
+			# Help Functions
+
+			if c == "help":
+				await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+
+			if c.startswith("help") and (c != "help"):
+				topic = c[4:].strip()
+				embed = helpDir.getHelpDirectoryEmbed(message, topic)
+				await message.channel.send(embed=embed)
 
 			
 			# Admin Functions
