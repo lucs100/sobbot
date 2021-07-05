@@ -99,43 +99,31 @@
             }
         ]
     },
-    "coin": {
-        "title": "Currency Functions",
-        "desc": "Earn and trade soblecoins",
-        "emoji": "coin",
-        "header": "You must register your account before you can earn or receive soblecoins.",
+    "finance": {
+        "title": "Finance Functions",
+        "desc": "Manage your personal portfolio",
+        "emoji": "chart_with_upwards_trend",
+        "header": "You must register your account to save your portfolio.",
         "commands": [
             {
-                "usage": "coinstart",
-                "description": "*Registers* your Discord ID to the soblecoin database."
+                "usage": "ticker `symbol`",
+                "description": "Returns current market data for `symbol`."
             },
             {
-                "usage": "give `user` `value`",
-                "description": "Sends `value` of your soblecoins to `user`."
+                "usage": "pfstart",
+                "description": "*Registers* your Discord ID to open your portfolio."
             },
             {
-                "usage": "balance",
-                "description": "Returns your current soblecoin balance."
+                "usage": "pfshow",
+                "description": "Returns your portfolio."
             },
             {
-                "usage": "claim",
-                "description": "Claims a gift box of soblecoins! Has a 2 hour cooldown."
+                "usage": "pf `symbol` `count`",
+                "description": "Updates your portfolio to have `count` shares of `symbol`."
             },
             {
-                "usage": "roll `value`",
-                "description": "Wagers `value` soblecoins. Win up to 10x!"
-            },
-            {
-                "usage": "shop",
-                "description": "Returns the current soblecoin shop."
-            },
-            {
-                "usage": "buy `itemID`",
-                "description": "Purchases item `itemID`."
-            },
-            {
-                "usage": "inventory",
-                "description": "Returns your current inventory."
+                "usage": "pf `symbol` 0",
+                "description": "Removes `symbol` from your portfolio."
             }
         ]
     }
