@@ -319,6 +319,7 @@ async def on_message(message):
 				else:
 					await message.channel.send(embed=response)
 
+
 			# Currency Functions
 
 
@@ -390,7 +391,7 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
 			
 			if c == "shop":
-				await message.channel.send(embed = coin.getShop())
+				await message.channel.send(embed = coin.getShop(message))
 			
 			if c.startswith("buy"):
 				c = c[3:].strip()

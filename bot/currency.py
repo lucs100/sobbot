@@ -1,4 +1,4 @@
-import json, time, random, discord
+import json, time, random, discord, admin
 from datetime import datetime
 
 startingCoins = 1000
@@ -215,14 +215,15 @@ def checkLimited(itemID, userID):
             return True
     return True
 
-def getShop():
+def getShop(message):
     #CAREFUL, this is gonna get hard to maintain if there are too many items
     #pagination?
     embed = discord.Embed(title="Sobble Shop", color=0xf42069)
     shopDescription = ""
     for i in range(1, len(shop)+1):
         n = str(i)
-        shopDescription += f"**{shop[n]['name']}** (s!buy {shop[n]['id']})   "
+        px = admin.getGuildPrefix(message)
+        shopDescription += f"**{shop[n]['name']}** ({px}buy {shop[n]['id']})   "
         if "limited" in shop[n]:
             shopDescription += f"`Limited item.`"
         shopDescription += "\n"
