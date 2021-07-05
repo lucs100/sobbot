@@ -56,7 +56,9 @@ async def on_message(message):
 			await message.channel.send("pong! ({0}ms)".format(int(client.latency*1000)))
 		
 		if match("<@!?835251884104482907>", c) is not None:
-			await message.channel.send(f"My current prefix in this server is `{admin.getGuildPrefix(message.guild.id)}`.")
+			px = admin.getGuildPrefix(message.guild.id)
+			await message.channel.send(f"My current prefix in this server is `{px}`.\n" +
+			f"Use `{px}help` for a directory of valid commands!  :blue_heart:")
 
 		#special channels
 		if message.channel.id == 835388133959794699:
