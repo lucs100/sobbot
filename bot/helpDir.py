@@ -32,5 +32,5 @@ def getHelpDirectoryEmbed(message, topic):
         if data["header"] != "": # needs to be a successive check
             description += f"*{data['header']}*\n"
     for command in data["commands"]:
-        description += f"{px}{command['usage']} - {command['description']}\n"
+        description += f"• {px}{command['usage']} - {command['description']}\n"
     return discord.Embed(title=title, description=description, color=helpfulGreen)
