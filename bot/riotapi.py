@@ -350,8 +350,10 @@ def getMatchHistory(name, ranked=False):
     return matchList
 
 def getLastMatch(name, ranked=False):
-    data = (getMatchHistory(name, ranked)[0])
-    return data
+    data = getMatchHistory(name, ranked)
+    if data == []:
+        return "none" #for errordict use, ik Nonetype exists
+    return data[0]
 
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
@@ -360,7 +362,7 @@ def timeSinceLastMatch(name, ranked=False):
         name = getNameAndLevel(name)["name"]
     except KeyError:
         return "sum"
-    codes = ["key", "sum"]
+    codes = ["key", "sum", "none"]
     now = datetime.now()
     lastMatch = getLastMatch(name, ranked)
     if lastMatch in codes:
