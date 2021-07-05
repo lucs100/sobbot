@@ -1,40 +1,42 @@
 {
     "lol": {
-        "title": "Commands for League of Legends",
+        "title": "LoL",
+        "desc": "Commands for League of Legends",
+        "emoji": "regional_indicator_l",
         "header": "If your account is registered, you can use these commands without appending a summoner name to have them trigger on your own summoner name.",
-        "commands": {
-            "lolregister" : {
+        "commands": [
+            {
                 "usage": "lolregister `your summoner name`",
-                "description": "\"Registers\" your summoner name to your Discord ID."
+                "description": "\"*Registers*\" your summoner name to your Discord ID."
             },
-            "lollevel" : {
+            {
                 "usage": "lollevel `summoner`",
                 "description": "Returns a summoner's account level."
             },
-            "lolmastery" : {
+            {
                 "usage": "lolmastery `summoner`",
                 "description": "Returns a summoner's top three mastery champions."
             },
-            "lolrank" : {
+            {
                 "usage": "lolrank `summoner`",
                 "description": "Returns data on a summoner's ladder rankings."
             },
-            "lastmatch" : {
+            {
                 "usage": "lastmatch `summoner`",
                 "description": "Returns the time elapsed since a summoner's last match."
             },
-            "lastrmatch" : {
+            {
                 "usage": "lastrmatch `summoner`",
                 "description": "Returns the time elapsed since a summoner's last ranked match."
             },
-            "lolrole" : {
+            {
                 "usage": "lolrole `summoner`",
                 "description": "Returns data on a summoner's role preference."
             },
-            "lolrrole" : {
+            {
                 "usage": "lolrrole `summoner`",
                 "description": "Returns data on a summoner's role preference in ranked play."
             }
-        }
+        ]
     }
 }
