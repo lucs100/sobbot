@@ -54,5 +54,49 @@
                 "description": "Resets Sobbot's server prefix."
             }
         ]
+    },
+    "misc": {
+        "title": "Miscellaneous Functions",
+        "desc": "Fun functions :D",
+        "emoji": "tada",
+        "header": "",
+        "commands": [
+            {
+                "usage": "flipcoin",
+                "description": "Flips a coin."
+            },
+            {
+                "usage": "d`number`",
+                "description": "Rolls a die with `number` sides."
+            },
+            {
+                "usage": "sobbleimage",
+                "description": "Returns a cute Sobble image."
+            },
+            {
+                "usage": "math `expression`",
+                "description": "Returns the answer to your expression."
+            },
+            {
+                "usage": "pkmn `pokedex number`",
+                "description": "Returns data on a given Pokedex entry."
+            },
+            {
+                "usage": "pkmn `name`",
+                "description": "Returns data on a given Pokemon."
+            },
+            {
+                "usage": "uptime",
+                "description": "Returns how long Sobbot has been running."
+            },
+            {
+                "usage": "starttime",
+                "description": "Returns when Sobbot last started."
+            },
+            {
+                "usage": "randblue",
+                "description": "Returns a random shade of blue."
+            }
+        ]
     }
 }
