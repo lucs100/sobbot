@@ -7,7 +7,7 @@
         "commands": [
             {
                 "usage": "lolregister `your summoner name`",
-                "description": "\"*Registers*\" your summoner name to your Discord ID."
+                "description": "*Registers* your summoner name to your Discord ID."
             },
             {
                 "usage": "lollevel `summoner`",
@@ -96,6 +96,46 @@
             {
                 "usage": "randblue",
                 "description": "Returns a random shade of blue."
+            }
+        ]
+    },
+    "coin": {
+        "title": "Currency Functions",
+        "desc": "Earn and trade soblecoins",
+        "emoji": "coin",
+        "header": "You must register your account before you can earn or receive soblecoins.",
+        "commands": [
+            {
+                "usage": "coinstart",
+                "description": "*Registers* your Discord ID to the soblecoin database."
+            },
+            {
+                "usage": "give `user` `value`",
+                "description": "Sends `value` of your soblecoins to `user`."
+            },
+            {
+                "usage": "balance",
+                "description": "Returns your current soblecoin balance."
+            },
+            {
+                "usage": "claim",
+                "description": "Claims a gift box of soblecoins! Has a 2 hour cooldown."
+            },
+            {
+                "usage": "roll `value`",
+                "description": "Wagers `value` soblecoins. Win up to 10x!"
+            },
+            {
+                "usage": "shop",
+                "description": "Returns the current soblecoin shop."
+            },
+            {
+                "usage": "buy `itemID`",
+                "description": "Purchases item `itemID`."
+            },
+            {
+                "usage": "inventory",
+                "description": "Returns your current inventory."
             }
         ]
     }
