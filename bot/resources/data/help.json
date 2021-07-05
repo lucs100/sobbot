@@ -38,5 +38,21 @@
                 "description": "Returns data on a summoner's role preference in ranked play."
             }
         ]
+    },
+    "admin": {
+        "title": "Admin Functions",
+        "desc": "Change Sobbot's server settings",
+        "emoji": "gear",
+        "header": "These commands require certain permissions. Administrator permissions give access to ALL admin commands.",
+        "commands": [
+            {
+                "usage": "prefix `new prefix`",
+                "description": "Changes Sobbot's server prefix."
+            },
+            {
+                "usage": "prefix `(blank)`",
+                "description": "Resets Sobbot's server prefix."
+            }
+        ]
     }
 }
