@@ -354,35 +354,36 @@ async def on_message(message):
 			
 			if c == "balance":
 				value = coin.getUserCoins(message.author.id)
-				if value == None:
-					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-				else:
-					await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
-				return True
+				if isinstance(value, bool):
+					if value == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+						return True
+				await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
 			
 			if c == "claim":
 				ok, value = coin.claimHourly(message.author.id)
+				if isinstance(ok, str):
+					if ok == "reg":
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 				if ok:
 					if value == 1000:
 						await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
 					else:
 						await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
 				else:
-					if value == -1:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-					else:
-						await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+					await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
 
 			if c.startswith("roll"):
 				value = c[4:].strip()
 				status, change, multi = coin.luckyRoll(message.author.id, value)
-				if status == "int":
-					await message.channel.send(f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!")
-				if status == "reg":
-					await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-				elif status == "insuff":
-					await message.channel.send(f"<@!{message.author.id}>, you only have {change} soblecoins!")
-				elif status == "ok":
+				codes = {
+					"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
+					"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+					"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
+				}
+				if status in codes:
+					await message.channel.send(codes[status])
+				else:
 					if multi > 1:
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
 					if multi == 1:

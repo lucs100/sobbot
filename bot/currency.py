@@ -78,7 +78,7 @@ def claimHourly(id):
     value = 0
     id = str(id)
     if not isUserRegistered(id):
-        return False, -1 # recipient error
+        return "reg" # recipient error
     if "coinsLastClaimed" not in users[id]:
         users[id]["coinsLastClaimed"] = float(0) # create field
     last = users[id]["coinsLastClaimed"]
@@ -93,12 +93,12 @@ def claimHourly(id):
             users[id]["coins"] = 1000
             users[id]["coinsLastClaimed"] = currentTime
             updateUserData(f"{id} reset to 1000 coins")
-            return True, 1000
+            return [True, 1000]
         else:
             users[id]["coins"] += value
             users[id]["coinsLastClaimed"] = currentTime
             updateUserData(f"{id} claimed {value} coins")
-            return True, value
+            return [True, value]
     else:
         availableTime = datetime.fromtimestamp(last + claimCooldown) # date magic to show the user when next claim ready
         currentTime = datetime.fromtimestamp(currentTime)
@@ -106,7 +106,7 @@ def claimHourly(id):
         nextTimeString = "at " + nextTimeString
         if availableTime.day != currentTime.day:
             nextTimeString = "tomorrow " + nextTimeString
-        return False, nextTimeString # time not passed
+        return [False, nextTimeString] # time not passed
 
 def messageBonus(id):
     id = str(id)
