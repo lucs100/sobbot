@@ -36,6 +36,10 @@
             {
                 "usage": "lolrrole `summoner`",
                 "description": "Returns data on a summoner's role preference in ranked play."
+            },
+            {
+                "usage": "lolwr `summoner`",
+                "description": "Returns data on a summoner's winrate."
             }
         ]
     },
