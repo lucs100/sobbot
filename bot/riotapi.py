@@ -55,7 +55,7 @@ def getRole(role, lane):
         return "Support"
     return "Unknown"
 
-class Match:
+class MatchKey:
     def __init__(self, matchData):
         self.gameID = matchData["gameId"]
         self.champID = int(matchData["champion"])
@@ -342,11 +342,11 @@ def getMatchHistory(name, ranked=False):
     matchList = []
     for matches in data.json()["matches"]:
         if ranked:
-            currentMatch = Match(matches)
+            currentMatch = MatchKey(matches)
             if currentMatch.queue == 420: # ranked solo/duo queue id
-                matchList.append(Match(matches))
+                matchList.append(MatchKey(matches))
         else:
-            matchList.append(Match(matches))
+            matchList.append(MatchKey(matches))
     return matchList
 
 def getLastMatch(name, ranked=False):
@@ -361,6 +361,8 @@ def getMatchInfo(match):
             (url + f"/lol/match/v4/matches/{gameID}"),
             headers = headers
         )
+    if data.status_code == 400:
+        return "sum"
     return data.json()
 
 def didPlayerWin(summonerId, matchData):
