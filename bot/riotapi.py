@@ -422,10 +422,10 @@ def parseWinLossTrend(summoner, maxMatches=5, ranked=True):
     text += f"{name} is {w}W - {l}L in their past {gp} games.\n"
     text += f"Standard winrate: **{100*stdwr:.2f}**\n"
     text += f"Recent-curved winrate: **{100*awr:.2f}**\n"
-    if deltawr < 0:
+    if deltawr > 0:
         text += f"Winrate delta: **+{100*deltawr:.2f}**\n"
     else:
-        text += f"Winrate delta: **-{100*deltawr:.2f}**\n"
+        text += f"Winrate delta: **{100*deltawr:.2f}**\n"
     return text
 
 def timeSinceLastMatch(name, ranked=False):
