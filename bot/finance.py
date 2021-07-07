@@ -207,6 +207,7 @@ async def getUserPortfolioEmbed(message):
     user = message.author
     id = str(user.id) 
     total = 0
+    exch = fx().get_rate("USD", "CAD")
     dailyChange = 0
     name = user.nick
     if name == None:
@@ -226,8 +227,8 @@ async def getUserPortfolioEmbed(message):
         stock = Stock(sym)
         description += f"**{stock.symbol}** - **{shares}** shares (currently *{stock.currentPrice:.2f}* {stock.currency}, "
         description += f"{parseChangeValue(stock.dailyChange, ' today', False)})\n"
-        total += (shares * stock.currentPrice) * fx().get_rate("USD", "CAD")
-        dailyChange += (shares * stock.dailyChange) * fx().get_rate("USD", "CAD")
+        total += (shares * stock.currentPrice) * exch
+        dailyChange += (shares * stock.dailyChange) * exch
 
         pfEmbed.description = description
         await sobMessage.edit(embed=pfEmbed)
