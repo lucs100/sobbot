@@ -355,6 +355,23 @@ def getLastMatch(name, ranked=False):
         return "none" #for errordict use, ik Nonetype exists
     return data[0]
 
+def getMatchInfo(match):
+    gameID = match.gameID
+    data = requests.get(
+            (url + f"/lol/match/v4/matches/{gameID}"),
+            headers = headers
+        )
+    return data.json()
+
+def didPlayerWin(summonerId, matchData):
+    playerIndex = 0
+    for player in matchData["participantIdentities"]:
+        if summonerId == player["player"]["summonerId"]:
+            playerIndex = player["participantId"]
+            if playerIndex < 6:
+                return (matchData["teams"][0]["win"] == "Win")
+            return (matchData["teams"][1]["win"] == "Win")
+
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
         return "key"
