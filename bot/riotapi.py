@@ -11,6 +11,7 @@ url = "https://na1.api.riotgames.com"
 
 champs = {}
 users = {}
+pulledMatches = {}
 
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
@@ -19,6 +20,11 @@ with open('bot/resources/data/champs.json') as f:
 with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
     users = data
+
+with open('bot/resources/data/private/matchdata.json') as f:
+    data = json.loads(f.read()) # unpacking data
+    print(f"Loaded {len(data)} matches.")
+    pulledMatches = data
 
 def getChampNameById(id):
     return champs[str(id)]
@@ -87,7 +93,13 @@ async def updateAPIKey():
 
 def updateUserData():
     with open('bot/resources/data/private/userdata.json', 'w') as fp: # updates .json of all user data
-        json.dump(users, fp,  indent=4)
+        json.dump(users, fp, indent=4)
+    return True
+
+def addToMatchBase(match, matchId):
+    pulledMatches[str(matchId)] = match
+    with open('bot/resources/data/private/matchdata.json', 'w') as fp: # updates .json of all user data
+        json.dump(pulledMatches, fp, indent=4)
     return True
 
 def parseSpaces(s):
@@ -362,13 +374,19 @@ def getLastMatch(name, ranked=False):
     return data[0]
 
 def getMatchInfo(match):
-    gameID = match.gameID
+    if isinstance(match, int):
+        gameID = match
+    else:
+        gameID = match.gameID
+    if str(gameID) in pulledMatches:
+        return pulledMatches[str(gameID)]
     data = requests.get(
             (url + f"/lol/match/v4/matches/{gameID}"),
             headers = headers
         )
     if data.status_code == 400:
-        return "sum"
+        return None
+    addToMatchBase(data.json(), gameID)
     return data.json()
 
 def didPlayerWin(summonerId, matchData):
@@ -383,6 +401,24 @@ def didPlayerWin(summonerId, matchData):
     except KeyError:
         print("ERROR")
         print(matchData)
+
+def pullAllowableMatchData(matchList):
+    ConsecutiveLimit = 50
+    gamesInList = len(matchList)
+    gamesPulled = 0
+    i = 0
+    while gamesPulled < ConsecutiveLimit and i < gamesInList-1:
+        try:
+            print(f"games pulled: {gamesPulled} limit: {ConsecutiveLimit} i: {i} total games: {gamesInList}")
+            if str(matchList[i].gameID) in pulledMatches:
+                pass
+            else:
+                getMatchInfo(matchList[i].gameID)
+                gamesPulled += 1
+            i += 1
+        except IndexError:
+            break
+    return gamesPulled
 
 def getWinLossTrend(summoner, maxMatches=5, ranked=True):
     data = getSummonerData(summoner)
