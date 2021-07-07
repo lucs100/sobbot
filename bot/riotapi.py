@@ -65,6 +65,10 @@ class MatchKey:
         self.role = getRole(matchData["role"], matchData["lane"])
         self.debugData = (matchData["role"], matchData["lane"])
 
+class Match:
+    def __init__(self, matchData):
+        pass
+        #todo
 
 def checkKeyInvalid():
     response = requests.get(
@@ -95,6 +99,8 @@ def getSummonerData(s):
         headers = headers
     )
     summonerData = json.loads(response.text)
+    if response.status_code == 400:
+        return None
     return summonerData # loads basic summoner data
 
 def getESID(s): # encrypted summoner id
@@ -367,12 +373,60 @@ def getMatchInfo(match):
 
 def didPlayerWin(summonerId, matchData):
     playerIndex = 0
-    for player in matchData["participantIdentities"]:
-        if summonerId == player["player"]["summonerId"]:
-            playerIndex = player["participantId"]
-            if playerIndex < 6:
-                return (matchData["teams"][0]["win"] == "Win")
-            return (matchData["teams"][1]["win"] == "Win")
+    try:
+        for player in matchData["participantIdentities"]:
+            if summonerId == player["player"]["summonerId"]:
+                playerIndex = player["participantId"]
+                if playerIndex < 6:
+                    return (matchData["teams"][0]["win"] == "Win")
+                return (matchData["teams"][1]["win"] == "Win")
+    except KeyError:
+        print("ERROR")
+        print(matchData)
+
+def getWinLossTrend(summoner, maxMatches=5, ranked=True):
+    data = getSummonerData(summoner)
+    if data == None:
+        return "sum"
+    summoner = data["name"]
+    sID = data["id"]
+     #param at some point
+    matchList = getMatchHistory(summoner, ranked)[0:maxMatches]
+    w = 0
+    l = 0
+    awr = 0 #adjusted winrate
+    m = 0 #maximum
+    for i in range(len(matchList)):
+        value = (1 - (i/maxMatches)**2)
+        if didPlayerWin(sID, getMatchInfo(matchList[i])):
+            w += 1
+            awr += value
+        else:
+            l += 1
+        m += value
+    awr = (awr/m)
+    g = w + l
+    return {"record":(w, l, g), "awr":awr, "name": summoner}
+
+def parseWinLossTrend(summoner, maxMatches=5, ranked=True):
+    #make embed later #slow
+    data = getWinLossTrend(summoner, maxMatches, ranked)
+    w = data["record"][0]
+    l = data["record"][1]
+    gp = data["record"][2]
+    awr = data["awr"]
+    name = data["name"]
+    stdwr = (w/gp)
+    deltawr = (awr-stdwr) #make this a rating system, eg. >10% is "very hot", <-10% is "very cold"
+    text = ""
+    text += f"{name} is {w}W - {l}L in their past {gp} games.\n"
+    text += f"Standard winrate: **{100*stdwr:.2f}**\n"
+    text += f"Recent-curved winrate: **{100*awr:.2f}**\n"
+    if deltawr < 0:
+        text += f"Winrate delta: **+{100*deltawr:.2f}**\n"
+    else:
+        text += f"Winrate delta: **-{100*deltawr:.2f}**\n"
+    return text
 
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
