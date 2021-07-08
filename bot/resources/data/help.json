@@ -40,6 +40,10 @@
             {
                 "usage": "lolwr `summoner`",
                 "description": "Returns data on a summoner's winrate."
+            },
+            {
+                "usage": "lolrwr `summoner`",
+                "description": "Returns data on a summoner's ranked winrate."
             }
         ]
     },
