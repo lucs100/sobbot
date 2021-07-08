@@ -436,7 +436,63 @@ def pullAllowableMatchData(matchList):
             break
     return gamesPulled
 
-def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
+def getWinLossPerformanceTag(awr, stdwr, deltawr):
+    tag1 = "Placeholder"
+    tag2 = "Standard"
+    tag3 = "Average" #default tags
+    #tag1 = short term, tag2 = longterm
+
+    #not using tag1s for now
+    # if awr >= 75:
+    #     tag1 = "Unstoppable"
+    # if awr >= 65:
+    #     tag1 = "Blazing"
+    # if awr >= 55:
+    #     tag1 = "On Fire"
+    # elif awr <= 45:
+    #     tag1 = "In a Rough Patch"
+    # elif awr <= 35:
+    #     tag1 = "Needs a Break"
+    # elif awr <= 25:
+    #     tag1 = "Should cool off"
+    
+    if abs(stdwr-50) < 2.5 and abs(deltawr) < 2:
+        tag2 = "Consistent"
+    elif deltawr >= 5:
+        tag2 = "Suddenly Winning"
+    elif deltawr >= 3.25:
+        tag2 = "Hot Streak"
+    elif deltawr >= 1.5:
+        tag2 = "Warming Up"
+    elif deltawr <= 1.5:
+        tag2 = "Rough Patch"
+    elif deltawr <= 3.25:
+        tag2 = "Cold Streak"
+    elif deltawr <= -5:
+        tag1 = "Tilted"
+    elif deltawr == 0:
+        tag2 = "Is this even mathematically possible"
+
+    if stdwr >= 75:
+        tag3 = "Needs a job"
+    elif stdwr >= 65:
+        tag3 = "Cracked"
+    elif stdwr >= 55:
+        tag3 = "Overachiever"
+    elif stdwr <= 45:
+        tag3 = "Underperformer"
+    elif stdwr <= 35:
+        tag3 = "Needs a new champ"
+    elif stdwr <= 25:
+        tag3 = "Should Uninstall"
+
+    return {
+        "tag1":tag1,
+        "tag2":tag2,
+        "tag3":tag3
+        }
+
+def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
     data = getSummonerData(summoner)
     if data == None:
         return "sum"
@@ -449,7 +505,7 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
     awr = 0 #adjusted winrate
     m = 0 #maximum
     for i in range(len(matchList)):
-        value = (1 - (i/maxMatches)**2)
+        value = (1 - (i/maxMatches)**3)
         if didPlayerWin(sID, getMatchInfo(matchList[i])):
             w += 1
             awr += value
@@ -460,46 +516,7 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
     g = w + l
     return {"record":(w, l, g), "awr":awr, "name": summoner}
 
-def getWinLossPerformanceTag(awr, stdwr, deltawr):
-    tag1, tag2 = "Standard", "Average" #default tags
-    #tag1 = short term, tag2 = longterm
-    if awr >= 75:
-        tag1 = "Unstoppable"
-    if awr >= 65:
-        tag1 = "Blazing"
-    if awr >= 55:
-        tag1 = "On Fire"
-    elif awr <= 45:
-        tag1 = "In a Rough Patch"
-    elif awr <= 35:
-        tag1 = "Needs a Break"
-    elif awr <= 25:
-        tag1 = "Should cool off"
-    elif deltawr >= 5:
-        tag1 = "In a Sudden Breakthrough"
-    elif deltawr <= -5:
-        tag1 = "Tilted"
-    elif deltawr == 0:
-        tag1 = "Is this even mathematically possible"
-    elif abs(stdwr-50) < 2.5 and abs(deltawr) < 5:
-        tag1 = "Consistent"
-
-    if stdwr >= 75:
-        tag2 = "Get a job"
-    elif stdwr >= 65:
-        tag2 = "Cracked"
-    elif stdwr >= 55:
-        tag2 = "Overachiever"
-    elif stdwr <= 45:
-        tag2 = "Underperformer"
-    elif stdwr <= 35:
-        tag2 = "Needs a new champ"
-    elif stdwr <= 25:
-        tag2 = "Should Uninstall"
-
-    return {"st":tag1, "lt":tag2}
-
-def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
+def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
     #make embed later #slow
     data = getWinLossTrend(summoner, maxMatches, ranked)
     w = data["record"][0]
@@ -510,18 +527,21 @@ def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
     stdwr = (w/gp)*100
     deltawr = (awr-stdwr)
     text = ""
-    text += f"{name} is {w}W - {l}L in their past {gp} games.\n"
-    text += f"Standard winrate: **{stdwr:.2f}**%\n"
-    text += f"Recent-curved winrate: **{awr:.2f}**%\n"
-    if deltawr > 0:
-        text += f"Winrate delta: **+{deltawr:.2f}** points\n"
+    if ranked:
+        text += f"{name} is {w}W - {l}L in their past {gp} ranked matches.\n"
     else:
-        text += f"Winrate delta: **{deltawr:.2f}** points\n"
+        text += f"{name} is {w}W - {l}L in their past {gp} matches.\n"
+    text += f"Standard winrate: **{stdwr:.2f}**%\n"
+    #text += f"Recent-curved winrate: **{awr:.2f}**%\n"
+    if deltawr > 0:
+        text += f"Recency-Relative Rating: **+{deltawr:.2f}** points\n"
+    else:
+        text += f"Recency-Relative Rating: **{deltawr:.2f}** points\n"
     tags = getWinLossPerformanceTag(awr, stdwr, deltawr)
-    st = tags["st"]
-    lt = tags["lt"]
-    text += f"Short term tag: *{st}*\n"
-    text += f"Long term tag: *{lt}*\n"
+    tag2 = tags["tag2"]
+    tag3 = tags["tag3"]
+    text += f"Short term tag: *{tag2}*\n"
+    text += f"Long term tag: *{tag3}*\n"
     return text
 
 def timeSinceLastMatch(name, ranked=False):
