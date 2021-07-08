@@ -13,6 +13,8 @@ champs = {}
 users = {}
 pulledMatches = {}
 
+MatchLimit = 50
+
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
     champs = data
@@ -389,6 +391,21 @@ def getMatchInfo(match):
     addToMatchBase(data.json(), gameID)
     return data.json()
 
+def getPlayerRespectiveInfo(match, esid):
+    for player in match["participantIdentities"]:
+        if player["player"]["summonerId"] == esid:
+            playerdata = player
+            playerNumber = player["participantId"]
+    return {"matchdata": match["participants"][playerNumber-1], "playerdata": playerdata}
+
+def analyzePlayerPerformance(matchId, summoner):
+    match = getMatchInfo(int(matchId))
+    esid = getESID(summoner)
+    matchdata, playerdata = (getPlayerRespectiveInfo(match, esid))
+    print(json.dumps(matchdata, indent=4))
+    print(json.dumps(playerdata, indent=4))
+    #todo
+
 def didPlayerWin(summonerId, matchData):
     playerIndex = 0
     try:
@@ -403,13 +420,12 @@ def didPlayerWin(summonerId, matchData):
         print(matchData)
 
 def pullAllowableMatchData(matchList):
-    ConsecutiveLimit = 50
+    ConsecutiveLimit = MatchLimit
     gamesInList = len(matchList)
     gamesPulled = 0
     i = 0
     while gamesPulled < ConsecutiveLimit and i < gamesInList-1:
         try:
-            print(f"games pulled: {gamesPulled} limit: {ConsecutiveLimit} i: {i} total games: {gamesInList}")
             if str(matchList[i].gameID) in pulledMatches:
                 pass
             else:
@@ -420,7 +436,7 @@ def pullAllowableMatchData(matchList):
             break
     return gamesPulled
 
-def getWinLossTrend(summoner, maxMatches=5, ranked=True):
+def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
     data = getSummonerData(summoner)
     if data == None:
         return "sum"
@@ -434,6 +450,7 @@ def getWinLossTrend(summoner, maxMatches=5, ranked=True):
     m = 0 #maximum
     for i in range(len(matchList)):
         value = (1 - (i/maxMatches)**2)
+        print(f"Analyzing match {i}...")
         if didPlayerWin(sID, getMatchInfo(matchList[i])):
             w += 1
             awr += value
@@ -444,7 +461,7 @@ def getWinLossTrend(summoner, maxMatches=5, ranked=True):
     g = w + l
     return {"record":(w, l, g), "awr":awr, "name": summoner}
 
-def parseWinLossTrend(summoner, maxMatches=5, ranked=True):
+def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=True):
     #make embed later #slow
     data = getWinLossTrend(summoner, maxMatches, ranked)
     w = data["record"][0]
