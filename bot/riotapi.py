@@ -13,7 +13,7 @@ champs = {}
 users = {}
 pulledMatches = {}
 
-MatchLimit = 20
+MatchLimit = 25
 
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
@@ -472,26 +472,26 @@ def getWinLossPerformanceTag(awr, stdwr, deltawr):
         tag2 = "Hot Streak"
     elif deltawr >= 1.5:
         tag2 = "Warming Up"
-    elif deltawr <= 1.5:
+    elif deltawr <= -1.5:
         tag2 = "Rough Patch"
-    elif deltawr <= 3.25:
+    elif deltawr <= -3.25:
         tag2 = "Cold Streak"
     elif deltawr <= -5:
         tag1 = "Tilted"
     elif deltawr == 0:
         tag2 = "Is this even mathematically possible"
 
-    if stdwr >= 75:
-        tag3 = "Needs a job"
-    elif stdwr >= 65:
+    if stdwr >= 80:
+        tag3 = "Absolutely Insane"
+    elif stdwr >= 70:
         tag3 = "Cracked"
-    elif stdwr >= 55:
+    elif stdwr >= 60:
         tag3 = "Overachiever"
-    elif stdwr <= 45:
+    elif stdwr <= 40:
         tag3 = "Underperformer"
-    elif stdwr <= 35:
+    elif stdwr <= 30:
         tag3 = "Needs a new champ"
-    elif stdwr <= 25:
+    elif stdwr <= 20:
         tag3 = "Should Uninstall"
 
     return {
