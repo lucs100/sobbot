@@ -120,7 +120,7 @@ def getSummonerData(s):
         headers = headers
     )
     summonerData = json.loads(response.text)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return None
     return summonerData # loads basic summoner data
 
@@ -423,8 +423,8 @@ def didPlayerWin(summonerId, matchData):
                     return (matchData["teams"][0]["win"] == "Win")
                 return (matchData["teams"][1]["win"] == "Win")
     except KeyError:
-        print("ERROR")
-        print(matchData)
+        print("RATE LIMIT EXCEEDED!")
+        return "rate"
 
 def bulkPullMatchData(matchList, max=MatchLimit): #not accessible by sobbot atm
     for match in matchList:
@@ -433,10 +433,10 @@ def bulkPullMatchData(matchList, max=MatchLimit): #not accessible by sobbot atm
     if len(matchList) > max:
         matchList = matchList[0:max]
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        res = [executor.submit(getMatchInfo, game.gameID) for game in matchList]
+        res = [executor.submit(getMatchInfo, game.gameID, autosave=False) for game in matchList]
         concurrent.futures.wait(res)
     updateMatchBase()
-    return True
+    return len(matchList)
 
 def getWinLossPerformanceTag(awr, stdwr, deltawr):
     tag1 = "Placeholder"
@@ -494,22 +494,25 @@ def getWinLossPerformanceTag(awr, stdwr, deltawr):
         "tag3":tag3
         }
 
-def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
+def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False, turboMode=True):
     data = getSummonerData(summoner)
     if data == None:
         return "sum"
     summoner = data["name"]
     sID = data["id"]
-     #param at some point
     matchList = getMatchHistory(summoner, ranked)[0:maxMatches]
-    bulkPullMatchData(matchList)
+    if turboMode:
+        bulkPullMatchData(matchList)
     w = 0
     l = 0
     awr = 0 #adjusted winrate
     m = 0 #maximum
     for i in range(len(matchList)):
         value = (1 - (i/maxMatches)**3)
-        if didPlayerWin(sID, getMatchInfo(matchList[i])):
+        win = didPlayerWin(sID, getMatchInfo(matchList[i]))
+        if isinstance(win, str):
+            return win #error code
+        elif win:
             w += 1
             awr += value
         else:
@@ -524,6 +527,14 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     sentMessage = await message.channel.send("Retrieving data... \n" +
     "This may take a while if this summoner's match history hasn't recently been pulled.")
     data = getWinLossTrend(summoner, maxMatches, ranked)
+    codes = ["rate", "sum"]
+    if data in codes:
+        if data == "rate":
+            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!** Sobbot will now exit to avoid API blacklisting."
+            await sentMessage.edit(content=text)
+            exit()
+        elif data == "sum":
+            await sentMessage.edit(content=f"Summoner {summoner} doesn't exist.")
     w = data["record"][0]
     l = data["record"][1]
     gp = data["record"][2]
