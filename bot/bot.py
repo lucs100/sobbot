@@ -319,7 +319,6 @@ async def on_message(message):
 				else:
 					await message.channel.send(embed=response)
 
-
 			if c.startswith("lolwr"):
 				summoner = c[5:].strip()
 				if summoner == "":
@@ -328,6 +327,23 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 						return True
 				response = riotapi.parseWinLossTrend(summoner)
+				codes = {
+					"sum": f"Summoner {summoner} doesn't exist."
+				}
+				# if isinstance(response, str):
+				if response in codes:
+					await message.channel.send(codes[response])
+				else:
+					await message.channel.send(response)
+
+			if c.startswith("lolrwr"):
+				summoner = c[6:].strip()
+				if summoner == "":
+					summoner = riotapi.isUserRegistered(message.author.id)
+					if summoner == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+						return True
+				response = riotapi.parseWinLossTrend(summoner, ranked=True)
 				codes = {
 					"sum": f"Summoner {summoner} doesn't exist."
 				}
