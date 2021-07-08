@@ -425,12 +425,11 @@ def didPlayerWin(summonerId, matchData):
         print("ERROR")
         print(matchData)
 
-def pullAllowableMatchData(matchList): #not accessible by sobbot atm
-    ConsecutiveLimit = MatchLimit
+def pullAllowableMatchData(matchList, consecutiveLimit=MatchLimit): #not accessible by sobbot atm
     gamesInList = len(matchList)
     gamesPulled = 0
     i = 0
-    while gamesPulled < ConsecutiveLimit and i < gamesInList-1:
+    while gamesPulled < consecutiveLimit and i < gamesInList-1:
         print(f"Pulling match {gamesPulled+1}...")
         try:
             if str(matchList[i].gameID) in pulledMatches:
@@ -525,8 +524,10 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
     g = w + l
     return {"record":(w, l, g), "awr":awr, "name": summoner}
 
-def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
+async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=False):
     #make embed later #slow
+    sentMessage = await message.channel.send("Retrieving data... \n" +
+    "This may take a while if this summoner's match history hasn't recently been pulled.")
     data = getWinLossTrend(summoner, maxMatches, ranked)
     w = data["record"][0]
     l = data["record"][1]
@@ -551,7 +552,8 @@ def parseWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
     tag3 = tags["tag3"]
     text += f"Short term tag: *{tag2}*\n"
     text += f"Long term tag: *{tag3}*\n"
-    return text
+    await sentMessage.edit(content=text)
+    return True
 
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
