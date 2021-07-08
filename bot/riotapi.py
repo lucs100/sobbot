@@ -98,10 +98,16 @@ def updateUserData():
         json.dump(users, fp, indent=4)
     return True
 
-def addToMatchBase(match, matchId):
-    pulledMatches[str(matchId)] = match
+def updateMatchBase():
     with open('bot/resources/data/private/matchdata.json', 'w') as fp: # updates .json of all user data
         json.dump(pulledMatches, fp, indent=4)
+    return True
+
+def addToMatchBase(match, matchId, autosave=True):
+    if str(matchId) not in pulledMatches:
+        pulledMatches[str(matchId)] = match
+        if autosave:
+            updateMatchBase()
     return True
 
 def parseSpaces(s):
@@ -375,7 +381,7 @@ def getLastMatch(name, ranked=False):
         return "none" #for errordict use, ik Nonetype exists
     return data[0]
 
-def getMatchInfo(match):
+def getMatchInfo(match, autosave=True):
     if isinstance(match, int):
         gameID = match
     else:
@@ -388,7 +394,7 @@ def getMatchInfo(match):
         )
     if data.status_code == 400:
         return None
-    addToMatchBase(data.json(), gameID)
+    addToMatchBase(data.json(), gameID, autosave)
     return data.json()
 
 def getPlayerRespectiveInfo(match, esid):
@@ -419,21 +425,24 @@ def didPlayerWin(summonerId, matchData):
         print("ERROR")
         print(matchData)
 
-def pullAllowableMatchData(matchList):
+def pullAllowableMatchData(matchList): #not accessible by sobbot atm
     ConsecutiveLimit = MatchLimit
     gamesInList = len(matchList)
     gamesPulled = 0
     i = 0
     while gamesPulled < ConsecutiveLimit and i < gamesInList-1:
+        print(f"Pulling match {gamesPulled+1}...")
         try:
             if str(matchList[i].gameID) in pulledMatches:
                 pass
             else:
-                getMatchInfo(matchList[i].gameID)
+                getMatchInfo(matchList[i].gameID, autosave=False)
                 gamesPulled += 1
             i += 1
         except IndexError:
             break
+    updateMatchBase()
+    print(f"Saved {gamesPulled} new matches.")
     return gamesPulled
 
 def getWinLossPerformanceTag(awr, stdwr, deltawr):
