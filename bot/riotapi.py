@@ -3,6 +3,7 @@ from sys import prefix
 from dotenv import load_dotenv
 import requests, os, json, discord
 from datetime import datetime
+import concurrent
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
@@ -425,24 +426,17 @@ def didPlayerWin(summonerId, matchData):
         print("ERROR")
         print(matchData)
 
-def pullAllowableMatchData(matchList, consecutiveLimit=MatchLimit): #not accessible by sobbot atm
-    gamesInList = len(matchList)
-    gamesPulled = 0
-    i = 0
-    while gamesPulled < consecutiveLimit and i < gamesInList-1:
-        print(f"Pulling match {gamesPulled+1}...")
-        try:
-            if str(matchList[i].gameID) in pulledMatches:
-                pass
-            else:
-                getMatchInfo(matchList[i].gameID, autosave=False)
-                gamesPulled += 1
-            i += 1
-        except IndexError:
-            break
+def bulkPullMatchData(matchList, max=MatchLimit): #not accessible by sobbot atm
+    for match in matchList:
+        if str(match.gameID) in pulledMatches:
+            matchList.remove(match)
+    if len(matchList) > max:
+        matchList = matchList[0:max]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        res = [executor.submit(getMatchInfo, game.gameID) for game in matchList]
+        concurrent.futures.wait(res)
     updateMatchBase()
-    print(f"Saved {gamesPulled} new matches.")
-    return gamesPulled
+    return True
 
 def getWinLossPerformanceTag(awr, stdwr, deltawr):
     tag1 = "Placeholder"
@@ -508,6 +502,7 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False):
     sID = data["id"]
      #param at some point
     matchList = getMatchHistory(summoner, ranked)[0:maxMatches]
+    bulkPullMatchData(matchList)
     w = 0
     l = 0
     awr = 0 #adjusted winrate
