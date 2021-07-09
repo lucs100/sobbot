@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import requests, os, json, discord
 from datetime import datetime
 import concurrent
+from time import sleep
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
@@ -13,6 +14,7 @@ url = "https://na1.api.riotgames.com"
 champs = {}
 users = {}
 pulledMatches = {}
+summonerList = []
 
 MatchLimit = 25
 
@@ -25,9 +27,18 @@ with open('bot/resources/data/private/userdata.json') as f:
     users = data
 
 with open('bot/resources/data/private/matchdata.json') as f:
-    data = json.loads(f.read()) # unpacking data
-    print(f"/riotapi: Loaded {len(data)} matches.")
-    pulledMatches = data
+    try:
+        data = json.loads(f.read()) # unpacking data
+        print(f"/riotapi: Loaded {len(data)} matches.")
+        pulledMatches = data
+    except:
+        print("Failure loading matchdata.json. File may be corrupt.")
+
+for user in users.values():
+    try:
+        summonerList.append(user["lol"])
+    except KeyError:
+        pass
 
 def getChampNameById(id):
     return champs[str(id)]
@@ -426,17 +437,18 @@ def didPlayerWin(summonerId, matchData):
         print("RATE LIMIT EXCEEDED!")
         return "rate"
 
-def bulkPullMatchData(matchList, max=MatchLimit): #not accessible by sobbot atm
+def bulkPullMatchData(matchList, max=MatchLimit):
+    pullList = [] #stupid pass by sharing !!!
     for match in matchList:
-        if str(match.gameID) in pulledMatches:
-            matchList.remove(match)
-    if len(matchList) > max:
-        matchList = matchList[0:max]
+        if str(match.gameID) not in pulledMatches:
+            pullList.append(match)
+    if len(pullList) > max:
+        pullList = pullList[0:max]
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        res = [executor.submit(getMatchInfo, game.gameID, autosave=False) for game in matchList]
+        res = [executor.submit(getMatchInfo, game.gameID, autosave=False) for game in pullList]
         concurrent.futures.wait(res)
     updateMatchBase()
-    return len(matchList)
+    return len(pullList)
 
 def getWinLossPerformanceTag(awr, stdwr, deltawr):
     tag1 = "Placeholder"
@@ -524,8 +536,10 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False, turboMode=Tru
 
 async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=False):
     #make embed later #slow
-    sentMessage = await message.channel.send("Retrieving data... \n" +
-    "This may take a while if this summoner's match history hasn't recently been pulled.")
+    title = "Retrieving data..."
+    text = "This may take a while if this summoner's match history hasn't recently been pulled."
+    embed = discord.Embed(title=title, description=text)
+    sentMessage = await message.channel.send(embed=embed)
     data = getWinLossTrend(summoner, maxMatches, ranked)
     codes = ["rate", "sum"]
     if data in codes:
@@ -534,7 +548,8 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
             await sentMessage.edit(content=text)
             exit()
         elif data == "sum":
-            await sentMessage.edit(content=f"Summoner {summoner} doesn't exist.")
+            text = f"Summoner {summoner} doesn't exist."
+            await sentMessage.edit(content=text)
     w = data["record"][0]
     l = data["record"][1]
     gp = data["record"][2]
@@ -548,17 +563,24 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     else:
         text += f"{name} is {w}W - {l}L in their past {gp} matches.\n"
     text += f"Standard winrate: **{stdwr:.2f}**%\n"
-    #text += f"Recent-curved winrate: **{awr:.2f}**%\n"
+    #text += f"Recent-curved winrate: **{awr:.2f}**%\n" #hidden
     if deltawr > 0:
+        color = 0x6ad337
+        title = f"{name} - Winrate Analysis (+{deltawr:.2f})"
         text += f"Recency-Relative Rating: **+{deltawr:.2f}** points\n"
     else:
+        color = 0xd33737
+        title = f"{name} - Winrate Analysis ({deltawr:.2f})"
         text += f"Recency-Relative Rating: **{deltawr:.2f}** points\n"
     tags = getWinLossPerformanceTag(awr, stdwr, deltawr)
     tag2 = tags["tag2"]
     tag3 = tags["tag3"]
     text += f"Short term tag: *{tag2}*\n"
     text += f"Long term tag: *{tag3}*\n"
-    await sentMessage.edit(content=text)
+    embed.title = title
+    embed.description = text
+    embed.color = color
+    await sentMessage.edit(embed=embed)
     return True
 
 def timeSinceLastMatch(name, ranked=False):
