@@ -400,6 +400,7 @@ def getMatchInfo(match, autosave=True):
         gameID = match.gameID
     if str(gameID) in pulledMatches:
         return pulledMatches[str(gameID)]
+    print("Attempting match pull...")
     data = requests.get(
             (url + f"/lol/match/v4/matches/{gameID}"),
             headers = headers
@@ -684,3 +685,18 @@ def getRolePlayDataEmbed(name, ranked=False):
     embed = discord.Embed(title=title, description=description, color=discord.Color.random())
     embed.set_footer(text=footertext)
     return embed
+
+def getBanData(matchList):
+    bans = dict()
+    for match in matchList:
+        data = getMatchInfo(match)
+        for playerId in range(0, 10):
+            try:
+                bannedChamp = str(data["teams"][(playerId - 1) // 5]["bans"][(playerId % 5) - 1]["championId"])
+                if champs[bannedChamp] in bans:
+                    bans[champs[bannedChamp]] += 1
+                else:
+                    bans[champs[bannedChamp]] = 1
+            except KeyError:
+                pass
+    print(bans)
