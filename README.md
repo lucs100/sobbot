@@ -1,4 +1,4 @@
-# sobbot - an aimless discord bot
+# sobbot - an experimental discord bot
 
 Repository for Sobbot, a personal Discord bot.
 Sobbot is mainly a side project intended for me to gain experience using Python as an interface between Discord, Sobbot's logic, and various API's, with a lot of random features thrown in as well. This is intentional - Sobbot isn't really intended to be a general use Discord bot, but rather a compilation of tons of side projects too small for their own repoitories, wrapped into a Discord bot.
