@@ -370,21 +370,18 @@ def editRegistration(id, name):
 def getMatchHistory(name, ranked=False):
     if checkKeyInvalid():
         return "key"
+    rankedParam = ""
+    if ranked:
+        rankedParam = "?queue=420"
     data = requests.get(
-            (url + f"/lol/match/v4/matchlists/by-account/{getEAID(parseSpaces(name))}"),
+            (url + f"/lol/match/v4/matchlists/by-account/{getEAID(parseSpaces(name))}{rankedParam}"),
             headers = headers
         )
     if data.status_code == 400:
         return "sum"
-    #datajson = json.dumps(data.json(), indent=4)
     matchList = []
     for matches in data.json()["matches"]:
-        if ranked:
-            currentMatch = MatchKey(matches)
-            if currentMatch.queue == 420: # ranked solo/duo queue id
-                matchList.append(MatchKey(matches))
-        else:
-            matchList.append(MatchKey(matches))
+        matchList.append(MatchKey(matches))
     return matchList
 
 def getLastMatch(name, ranked=False):
