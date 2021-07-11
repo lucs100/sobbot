@@ -705,3 +705,15 @@ def getBanData(matchList):
                 pass
     return bans
 
+def getLiveMatch(summoner):
+    if len(summoner) <= 16:  # is name
+        summoner = getESID(summoner)
+    data = requests.get(
+            (url + f"/lol/spectator/v4/active-games/by-summoner/{summoner}"),
+            headers = headers
+        )
+    if data.status_code == 409:
+        return "rate"
+    if data.status_code == 409:
+        return "no"
+    return data.json()
