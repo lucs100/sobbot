@@ -684,16 +684,24 @@ def getRolePlayDataEmbed(name, ranked=False):
     return embed
 
 def getBanData(matchList):
+    if isinstance(matchList, Match):
+        matchList = [matchList]
+    if isinstance(matchList, MatchKey):
+        matchList = [Match(getMatchInfo(matchList))]
     bans = dict()
     for match in matchList:
         data = getMatchInfo(match)
         for playerId in range(0, 10):
             try:
                 bannedChamp = str(data["teams"][(playerId - 1) // 5]["bans"][(playerId % 5) - 1]["championId"])
+                # ban "order" doesnt match up with player indexing, so getting bans by player
+                # is awkward (need to compare one of the account IDs to determing pick order)
+                # function only gets bans for match + accounts for dupes
                 if champs[bannedChamp] in bans:
                     bans[champs[bannedChamp]] += 1
                 else:
                     bans[champs[bannedChamp]] = 1
             except KeyError:
                 pass
-    print(bans)
+    return bans
+
