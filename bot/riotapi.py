@@ -14,6 +14,7 @@ url = "https://na1.api.riotgames.com"
 champs = {}
 users = {}
 pulledMatches = {}
+queues = {}
 summonerList = []
 
 MatchLimit = 25
@@ -21,6 +22,10 @@ MatchLimit = 25
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
     champs = data
+
+with open('bot/resources/data/queues.json') as f:
+    data = json.loads(f.read()) # unpacking data
+    queues = data
 
 with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
@@ -40,6 +45,11 @@ for user in users.values():
     except KeyError:
         pass
 
+def getModeFromQueueID(id):
+    for queue in queues:
+        if queue["queueId"] == id:
+            return {"map": queue["map"], "description": queue["description"]} 
+        
 def getChampNameById(id):
     return champs[str(id)]
 
@@ -705,6 +715,41 @@ def getBanData(matchList):
                 pass
     return bans
 
+class LiveMatchParticipant():
+    def __init__(self, data):
+        self.teamID = data["teamId"]
+        self.summ1 = data["spell1Id"]
+        self.summ2 = data["spell2Id"]
+        self.champID = data["championId"]
+        self.champName = getChampNameById(self.champID)
+        self.icon = data["profileIconId"]
+        self.summonerName = data["summonerName"]
+        self.customizationObjects = data["gameCustomizationObjects"]
+        self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
+        self.primaryRuneTree = data["perks"]["perkStyle"]
+        self.secondaryRuneTree = data["perks"]["perkSubStyle"]
+
+class LiveMatchBan():
+    def __init__(self, data):
+        self.champID = data["championId"]
+        self.champName = getChampNameById(self.champID) 
+        self.teamID = data["teamId"]
+        self.pickTurn = data["pickTurn"]
+
+class LiveMatch():
+    def __init__(self, data, summoner):
+        self.summonerId = summoner #make this class Summoner later!
+        self.gameMap = data["gameQueueConfigId"]
+        self.participants = {}
+        for player in data["participants"]:
+            self.participants[data["participants"].index(player)] = LiveMatchParticipant(player)
+        self.gameID = data["gameId"]
+        self.bans = {}
+        for ban in data["bannedChampions"]:
+            self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
+        self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
+        self.elapsedTime = data["gameLength"]
+
 def getLiveMatch(summoner):
     if len(summoner) <= 16:  # is name
         summoner = getESID(summoner)
@@ -714,6 +759,6 @@ def getLiveMatch(summoner):
         )
     if data.status_code == 409:
         return "rate"
-    if data.status_code == 409:
+    elif data.status_code == 409:
         return "no"
-    return data.json()
+    else: return LiveMatch(data.json(), summoner)
