@@ -31,6 +31,14 @@ with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
     users = data
 
+with open('bot/resources/data/runesReforged.json') as f:
+    data = json.loads(f.read()) # unpacking data
+    runes = data
+
+with open('bot/resources/data/summoner.json') as f:
+    data = json.loads(f.read()) # unpacking data
+    summoner = data
+
 with open('bot/resources/data/private/matchdata.json') as f:
     try:
         data = json.loads(f.read()) # unpacking data
@@ -749,6 +757,7 @@ class LiveMatch():
             self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
         self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
         self.elapsedTime = data["gameLength"]
+        self.spectatorKey = data["observers"]["encryptionKey"]
 
 def getLiveMatch(summoner):
     if len(summoner) <= 16:  # is name
@@ -762,3 +771,9 @@ def getLiveMatch(summoner):
     elif data.status_code == 409:
         return "no"
     else: return LiveMatch(data.json(), summoner)
+
+def getLiveMatchEmbed(summoner):
+    match = getLiveMatch(summoner)
+    print(match.spectatorKey)
+
+getLiveMatchEmbed("Royale Reaper")
