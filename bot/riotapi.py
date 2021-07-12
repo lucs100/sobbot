@@ -41,12 +41,12 @@ class SummSpell():
     def __init__(self, data):
         self.name = data["name"]
         self.cooldown = data["cooldown"][0]
-        self.id = data["key"]
+        self.id = int(data["key"])
 
 with open('bot/resources/data/summoner.json') as f:
     data = json.loads(f.read()) # unpacking data
     for summ in data:
-        summSpells[len(summSpells)] = SummSpell(data[summ])
+        summSpells[int(data[summ]["key"])] = SummSpell(data[summ])
 
 with open('bot/resources/data/private/matchdata.json') as f:
     try:
@@ -735,8 +735,8 @@ def getBanData(matchList):
 class LiveMatchParticipant():
     def __init__(self, data):
         self.teamID = data["teamId"]
-        self.summ1 = data["spell1Id"]
-        self.summ2 = data["spell2Id"]
+        self.summ1 = summSpells
+        self.summ2 = summSpells
         self.champID = data["championId"]
         self.champName = getChampNameById(self.champID)
         self.icon = data["profileIconId"]
@@ -784,5 +784,5 @@ def getLiveMatch(summoner):
 def getLiveMatchEmbed(summoner):
     match = getLiveMatch(summoner)
     print(match.spectatorKey)
-
-getLiveMatchEmbed("Royale Reaper")
+    
+# getLiveMatchEmbed("Royale Reaper")
