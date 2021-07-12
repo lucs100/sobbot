@@ -1,3 +1,13 @@
+# Sobbot - Riot Games API Library
+# Written by Lucas Di Pietro 2021
+
+
+###############################
+
+
+# Library Imports and Other Formalities
+
+
 from random import Random
 from sys import prefix
 from dotenv import load_dotenv
@@ -11,6 +21,10 @@ RIOTTOKEN = os.getenv('RIOTTOKEN')
 headers = {"X-Riot-Token": RIOTTOKEN}
 url = "https://na1.api.riotgames.com"
 
+
+# Constants and Constant Data
+
+
 champs = {}
 users = {}
 pulledMatches = {}
@@ -20,6 +34,71 @@ summSpells = {}
 summonerList = []
 
 MatchLimit = 25
+
+
+# Class Declarations
+
+
+class SummSpell():
+    def __init__(self, data):
+        self.name = data["name"]
+        self.cooldown = data["cooldown"][0]
+        self.id = int(data["key"])
+
+class MatchKey:
+    def __init__(self, matchData):
+        self.gameID = matchData["gameId"]
+        self.champID = int(matchData["champion"])
+        self.champ = getChampNameById(self.champID)
+        self.queue = int(matchData["queue"])
+        self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
+        self.role = getRole(matchData["role"], matchData["lane"])
+        self.debugData = (matchData["role"], matchData["lane"])
+
+class Match:
+    def __init__(self, matchData):
+        pass
+        #todo
+
+class LiveMatchParticipant():
+    def __init__(self, data):
+        self.teamID = data["teamId"]
+        self.summ1 = summSpells
+        self.summ2 = summSpells
+        self.champID = data["championId"]
+        self.champName = getChampNameById(self.champID)
+        self.icon = data["profileIconId"]
+        self.summonerName = data["summonerName"]
+        self.customizationObjects = data["gameCustomizationObjects"]
+        self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
+        self.primaryRuneTree = data["perks"]["perkStyle"]
+        self.secondaryRuneTree = data["perks"]["perkSubStyle"]
+
+class LiveMatchBan():
+    def __init__(self, data):
+        self.champID = data["championId"]
+        self.champName = getChampNameById(self.champID) 
+        self.teamID = data["teamId"]
+        self.pickTurn = data["pickTurn"]
+
+class LiveMatch():
+    def __init__(self, data, summoner):
+        self.summonerId = summoner #make this class Summoner later!
+        self.gameMap = data["gameQueueConfigId"]
+        self.participants = {}
+        for player in data["participants"]:
+            self.participants[data["participants"].index(player)] = LiveMatchParticipant(player)
+        self.gameID = data["gameId"]
+        self.bans = {}
+        for ban in data["bannedChampions"]:
+            self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
+        self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
+        self.elapsedTime = data["gameLength"]
+        self.spectatorKey = data["observers"]["encryptionKey"]
+
+
+# File Imports / Setup
+
 
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
@@ -36,12 +115,6 @@ with open('bot/resources/data/private/userdata.json') as f:
 with open('bot/resources/data/runesReforged.json') as f:
     data = json.loads(f.read()) # unpacking data
     runes = data
-
-class SummSpell():
-    def __init__(self, data):
-        self.name = data["name"]
-        self.cooldown = data["cooldown"][0]
-        self.id = int(data["key"])
 
 with open('bot/resources/data/summoner.json') as f:
     data = json.loads(f.read()) # unpacking data
@@ -61,6 +134,10 @@ for user in users.values():
         summonerList.append(user["lol"])
     except KeyError:
         pass
+
+
+# Function Definitions
+
 
 def getModeFromQueueID(id):
     for queue in queues:
@@ -101,21 +178,6 @@ def getRole(role, lane):
     elif role == "DUO_SUPPORT":
         return "Support"
     return "Unknown"
-
-class MatchKey:
-    def __init__(self, matchData):
-        self.gameID = matchData["gameId"]
-        self.champID = int(matchData["champion"])
-        self.champ = getChampNameById(self.champID)
-        self.queue = int(matchData["queue"])
-        self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
-        self.role = getRole(matchData["role"], matchData["lane"])
-        self.debugData = (matchData["role"], matchData["lane"])
-
-class Match:
-    def __init__(self, matchData):
-        pass
-        #todo
 
 def checkKeyInvalid():
     response = requests.get(
@@ -732,42 +794,6 @@ def getBanData(matchList):
                 pass
     return bans
 
-class LiveMatchParticipant():
-    def __init__(self, data):
-        self.teamID = data["teamId"]
-        self.summ1 = summSpells
-        self.summ2 = summSpells
-        self.champID = data["championId"]
-        self.champName = getChampNameById(self.champID)
-        self.icon = data["profileIconId"]
-        self.summonerName = data["summonerName"]
-        self.customizationObjects = data["gameCustomizationObjects"]
-        self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
-        self.primaryRuneTree = data["perks"]["perkStyle"]
-        self.secondaryRuneTree = data["perks"]["perkSubStyle"]
-
-class LiveMatchBan():
-    def __init__(self, data):
-        self.champID = data["championId"]
-        self.champName = getChampNameById(self.champID) 
-        self.teamID = data["teamId"]
-        self.pickTurn = data["pickTurn"]
-
-class LiveMatch():
-    def __init__(self, data, summoner):
-        self.summonerId = summoner #make this class Summoner later!
-        self.gameMap = data["gameQueueConfigId"]
-        self.participants = {}
-        for player in data["participants"]:
-            self.participants[data["participants"].index(player)] = LiveMatchParticipant(player)
-        self.gameID = data["gameId"]
-        self.bans = {}
-        for ban in data["bannedChampions"]:
-            self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
-        self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
-        self.elapsedTime = data["gameLength"]
-        self.spectatorKey = data["observers"]["encryptionKey"]
-
 def getLiveMatch(summoner):
     if len(summoner) <= 16:  # is name
         summoner = getESID(summoner)
@@ -784,5 +810,3 @@ def getLiveMatch(summoner):
 def getLiveMatchEmbed(summoner):
     match = getLiveMatch(summoner)
     print(match.spectatorKey)
-    
-# getLiveMatchEmbed("Royale Reaper")
