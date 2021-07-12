@@ -15,6 +15,8 @@ champs = {}
 users = {}
 pulledMatches = {}
 queues = {}
+runes = {}
+summSpells = {}
 summonerList = []
 
 MatchLimit = 25
@@ -35,9 +37,16 @@ with open('bot/resources/data/runesReforged.json') as f:
     data = json.loads(f.read()) # unpacking data
     runes = data
 
+class SummSpell():
+    def __init__(self, data):
+        self.name = data["name"]
+        self.cooldown = data["cooldown"][0]
+        self.id = data["key"]
+
 with open('bot/resources/data/summoner.json') as f:
     data = json.loads(f.read()) # unpacking data
-    summoner = data
+    for summ in data:
+        summSpells[len(summSpells)] = SummSpell(data[summ])
 
 with open('bot/resources/data/private/matchdata.json') as f:
     try:
