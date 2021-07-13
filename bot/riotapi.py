@@ -244,18 +244,13 @@ def getEAID(s): # encrypted summoner id
     except KeyError:
         return False
 
-def getNameAndLevel(s):
-    if checkKeyInvalid():
-        return False
-    summonerData = getSummonerData(s)
-    return {"name": summonerData["name"], "level": int(summonerData["summonerLevel"])}
-
 def getRankedData(s):
     if checkKeyInvalid():
         return False
+    summoner = getSummonerData(s)
     try:
         response = requests.get(
-            (url + f"/lol/league/v4/entries/by-summoner/{getSummonerData(s).esid}"),
+            (url + f"/lol/league/v4/entries/by-summoner/{summoner.esid}"),
             headers = headers
         )
     except:
@@ -275,7 +270,7 @@ def getRankedData(s):
     try:
         name = datajson[i]["summonerName"]
     except:
-        name = getNameAndLevel(s)["name"]
+        name = summoner.name
     return data, name
 
 def getMaxRank(list):
@@ -447,21 +442,21 @@ def isUserRegistered(id):
     return False
 
 def addRegistration(id, name):
-    data = getNameAndLevel(name)
-    if data == False:
+    summoner = getSummonerData(name)
+    if summoner == None:
         return False  # summoner does not exist
     users[str(id)] = {"lol": "placeholder"}
-    users[str(id)]["lol"] = str(data["name"])
+    users[str(id)]["lol"] = str(summoner.name)
     updateUserData()
-    return data["name"] # confirms with properly capitalized name
+    return (summoner.name) # confirms with properly capitalized name
 
 def editRegistration(id, name):
-    data = getNameAndLevel(name)
-    if data == False:
+    summoner = getSummonerData(name)
+    if summoner == None:
         return False  # summoner does not exist
-    users[str(id)]["lol"] = str(data["name"])
+    users[str(id)]["lol"] = str(summoner.name)
     updateUserData()
-    return data["name"] # confirms with properly capitalized name
+    return (summoner.name) # confirms with properly capitalized name
 
 def getMatchHistory(name, ranked=False):
     if checkKeyInvalid():
@@ -681,7 +676,7 @@ def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
         return "key"
     try:
-        name = getNameAndLevel(name)["name"]
+        name = getSummonerData(name).name
     except KeyError:
         return "sum"
     codes = ["key", "sum", "none"]
@@ -710,7 +705,7 @@ def timeSinceLastMatch(name, ranked=False):
 
 def getRoleHistory(name, ranked=False, weightedMode=False):
     try:
-        name = getNameAndLevel(name)["name"]
+        name = getSummonerData(name).name
     except KeyError:
         return "sum"
     matchHistory = getMatchHistory(name, ranked)
@@ -751,7 +746,7 @@ def getTopRoles(data):
 
 def getRolePlayDataEmbed(name, ranked=False):
     try:
-        name = getNameAndLevel(name)["name"]
+        name = getSummonerData(name).name
     except KeyError:
         return "sum"
     codes = ["key", "sum"]
