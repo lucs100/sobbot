@@ -236,14 +236,6 @@ def getSummonerData(s):
         return None
     else: return Summoner(summonerData)
 
-def getEAID(s): # encrypted summoner id
-    if checkKeyInvalid():
-        return False, False  # what
-    try:
-        return getSummonerData(s)["accountId"]
-    except KeyError:
-        return False
-
 def getRankedData(s):
     if checkKeyInvalid():
         return False
