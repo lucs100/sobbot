@@ -96,6 +96,16 @@ class LiveMatch():
         self.elapsedTime = data["gameLength"]
         self.spectatorKey = data["observers"]["encryptionKey"]
 
+class Summoner():
+    def __init__(self, data):
+        self.eaid = data["accountId"]
+        self.esid = data["id"]
+        self.puuid = data["puuid"]
+        self.name = data["name"]
+        self.icon = data["profileIconId"]
+        self.timestamp = data["revisionDate"]
+        self.level = data["summonerLevel"]
+
 
 # File Imports / Setup
 
@@ -219,10 +229,10 @@ def getSummonerData(s):
         (url + f"/lol/summoner/v4/summoners/by-name/{parseSpaces(s)}"),
         headers = headers
     )
-    summonerData = json.loads(response.text)
+    summonerData = response.json()
     if response.status_code != 200:
         return None
-    return summonerData # loads basic summoner data
+    else: return Summoner(summonerData)
 
 def getESID(s): # encrypted summoner id
     if checkKeyInvalid():
@@ -248,7 +258,7 @@ def getRankedData(s):
         return False
     try:
         response = requests.get(
-            (url + f"/lol/league/v4/entries/by-summoner/{getESID(s)}"),
+            (url + f"/lol/league/v4/entries/by-summoner/{getSummonerData(s).esid}"),
             headers = headers
         )
     except:
@@ -399,7 +409,7 @@ def getTopMasteries(s):
         return False
     try:
         response = requests.get(
-            (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{getESID(parseSpaces(s))}"),
+            (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{getSummonerData(s).esid}"),
             headers = headers
         )
     except:
@@ -504,9 +514,9 @@ def getPlayerRespectiveInfo(match, esid):
     return {"matchdata": match["participants"][playerNumber-1], "playerdata": playerdata}
 
 def analyzePlayerPerformance(matchId, summoner):
+    summoner = getSummonerData(summoner)
     match = getMatchInfo(int(matchId))
-    esid = getESID(summoner)
-    matchdata, playerdata = (getPlayerRespectiveInfo(match, esid))
+    matchdata, playerdata = (getPlayerRespectiveInfo(match, summoner.esid))
     print(json.dumps(matchdata, indent=4))
     print(json.dumps(playerdata, indent=4))
     #todo
@@ -795,10 +805,10 @@ def getBanData(matchList):
     return bans
 
 def getLiveMatch(summoner):
-    if len(summoner) <= 16:  # is name
-        summoner = getESID(summoner)
+    if isinstance(summoner, str):
+        summoner = getSummonerData(summoner)
     data = requests.get(
-            (url + f"/lol/spectator/v4/active-games/by-summoner/{summoner}"),
+            (url + f"/lol/spectator/v4/active-games/by-summoner/{summoner.esid}"),
             headers = headers
         )
     if data.status_code == 409:
@@ -808,5 +818,7 @@ def getLiveMatch(summoner):
     else: return LiveMatch(data.json(), summoner)
 
 def getLiveMatchEmbed(summoner):
+    if isinstance(summoner, str):
+        summoner = getSummonerData(summoner)
     match = getLiveMatch(summoner)
     print(match.spectatorKey)
