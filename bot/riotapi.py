@@ -73,6 +73,7 @@ class LiveMatchParticipant():
         self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
         self.primaryRuneTree = data["perks"]["perkStyle"]
         self.secondaryRuneTree = data["perks"]["perkSubStyle"]
+        self.rank = getRank(self.summonerName) #todo
 
 class LiveMatchBan():
     def __init__(self, data):
@@ -82,8 +83,10 @@ class LiveMatchBan():
         self.pickTurn = data["pickTurn"]
 
 class LiveMatch():
-    def __init__(self, data, summoner):
-        self.summonerId = summoner #make this class Summoner later!
+    def __init__(self, data, targetSummoner):
+        if not isinstance(targetSummoner, Summoner):
+            targetSummoner = Summoner(targetSummoner)
+        self.targetSummoner = targetSummoner
         self.gameMap = data["gameQueueConfigId"]
         self.participants = {}
         for player in data["participants"]:
@@ -98,6 +101,8 @@ class LiveMatch():
 
 class Summoner():
     def __init__(self, data):
+        if isinstance(data, str):
+            data = getSummonerData(data)
         self.eaid = data["accountId"]
         self.esid = data["id"]
         self.puuid = data["puuid"]
@@ -105,6 +110,8 @@ class Summoner():
         self.icon = data["profileIconId"]
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
+        self.rank = None
+        self.rank = getRank(self.esid)
 
 
 # File Imports / Setup
@@ -250,6 +257,35 @@ def getSummonerData(s):
     if response.status_code != 200:
         return None
     else: return Summoner(summonerData)
+
+def getRank(summoner, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+    if isinstance(summoner, str):
+        if len(summoner) > 16:
+            id = summoner
+        else:
+            id = getSummonerData(summoner).esid
+    elif isinstance(summoner, Summoner):
+        id = summoner.esid
+    try:
+        response = requests.get(
+            (url + f"/lol/league/v4/entries/by-summoner/{id}"),
+            headers = headers
+        )
+    except:
+        return False
+    datajson = response.json()
+    data = {}
+    for q in datajson:
+        if q["queueType"] == queue:
+            data = {
+                "tier": q["tier"],
+                "division": q["rank"],
+                "lp": q["leaguePoints"]
+                }
+    if hasLP:
+        return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
+    else:
+        return (f"{data['tier'].capitalize()} {data['division']}")
 
 def getRankedData(s):
     if checkKeyInvalid():
