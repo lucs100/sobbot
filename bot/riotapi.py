@@ -225,6 +225,8 @@ def parseSpaces(s):
     return s.replace(" ", "%20") # used in urls
 
 def getSummonerData(s):
+    if isinstance(s, Summoner):
+        return s
     response = requests.get(
         (url + f"/lol/summoner/v4/summoners/by-name/{parseSpaces(s)}"),
         headers = headers
@@ -233,11 +235,6 @@ def getSummonerData(s):
     if response.status_code != 200:
         return None
     else: return Summoner(summonerData)
-
-def getESID(s): # encrypted summoner id
-    if checkKeyInvalid():
-        return False, False  # what
-    return getSummonerData(s)["id"]
 
 def getEAID(s): # encrypted summoner id
     if checkKeyInvalid():
@@ -280,6 +277,8 @@ def getRankedData(s):
     except:
         name = getNameAndLevel(s)["name"]
     return data, name
+
+getRankedData(s)
 
 def getMaxRank(list):
     rankSet = set()
