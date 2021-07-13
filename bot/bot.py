@@ -175,14 +175,13 @@ async def on_message(message):
 						if name == False:
 							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
 							return True
-					data = riotapi.getNameAndLevel(name)
+					data = riotapi.getSummonerData(name)
 					if data == False:
 						await message.channel.send("Key expired.")
 						return True
-					name, level = data["name"], data["level"]
-					await message.channel.send(f"Summoner **{name}** is level **{level}**.")
+					await message.channel.send(f"Summoner **{data.name}** is level **{data.level}**.")
 				except:
-					await message.channel.send(f"Summoner **{name}** doesn't exist.")
+					await message.channel.send(f"Summoner **{data.name}** doesn't exist.")
 					return True
 
 			if c.startswith("lolmastery"):

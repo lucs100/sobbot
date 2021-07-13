@@ -196,13 +196,13 @@ def checkKeyInvalid():
     )
     return not (response.status_code != 401 and response.status_code != 403) 
 
-async def updateAPIKey():
-    load_dotenv(override=True) # allows overriding envs from an updated .env file
-    global RIOTTOKEN
-    global headers
-    RIOTTOKEN = os.getenv('RIOTTOKEN')
-    headers = {"X-Riot-Token": RIOTTOKEN} # pushes update to global headers
-    return True
+# async def updateAPIKey():
+#     load_dotenv(override=True) # allows overriding envs from an updated .env file
+#     global RIOTTOKEN
+#     global headers
+#     RIOTTOKEN = os.getenv('RIOTTOKEN')
+#     headers = {"X-Riot-Token": RIOTTOKEN} # pushes update to global headers
+#     return True
 
 def updateUserData():
     with open('bot/resources/data/private/userdata.json', 'w') as fp: # updates .json of all user data
@@ -451,13 +451,14 @@ def editRegistration(id, name):
     return (summoner.name) # confirms with properly capitalized name
 
 def getMatchHistory(name, ranked=False):
+    summoner = getSummonerData(name)
     if checkKeyInvalid():
         return "key"
     rankedParam = ""
     if ranked:
         rankedParam = "?queue=420"
     data = requests.get(
-            (url + f"/lol/match/v4/matchlists/by-account/{getSummonerData(name).eaid}{rankedParam}"),
+            (url + f"/lol/match/v4/matchlists/by-account/{summoner.eaid}{rankedParam}"),
             headers = headers
         )
     if data.status_code == 400:
@@ -515,6 +516,7 @@ def didPlayerWin(summonerId, matchData):
                     return (matchData["teams"][0]["win"] == "Win")
                 return (matchData["teams"][1]["win"] == "Win")
     except KeyError:
+        print(matchData)
         print("RATE LIMIT EXCEEDED!")
         return "rate"
 
@@ -587,13 +589,13 @@ def getWinLossPerformanceTag(awr, stdwr, deltawr):
         "tag3":tag3
         }
 
-def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False, turboMode=True):
-    data = getSummonerData(summoner)
+def getWinLossTrend(summonerName, maxMatches=MatchLimit, ranked=False, turboMode=True):
+    data = getSummonerData(summonerName)
     if data == None:
         return "sum"
-    summoner = data["name"]
-    sID = data["id"]
-    matchList = getMatchHistory(summoner, ranked)[0:maxMatches]
+    summonerName = data.name
+    sID = data.esid
+    matchList = getMatchHistory(data, ranked)[0:maxMatches]
     if turboMode:
         bulkPullMatchData(matchList)
     w = 0
@@ -613,7 +615,7 @@ def getWinLossTrend(summoner, maxMatches=MatchLimit, ranked=False, turboMode=Tru
         m += value
     awr = (awr/m)
     g = w + l
-    return {"record":(w, l, g), "awr":awr, "name": summoner}
+    return {"record":(w, l, g), "awr":awr, "name": summonerName}
 
 async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=False):
     #make embed later #slow
