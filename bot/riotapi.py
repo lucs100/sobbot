@@ -214,6 +214,21 @@ def updateMatchBase():
         json.dump(pulledMatches, fp, indent=4)
     return True
 
+def cleanMatchBase():
+    print(f"Scanning {len(pulledMatches)}...   ", end="")
+    deleteList = []
+    for entry in pulledMatches:
+        if "gameId" not in pulledMatches[entry]:
+            print(f"Dead match found: {entry}")
+            deleteList.append(entry)
+    print("Done.")
+    for entry in deleteList:
+        pulledMatches.pop(entry)
+    updateMatchBase()
+    print(f"Clean matches: {len(pulledMatches)}")
+
+cleanMatchBase() # run this on startup to prune malformed matches!
+
 def addToMatchBase(match, matchId, autosave=True):
     if str(matchId) not in pulledMatches:
         pulledMatches[str(matchId)] = match
