@@ -278,8 +278,6 @@ def getRankedData(s):
         name = getNameAndLevel(s)["name"]
     return data, name
 
-getRankedData(s)
-
 def getMaxRank(list):
     rankSet = set()
     ranks = {
@@ -472,7 +470,7 @@ def getMatchHistory(name, ranked=False):
     if ranked:
         rankedParam = "?queue=420"
     data = requests.get(
-            (url + f"/lol/match/v4/matchlists/by-account/{getEAID(parseSpaces(name))}{rankedParam}"),
+            (url + f"/lol/match/v4/matchlists/by-account/{getSummonerData(name).eaid}{rankedParam}"),
             headers = headers
         )
     if data.status_code == 400:
