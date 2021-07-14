@@ -70,9 +70,9 @@ class LiveMatchParticipant():
         self.icon = data["profileIconId"]
         self.summonerName = data["summonerName"]
         self.customizationObjects = data["gameCustomizationObjects"]
-        self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
-        self.primaryRuneTree = data["perks"]["perkStyle"]
-        self.secondaryRuneTree = data["perks"]["perkSubStyle"]
+        # self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
+        # self.primaryRuneTree = data["perks"]["perkStyle"]
+        # self.secondaryRuneTree = data["perks"]["perkSubStyle"]
         #self.rank = getRank(self.summonerName) #todo
 
 class LiveMatchBan():
@@ -87,7 +87,7 @@ class LiveMatch():
         if not isinstance(targetSummoner, Summoner):
             targetSummoner = Summoner(targetSummoner)
         self.targetSummoner = targetSummoner
-        #self.gameMap = data["gameQueueConfigId"]
+        self.gameMode = getModeFromQueueID(data["gameQueueConfigId"])["description"]
         self.participants = {}
         for player in data["participants"]:
             if player["summonerName"] == self.targetSummoner.name:
@@ -98,7 +98,7 @@ class LiveMatch():
         for ban in data["bannedChampions"]:
             self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
         self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
-        self.elapsedTime = data["gameLength"]
+        self.elapsedTime = (datetime.now() - self.startTime).seconds
         self.spectatorKey = data["observers"]["encryptionKey"]
 
 class Summoner():
@@ -159,10 +159,13 @@ for user in users.values():
 
 
 def getModeFromQueueID(id):
-    for queue in queues:
-        if queue["queueId"] == id:
-            return {"map": queue["map"], "description": queue["description"]} 
-        
+    try:
+        for queue in queues:
+            if queue["queueId"] == id:
+                return {"map": queue["map"], "description": queue["description"]} 
+    except KeyError:
+        return {"map": "Queues file outdated!", "description": "Queues file outdated!"} 
+
 def getChampNameById(id):
     return champs[str(id)]
 
@@ -224,17 +227,14 @@ def updateMatchBase():
     return True
 
 def cleanMatchBase():
-    print(f"Scanning {len(pulledMatches)}...   ", end="")
     deleteList = []
     for entry in pulledMatches:
         if "gameId" not in pulledMatches[entry]:
             print(f"Dead match found: {entry}")
             deleteList.append(entry)
-    print("Done.")
     for entry in deleteList:
         pulledMatches.pop(entry)
     updateMatchBase()
-    print(f"Clean matches: {len(pulledMatches)}")
 
 cleanMatchBase() # run this on startup to prune malformed matches!
 
@@ -862,13 +862,13 @@ async def getLiveMatchEmbed(summoner, message):
     embed = discord.Embed(title=title, description=description)
     sentEmbed = await message.channel.send(embed=embed)
     if isinstance(summoner, str):
-        summoner = getSummonerData(summoner)
-        if summoner == None:
+        data = getSummonerData(summoner)
+        if data == None:
             embed.title = "Summoner not found"
             embed.description = f"Summoner {summoner} doesn't seem to exist."
-            sentEmbed.edit(embed=embed)
             await sentEmbed.edit(embed=embed)
             return False
+    summoner = data
     match = getLiveMatch(summoner)
     if isinstance(match, str):
         if match == "rate":
@@ -885,8 +885,22 @@ async def getLiveMatchEmbed(summoner, message):
     if match.targetPlayer.teamID == 100:
         embed.color = 0x3366cc    # blue
     else: embed.color = 0xff5050  # red
-    for player in range(0, 5):
-        text += f"{match.participants[player].champName}         {match.participants[player+4].champName}\n"
+    for team in range(0, 2):
+        for player in match.participants.values():
+            d = ""
+            targetName = match.targetPlayer.summonerName
+            if player.summonerName == targetName:
+                d = "**" 
+            if player.teamID == (team+1)*100:
+                text += f"{d}{player.summonerName}{d} - {player.champName}\n"
+        if team == 0:
+            text += "---------------------------------------\n"
     # embed.description = str(match)
     embed.description = text
+    title = ""
+    elapsed = match.elapsedTime
+    print(elapsed)
+    m, s = divmod(elapsed, 60)
+    title += f"Live Match - {m}:{s} elapsed - {match.gameMode}"
+    embed.title = title
     await sentEmbed.edit(embed=embed)
