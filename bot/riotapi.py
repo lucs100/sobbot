@@ -122,23 +122,28 @@ class Summoner():
 with open('bot/resources/data/champs.json') as f:
     data = json.loads(f.read()) # unpacking data
     champs = data
+    f.close()
 
 with open('bot/resources/data/queues.json') as f:
     data = json.loads(f.read()) # unpacking data
     queues = data
+    f.close()
 
 with open('bot/resources/data/private/userdata.json') as f:
     data = json.loads(f.read()) # unpacking data
     users = data
+    f.close()
 
 with open('bot/resources/data/runesReforged.json') as f:
     data = json.loads(f.read()) # unpacking data
     runes = data
+    f.close()
 
 with open('bot/resources/data/summoner.json') as f:
     data = json.loads(f.read()) # unpacking data
     for summ in data:
         summSpells[int(data[summ]["key"])] = SummSpell(data[summ])
+    f.close()
 
 with open('bot/resources/data/private/matchdata.json') as f:
     try:
@@ -147,6 +152,7 @@ with open('bot/resources/data/private/matchdata.json') as f:
         pulledMatches = data
     except:
         print("Failure loading matchdata.json. File may be corrupt.")
+    f.close()
 
 for user in users.values():
     try:
@@ -221,10 +227,22 @@ def updateUserData():
         json.dump(users, fp, indent=4)
     return True
 
-def updateMatchBase():
-    with open('bot/resources/data/private/matchdata.json', 'w') as fp: # updates .json of all user data
-        json.dump(pulledMatches, fp, indent=4)
-    return True
+def updateMatchBase(force=False):
+    def push():
+        with open('bot/resources/data/private/matchdata.json', 'w') as fp: # updates .json of all user data
+            json.dump(pulledMatches, fp, indent=4)
+        return True
+
+    if force:
+        return push()
+    with open('bot/resources/data/private/matchdata.json') as f:
+            oldLen = len(json.loads(f.read())) # unpacking data
+    f.close()
+    if len(pulledMatches) > oldLen:
+        push()
+    else:
+        print("Attempted to save corrupt matchbase! Matchbase not saved.")
+        return False
 
 def cleanMatchBase():
     deleteList = []
@@ -234,7 +252,7 @@ def cleanMatchBase():
             deleteList.append(entry)
     for entry in deleteList:
         pulledMatches.pop(entry)
-    updateMatchBase()
+    updateMatchBase(force=True)
 
 cleanMatchBase() # run this on startup to prune malformed matches!
 
