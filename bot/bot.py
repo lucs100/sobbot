@@ -347,6 +347,16 @@ async def on_message(message):
 				# if isinstance(response, str):
 				if response in codes:
 					await message.channel.send(codes[response])
+			
+			if c.startswith("livematch"):
+				summoner = c[9:].strip()
+				if summoner == "":
+					summoner = riotapi.isUserRegistered(message.author.id)
+					if summoner == False:
+						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+						return True
+				response = await riotapi.getLiveMatchEmbed(summoner, message)
+				return True
 				
 
 			# Currency Functions

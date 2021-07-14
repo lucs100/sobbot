@@ -881,4 +881,12 @@ async def getLiveMatchEmbed(summoner, message):
             embed.description = f"Summoner {summoner.name} isn't in a match right now!"
             await sentEmbed.edit(embed=embed)
             return False
+    text = ""
+    if match.targetPlayer.teamID == 100:
+        embed.color = 0x3366cc    # blue
+    else: embed.color = 0xff5050  # red
+    for player in range(0, 5):
+        text += f"{match.participants[player].champName}         {match.participants[player+4].champName}\n"
+    # embed.description = str(match)
+    embed.description = text
     await sentEmbed.edit(embed=embed)
