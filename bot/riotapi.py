@@ -33,7 +33,7 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-MatchLimit = 25
+MatchLimit = 80
 
 
 # Class Declarations
@@ -235,6 +235,7 @@ def updateMatchBase(force=False):
 
     if force:
         return push()
+    
     with open('bot/resources/data/private/matchdata.json') as f:
             oldLen = len(json.loads(f.read())) # unpacking data
     f.close()
@@ -252,7 +253,7 @@ def cleanMatchBase():
             deleteList.append(entry)
     for entry in deleteList:
         pulledMatches.pop(entry)
-    updateMatchBase()
+    updateMatchBase(force=True)
 
 cleanMatchBase() # run this on startup to prune malformed matches!
 
@@ -302,10 +303,12 @@ def getRank(summoner, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with de
                 "division": q["rank"],
                 "lp": q["leaguePoints"]
                 }
-    if hasLP:
-        return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
-    else:
-        return (f"{data['tier'].capitalize()} {data['division']}")
+    if data != {}:
+        if hasLP:
+            return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
+        else:
+            return (f"{data['tier'].capitalize()} {data['division']}")
+    else: return "Unranked"
 
 def getRankedData(s):
     if checkKeyInvalid():
@@ -552,7 +555,6 @@ def getMatchInfo(match, autosave=True):
         gameID = match.gameID
     if str(gameID) in pulledMatches:
         return pulledMatches[str(gameID)]
-    print("Attempting match pull...")
     data = requests.get(
             (url + f"/lol/match/v4/matches/{gameID}"),
             headers = headers
