@@ -73,7 +73,7 @@ class LiveMatchParticipant():
         self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
         self.primaryRuneTree = data["perks"]["perkStyle"]
         self.secondaryRuneTree = data["perks"]["perkSubStyle"]
-        self.rank = getRank(self.summonerName) #todo
+        #self.rank = getRank(self.summonerName) #todo
 
 class LiveMatchBan():
     def __init__(self, data):
@@ -87,9 +87,11 @@ class LiveMatch():
         if not isinstance(targetSummoner, Summoner):
             targetSummoner = Summoner(targetSummoner)
         self.targetSummoner = targetSummoner
-        self.gameMap = data["gameQueueConfigId"]
+        #self.gameMap = data["gameQueueConfigId"]
         self.participants = {}
         for player in data["participants"]:
+            if player["summonerName"] == self.targetSummoner.name:
+                self.targetPlayer = LiveMatchParticipant(player)
             self.participants[data["participants"].index(player)] = LiveMatchParticipant(player)
         self.gameID = data["gameId"]
         self.bans = {}
@@ -850,12 +852,33 @@ def getLiveMatch(summoner):
         )
     if data.status_code == 409:
         return "rate"
-    elif data.status_code == 409:
+    elif data.status_code == 404:
         return "no"
     else: return LiveMatch(data.json(), summoner)
 
-def getLiveMatchEmbed(summoner):
+async def getLiveMatchEmbed(summoner, message):
+    title = "Requesting match data..."
+    description = "Hang tight!"
+    embed = discord.Embed(title=title, description=description)
+    sentEmbed = await message.channel.send(embed=embed)
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
+        if summoner == None:
+            embed.title = "Summoner not found"
+            embed.description = f"Summoner {summoner} doesn't seem to exist."
+            sentEmbed.edit(embed=embed)
+            await sentEmbed.edit(embed=embed)
+            return False
     match = getLiveMatch(summoner)
-    print(match.spectatorKey)
+    if isinstance(match, str):
+        if match == "rate":
+            embed.title = "Rate limit exceeded!"
+            embed.description = "<@!312012475761688578> Sobbot will now exit."
+            await sentEmbed.edit(embed=embed)
+            return False
+        elif match == "no":
+            embed.title = "Match not found"
+            embed.description = f"Summoner {summoner.name} isn't in a match right now!"
+            await sentEmbed.edit(embed=embed)
+            return False
+    await sentEmbed.edit(embed=embed)
