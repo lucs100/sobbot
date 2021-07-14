@@ -73,7 +73,7 @@ class LiveMatchParticipant():
         # self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
         # self.primaryRuneTree = data["perks"]["perkStyle"]
         # self.secondaryRuneTree = data["perks"]["perkSubStyle"]
-        #self.rank = getRank(self.summonerName) #todo
+        # self.rank = getRank(self.summonerName) #todo
 
 class LiveMatchBan():
     def __init__(self, data):
@@ -85,7 +85,7 @@ class LiveMatchBan():
 class LiveMatch():
     def __init__(self, data, targetSummoner):
         if not isinstance(targetSummoner, Summoner):
-            targetSummoner = Summoner(targetSummoner)
+            targetSummoner = getSummonerData(targetSummoner)
         self.targetSummoner = targetSummoner
         self.gameMode = getModeFromQueueID(data["gameQueueConfigId"])["description"]
         self.participants = {}
@@ -104,7 +104,7 @@ class LiveMatch():
 class Summoner():
     def __init__(self, data):
         if isinstance(data, str):
-            data = getSummonerData(data)
+            self = getSummonerData(data)
         self.eaid = data["accountId"]
         self.esid = data["id"]
         self.puuid = data["puuid"]
@@ -112,8 +112,9 @@ class Summoner():
         self.icon = data["profileIconId"]
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
-        self.rank = None
-        self.rank = getRank(self.esid)
+        # self.rank = getRank(self.esid)
+    def getRank(self):
+        return getRank(self.esid)
 
 
 # File Imports / Setup
@@ -176,22 +177,22 @@ def getChampNameById(id):
     return champs[str(id)]
 
 def getChampIdByName(q):
-    for k in champs:
-        n = data[k].lower()
+    for id, n in champs.items():
+        n = n.lower()
         if n == q.lower(): # quick and dirty algorithm to search for champ id by name
-            return k
+            return id
         elif n.replace('\'', " ") == q.lower():
-            return k
+            return id
         elif n.replace('.', " ") == q.lower():
-            return k
+            return id
         elif n.replace('\'', "") == q.lower():
-            return k
+            return id
         elif n.replace('.', "") == q.lower():
-            return k
+            return id
         elif n.replace(' ', "") == q.lower():
-            return k
+            return id
         elif q.lower() in n.lower():
-            return k
+            return id
     return -1 # returns -1 if no match
 
 def getRole(role, lane):
@@ -297,12 +298,15 @@ def getRank(summoner, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with de
     datajson = response.json()
     data = {}
     for q in datajson:
-        if q["queueType"] == queue:
-            data = {
-                "tier": q["tier"],
-                "division": q["rank"],
-                "lp": q["leaguePoints"]
-                }
+        try:
+            if q["queueType"] == queue:
+                data = {
+                    "tier": q["tier"],
+                    "division": q["rank"],
+                    "lp": q["leaguePoints"]
+                    }
+        except TypeError:
+            print(q)
     if data != {}:
         if hasLP:
             return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
@@ -461,6 +465,25 @@ def embedRankedData(s):
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
+
+def getSingleMastery(summoner, champ):
+    if isinstance(summoner, str):
+        summoner = getSummonerData(summoner)
+    if not isinstance(champ, int):
+        try: champ = int(champ)
+        except ValueError:
+            try: 
+                champ = getChampIdByName(str(champ))
+                if champ == -1:
+                    return None
+            except: return None
+    response = requests.get(
+            (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{summoner.esid}/by-champion/{champ}"),
+            headers = headers
+        )
+    if response.status_code == 404:
+        return None
+    return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
     
 def getTopMasteries(s):
     if checkKeyInvalid():
@@ -905,23 +928,42 @@ async def getLiveMatchEmbed(summoner, message):
     if match.targetPlayer.teamID == 100:
         embed.color = 0x3366cc    # blue
     else: embed.color = 0xff5050  # red
+    embed.title = "Populating data..."
     text += "`Blue Team`\n"
+    embed.description = text
     for team in range(0, 2):
         for player in match.participants.values():
             d = ""
+            masteryStr = ""
+            level, points = 0, 0
             targetName = match.targetPlayer.summonerName
+            champData = (getSingleMastery(player.summonerName, player.champID))
+            if champData != None:
+                level, points = champData["level"], champData["points"]
+                msDec = ""
+                if level >= 3:
+                    if points >= 50000:
+                        msDec = "*"
+                    if points >= 200000:
+                        msDec = "**"
+                    if points >= 500000:
+                        msDec = "***"
+                    if points >= 1000000:
+                        msDec = "`"
+                    masteryStr = f" - {msDec}(M{level} / {points:,}){msDec}"
             if player.summonerName == targetName:
                 d = "**" 
             if player.teamID == (team+1)*100:
-                text += f"{d}{player.summonerName}{d} - {player.champName}\n"
+                text += f"{d}{player.summonerName}{d} - {player.champName}{masteryStr}\n"
+            embed.description = text
+            await sentEmbed.edit(embed=embed)
         if team == 0:
             text += "\n`Red Team`\n"
     # embed.description = str(match)
     embed.description = text
     title = ""
     elapsed = match.elapsedTime
-    print(elapsed)
     m, s = divmod(elapsed, 60)
-    title += f"Live Match - {m}:{s} elapsed - {match.gameMode}"
+    title += f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
     embed.title = title
     await sentEmbed.edit(embed=embed)
