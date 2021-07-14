@@ -113,8 +113,32 @@ class Summoner():
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
         # self.rank = getRank(self.esid)
-    def getRank(self):
-        return getRank(self.esid)
+    def getRank(self, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+        try:
+            response = requests.get(
+                (url + f"/lol/league/v4/entries/by-summoner/{self.esid}"),
+                headers = headers
+            )
+        except:
+            return "Summoner not found"
+        datajson = response.json()
+        data = {}
+        for q in datajson:
+            try:
+                if q["queueType"] == queue:
+                    data = {
+                        "tier": q["tier"],
+                        "division": q["rank"],
+                        "lp": q["leaguePoints"]
+                        }
+            except TypeError:
+                print(q)
+        if data != {}:
+            if hasLP:
+                return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
+            else:
+                return (f"{data['tier'].capitalize()} {data['division']}")
+        else: return "Unranked"
 
 
 # File Imports / Setup
@@ -279,40 +303,6 @@ def getSummonerData(s):
     if response.status_code != 200:
         return None
     else: return Summoner(summonerData)
-
-def getRank(summoner, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
-    if isinstance(summoner, str):
-        if len(summoner) > 16:
-            id = summoner
-        else:
-            id = getSummonerData(summoner).esid
-    elif isinstance(summoner, Summoner):
-        id = summoner.esid
-    try:
-        response = requests.get(
-            (url + f"/lol/league/v4/entries/by-summoner/{id}"),
-            headers = headers
-        )
-    except:
-        return False
-    datajson = response.json()
-    data = {}
-    for q in datajson:
-        try:
-            if q["queueType"] == queue:
-                data = {
-                    "tier": q["tier"],
-                    "division": q["rank"],
-                    "lp": q["leaguePoints"]
-                    }
-        except TypeError:
-            print(q)
-    if data != {}:
-        if hasLP:
-            return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
-        else:
-            return (f"{data['tier'].capitalize()} {data['division']}")
-    else: return "Unranked"
 
 def getRankedData(s):
     if checkKeyInvalid():
