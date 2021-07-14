@@ -112,7 +112,7 @@ class Summoner():
         self.icon = data["profileIconId"]
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
-        # self.rank = getRank(self.esid)
+
     def getRank(self, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
         try:
             response = requests.get(
@@ -139,6 +139,23 @@ class Summoner():
             else:
                 return (f"{data['tier'].capitalize()} {data['division']}")
         else: return "Unranked"
+    
+    def getSingleMastery(self, champ):
+        if not isinstance(champ, int):
+            try: champ = int(champ)
+            except ValueError:
+                try: 
+                    champ = getChampIdByName(str(champ))
+                    if champ == -1:
+                        return None
+                except: return None
+        response = requests.get(
+                (url + f"/lol/champion-mastery/v4/champion-masteries/by-summoner/{self.esid}/by-champion/{champ}"),
+                headers = headers
+            )
+        if response.status_code == 404:
+            return None
+        return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
 
 
 # File Imports / Setup
@@ -456,7 +473,7 @@ def embedRankedData(s):
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
 
-def getSingleMastery(summoner, champ):
+def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
     if not isinstance(champ, int):
@@ -927,7 +944,7 @@ async def getLiveMatchEmbed(summoner, message):
             masteryStr = ""
             level, points = 0, 0
             targetName = match.targetPlayer.summonerName
-            champData = (getSingleMastery(player.summonerName, player.champID))
+            champData = (anonGetSingleMastery(player.summonerName, player.champID))
             if champData != None:
                 level, points = champData["level"], champData["points"]
                 msDec = ""
