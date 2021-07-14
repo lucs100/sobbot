@@ -238,7 +238,7 @@ def updateMatchBase(force=False):
     with open('bot/resources/data/private/matchdata.json') as f:
             oldLen = len(json.loads(f.read())) # unpacking data
     f.close()
-    if len(pulledMatches) > oldLen:
+    if len(pulledMatches) >= oldLen:
         push()
     else:
         print("Attempted to save corrupt matchbase! Matchbase not saved.")
@@ -252,7 +252,7 @@ def cleanMatchBase():
             deleteList.append(entry)
     for entry in deleteList:
         pulledMatches.pop(entry)
-    updateMatchBase(force=True)
+    updateMatchBase()
 
 cleanMatchBase() # run this on startup to prune malformed matches!
 
@@ -903,6 +903,7 @@ async def getLiveMatchEmbed(summoner, message):
     if match.targetPlayer.teamID == 100:
         embed.color = 0x3366cc    # blue
     else: embed.color = 0xff5050  # red
+    text += "`Blue Team`\n"
     for team in range(0, 2):
         for player in match.participants.values():
             d = ""
@@ -912,7 +913,7 @@ async def getLiveMatchEmbed(summoner, message):
             if player.teamID == (team+1)*100:
                 text += f"{d}{player.summonerName}{d} - {player.champName}\n"
         if team == 0:
-            text += "---------------------------------------\n"
+            text += "\n`Red Team`\n"
     # embed.description = str(match)
     embed.description = text
     title = ""
