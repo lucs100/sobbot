@@ -490,6 +490,8 @@ def anonGetSingleMastery(summoner, champ):
         )
     if response.status_code == 404:
         return None
+    if response.status_code == 409:
+        return None #rate limit
     return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
     
 def getTopMasteries(s):
@@ -907,6 +909,35 @@ def getLiveMatch(summoner):
     else: return LiveMatch(data.json(), summoner)
 
 async def getLiveMatchEmbed(summoner, message):
+
+    class PlayerString():
+        def __init__(self, data, team):
+            self.dataString = data
+            self.team = team
+
+    def parseLiveMatchPlayerString(player):
+        d = ""
+        masteryStr = ""
+        level, points = 0, 0
+        targetName = match.targetPlayer.summonerName
+        champData = (anonGetSingleMastery(player.summonerName, player.champID))
+        if champData != None:
+            level, points = champData["level"], champData["points"]
+            msDec = ""
+            if level >= 3:
+                if points >= 50000:
+                    msDec = "*"
+                if points >= 200000:
+                    msDec = "**"
+                if points >= 500000:
+                    msDec = "***"
+                if points >= 1000000:
+                    msDec = "`"
+                masteryStr = f" - {msDec}(M{level} / {points:,}){msDec}"
+        if player.summonerName == targetName:
+            d = "**" 
+        return PlayerString(data=f"{d}{player.summonerName}{d} - {player.champName}{masteryStr}\n", team=player.teamID)
+        
     title = "Requesting match data..."
     description = "Hang tight!"
     embed = discord.Embed(title=title, description=description)
@@ -939,31 +970,14 @@ async def getLiveMatchEmbed(summoner, message):
     text += "`Blue Team`\n"
     embed.description = text
     for team in range(0, 2):
-        for player in match.participants.values():
-            d = ""
-            masteryStr = ""
-            level, points = 0, 0
-            targetName = match.targetPlayer.summonerName
-            champData = (anonGetSingleMastery(player.summonerName, player.champID))
-            if champData != None:
-                level, points = champData["level"], champData["points"]
-                msDec = ""
-                if level >= 3:
-                    if points >= 50000:
-                        msDec = "*"
-                    if points >= 200000:
-                        msDec = "**"
-                    if points >= 500000:
-                        msDec = "***"
-                    if points >= 1000000:
-                        msDec = "`"
-                    masteryStr = f" - {msDec}(M{level} / {points:,}){msDec}"
-            if player.summonerName == targetName:
-                d = "**" 
-            if player.teamID == (team+1)*100:
-                text += f"{d}{player.summonerName}{d} - {player.champName}{masteryStr}\n"
-            embed.description = text
-            await sentEmbed.edit(embed=embed)
+        res = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
+        for playerString in res:
+            if playerString.team == (team+1)*100: # if result on team:
+                text += playerString.dataString   # print player result
+        embed.description = text
+        await sentEmbed.edit(embed=embed)
         if team == 0:
             text += "\n`Red Team`\n"
     # embed.description = str(match)
