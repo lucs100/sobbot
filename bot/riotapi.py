@@ -122,6 +122,8 @@ class Summoner():
             )
         except:
             return "Summoner not found"
+        if response.status_code == 409:
+            return "rate"
         datajson = response.json()
         data = {}
         for q in datajson:
@@ -134,8 +136,8 @@ class Summoner():
                         }
             except TypeError:
                 if q == "status":
-                    pass
-                # rate limit
+                    print(f"TypeError caught in Summoner.getRank() - {datajson}")
+                    return None
         if data != {}:
             if hasLP:
                 return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
@@ -923,6 +925,13 @@ async def getLiveMatchEmbed(summoner, message):
             self.dataString = data
             self.team = team
 
+    async def rateCancel():
+        embed.title = "Rate limit exceeded!"
+        embed.description = "<@!312012475761688578> Too many workers/requests."
+        embed.colo = 0x840029
+        await sentEmbed.edit(embed=embed)
+        return False
+
     def parseLiveMatchPlayerString(player):
         d = ""
         masteryStr = ""
@@ -931,7 +940,9 @@ async def getLiveMatchEmbed(summoner, message):
         targetName = match.targetPlayer.summonerName
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         if champData != None:
-            rankStr += (getSummonerData(player.summonerName).getRank())
+            rankStrAddition = (getSummonerData(player.summonerName).getRank())
+            if rankStrAddition == "rate":
+                rateCancel()
             level, points = champData["level"], champData["points"]
             msDec = ""
             if level >= 3:
@@ -945,7 +956,7 @@ async def getLiveMatchEmbed(summoner, message):
                     msDec = "`"
                 masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
         else:
-            return None
+            rateCancel()
         if player.summonerName == targetName:
             d = "**"
         return PlayerString(data=f"{d}{player.summonerName}{d}  -  {player.champName}{masteryStr} {rankStr}\n", team=player.teamID)
@@ -983,15 +994,13 @@ async def getLiveMatchEmbed(summoner, message):
     embed.description = text
     for team in range(0, 2):
         res = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor: #testing rate limit!
             res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
         for playerString in res:
-            if playerString == None:
-                embed.title = "Rate limit exceeded!"
-                embed.description = "<@!312012475761688578>"
-                await sentEmbed.edit(embed=embed)
+            if playerString == "rate":
+                rateCancel()
                 return False
-            if playerString.team == (team+1)*100: # if result on team:
+            elif playerString.team == (team+1)*100: # if result on team:
                 text += playerString.dataString   # print player result
         embed.description = text
         await sentEmbed.edit(embed=embed)
@@ -1005,3 +1014,4 @@ async def getLiveMatchEmbed(summoner, message):
     title += f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
     embed.title = title
     await sentEmbed.edit(embed=embed)
+    return True
