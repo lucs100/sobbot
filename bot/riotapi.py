@@ -928,6 +928,8 @@ def getLiveMatch(summoner):
 
 async def getLiveMatchEmbed(summoner, message):
 
+    start = datetime.now()
+
     class PlayerString():
         def __init__(self, data, team):
             self.dataString = data
@@ -936,6 +938,7 @@ async def getLiveMatchEmbed(summoner, message):
     async def rateCancel():
         embed.title = "Rate limit exceeded!"
         embed.description = "<@!312012475761688578> Too many workers/requests."
+        embed.set_footer(text = "FAILED")
         embed.color = 0x840029
         await sentEmbed.edit(embed=embed)
         return False
@@ -1016,7 +1019,8 @@ async def getLiveMatchEmbed(summoner, message):
     embed.description = text
     for team in range(0, 2):
         res = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor: #testing rate limit!
+        WorkerCount = 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=WorkerCount) as executor: #testing rate limit!
             res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
         for playerString in res:
             if playerString == "rate":
@@ -1035,5 +1039,13 @@ async def getLiveMatchEmbed(summoner, message):
     m, s = divmod(elapsed, 60)
     title += f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
     embed.title = title
+    #testing START
+    timeTaken = datetime.now() - start
+    footerText = (
+        f"workers: {WorkerCount} " +
+        f"~ time: {timeTaken} secs " +
+        f"~ efficiency: {timeTaken/WorkerCount}")
+    embed.set_footer(text=footerText) #test workers by incrementing
+    #testing END
     await sentEmbed.edit(embed=embed)
     return True
