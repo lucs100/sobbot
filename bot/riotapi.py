@@ -10,6 +10,7 @@
 
 from random import Random
 from sys import prefix
+from discord import player
 from dotenv import load_dotenv
 import requests, os, json, discord
 from datetime import datetime
@@ -132,7 +133,9 @@ class Summoner():
                         "lp": q["leaguePoints"]
                         }
             except TypeError:
-                print(q)
+                if q == "status":
+                    pass
+                # rate limit
         if data != {}:
             if hasLP:
                 return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
@@ -476,6 +479,8 @@ def embedRankedData(s):
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
+    if summoner == None:
+        return None
     if not isinstance(champ, int):
         try: champ = int(champ)
         except ValueError:
@@ -490,9 +495,12 @@ def anonGetSingleMastery(summoner, champ):
         )
     if response.status_code == 404:
         return None
-    if response.status_code == 409:
-        return None #rate limit
-    return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
+    # elif response.status_code == 409:
+    #     return None #rate limit
+    try:
+        return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
+    except KeyError:
+        return {"level": 0, "points": 0}
     
 def getTopMasteries(s):
     if checkKeyInvalid():
@@ -632,7 +640,7 @@ def bulkPullMatchData(matchList, max=MatchLimit):
             pullList.append(match)
     if len(pullList) > max:
         pullList = pullList[0:max]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         res = [executor.submit(getMatchInfo, game.gameID, autosave=False) for game in pullList]
         concurrent.futures.wait(res)
     updateMatchBase()
@@ -918,10 +926,12 @@ async def getLiveMatchEmbed(summoner, message):
     def parseLiveMatchPlayerString(player):
         d = ""
         masteryStr = ""
+        rankStr = " - "
         level, points = 0, 0
         targetName = match.targetPlayer.summonerName
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         if champData != None:
+            rankStr += (getSummonerData(player.summonerName).getRank())
             level, points = champData["level"], champData["points"]
             msDec = ""
             if level >= 3:
@@ -933,10 +943,12 @@ async def getLiveMatchEmbed(summoner, message):
                     msDec = "***"
                 if points >= 1000000:
                     msDec = "`"
-                masteryStr = f" - {msDec}(M{level} / {points:,}){msDec}"
+                masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
+        else:
+            return None
         if player.summonerName == targetName:
-            d = "**" 
-        return PlayerString(data=f"{d}{player.summonerName}{d} - {player.champName}{masteryStr}\n", team=player.teamID)
+            d = "**"
+        return PlayerString(data=f"{d}{player.summonerName}{d}  -  {player.champName}{masteryStr} {rankStr}\n", team=player.teamID)
         
     title = "Requesting match data..."
     description = "Hang tight!"
@@ -974,6 +986,11 @@ async def getLiveMatchEmbed(summoner, message):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
         for playerString in res:
+            if playerString == None:
+                embed.title = "Rate limit exceeded!"
+                embed.description = "<@!312012475761688578>"
+                await sentEmbed.edit(embed=embed)
+                return False
             if playerString.team == (team+1)*100: # if result on team:
                 text += playerString.dataString   # print player result
         embed.description = text
