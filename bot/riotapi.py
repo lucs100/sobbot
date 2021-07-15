@@ -259,7 +259,7 @@ def checkKeyInvalid():
         (url + f"/lol/status/v4/platform-data"), # quick response to see if both key ok and api ok
         headers = headers
     )
-    return not (response.status_code != 401 and response.status_code != 403) 
+    return not (response.status_code != 401 and response.status_code != 403)
 
 # async def updateAPIKey():
 #     load_dotenv(override=True) # allows overriding envs from an updated .env file
@@ -580,8 +580,11 @@ def getMatchHistory(name, ranked=False):
     if data.status_code == 400:
         return "sum"
     matchList = []
-    for matches in data.json()["matches"]:
-        matchList.append(MatchKey(matches))
+    try:
+        for matches in data.json()["matches"]:
+            matchList.append(MatchKey(matches))
+    except KeyError:
+        pass
     return matchList
 
 def getLastMatch(name, ranked=False):
@@ -786,7 +789,7 @@ def timeSinceLastMatch(name, ranked=False):
         return "key"
     try:
         name = getSummonerData(name).name
-    except KeyError:
+    except AttributeError:
         return "sum"
     codes = ["key", "sum", "none"]
     now = datetime.now()
