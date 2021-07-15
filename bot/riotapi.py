@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 import requests, os, json, discord
 from datetime import datetime
 import concurrent
+import warnings
 from time import sleep
 
 load_dotenv()
@@ -122,7 +123,7 @@ class Summoner():
             )
         except:
             return "Summoner not found"
-        if response.status_code == 409:
+        if response.status_code == 429:
             return "rate"
         datajson = response.json()
         data = {}
@@ -323,6 +324,10 @@ def getSummonerData(s):
     )
     summonerData = response.json()
     if response.status_code != 200:
+        if response.status_code == 429:
+            print("Rate limit exceeded in getSummonerData()")
+            return "rate"
+        print(f"Uncaught error code in getSummonerData - {response.status_code}")
         return None
     else: return Summoner(summonerData)
 
@@ -497,7 +502,7 @@ def anonGetSingleMastery(summoner, champ):
         )
     if response.status_code == 404:
         return None
-    # elif response.status_code == 409:
+    # elif response.status_code == 429:
     #     return None #rate limit
     try:
         return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
@@ -915,7 +920,7 @@ def getLiveMatch(summoner):
             (url + f"/lol/spectator/v4/active-games/by-summoner/{summoner.esid}"),
             headers = headers
         )
-    if data.status_code == 409:
+    if data.status_code == 429:
         return "rate"
     elif data.status_code == 404:
         return "no"
@@ -931,21 +936,32 @@ async def getLiveMatchEmbed(summoner, message):
     async def rateCancel():
         embed.title = "Rate limit exceeded!"
         embed.description = "<@!312012475761688578> Too many workers/requests."
-        embed.colo = 0x840029
+        embed.color = 0x840029
         await sentEmbed.edit(embed=embed)
         return False
 
     def parseLiveMatchPlayerString(player):
         d = ""
         masteryStr = ""
-        rankStr = " - "
+        rankStr = ""
         level, points = 0, 0
         targetName = match.targetPlayer.summonerName
+        summoner = getSummonerData(player.summonerName)
+        if summoner == "rate":
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore") #can't properly await rateCancel() because of executor, so it's okay to bypass the warning
+                rateCancel()
+            return "rate"
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         if champData != None:
-            rankStrAddition = (getSummonerData(player.summonerName).getRank())
+            rankStrAddition = (summoner.getRank())
             if rankStrAddition == "rate":
-                rateCancel()
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    rateCancel()
+                return "rate"
+            else:
+                rankStr = f" - {rankStrAddition}"
             level, points = champData["level"], champData["points"]
             msDec = ""
             if level >= 3:
@@ -959,7 +975,10 @@ async def getLiveMatchEmbed(summoner, message):
                     msDec = "`"
                 masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
         else:
-            rateCancel()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                rateCancel()
+            return "rate"
         if player.summonerName == targetName:
             d = "**"
         return PlayerString(data=f"{d}{player.summonerName}{d}  -  {player.champName}{masteryStr} {rankStr}\n", team=player.teamID)
@@ -997,11 +1016,11 @@ async def getLiveMatchEmbed(summoner, message):
     embed.description = text
     for team in range(0, 2):
         res = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor: #testing rate limit!
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor: #testing rate limit!
             res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
         for playerString in res:
             if playerString == "rate":
-                rateCancel()
+                await rateCancel()
                 return False
             elif playerString.team == (team+1)*100: # if result on team:
                 text += playerString.dataString   # print player result
