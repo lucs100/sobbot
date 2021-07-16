@@ -8,14 +8,9 @@
 # Library Imports and Other Formalities
 
 
-from random import Random
-from discord import player
+import requests, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
-import requests, os, json, discord
 from datetime import datetime
-import concurrent
-import warnings
-from time import sleep
 from admin import getGuildPrefix
 
 load_dotenv()
