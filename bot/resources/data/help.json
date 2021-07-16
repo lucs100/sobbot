@@ -1,138 +1,153 @@
 {
-    "lol": {
-        "title": "LoL",
-        "desc": "Commands for League of Legends",
-        "emoji": "regional_indicator_l",
-        "header": "If your account is registered, you can use these commands without appending a summoner name to have them trigger on your own summoner name.",
-        "commands": [
-            {
-                "usage": "lolregister `your summoner name`",
-                "description": "*Registers* your summoner name to your Discord ID."
-            },
-            {
-                "usage": "lollevel `summoner`",
-                "description": "Returns a summoner's account level."
-            },
-            {
-                "usage": "lolmastery `summoner`",
-                "description": "Returns a summoner's top three mastery champions."
-            },
-            {
-                "usage": "lolrank `summoner`",
-                "description": "Returns data on a summoner's ladder rankings."
-            },
-            {
-                "usage": "lastmatch `summoner`",
-                "description": "Returns the time elapsed since a summoner's last match."
-            },
-            {
-                "usage": "lastrmatch `summoner`",
-                "description": "Returns the time elapsed since a summoner's last ranked match."
-            },
-            {
-                "usage": "lolrole `summoner`",
-                "description": "Returns data on a summoner's role preference."
-            },
-            {
-                "usage": "lolrrole `summoner`",
-                "description": "Returns data on a summoner's role preference in ranked play."
-            },
-            {
-                "usage": "lolwr `summoner`",
-                "description": "Returns data on a summoner's winrate."
-            },
-            {
-                "usage": "lolrwr `summoner`",
-                "description": "Returns data on a summoner's ranked winrate."
-            }
-        ]
+    "subdirectories": {
+        "lol": {
+            "title": "LoL",
+            "desc": "Commands for League of Legends",
+            "emoji": "regional_indicator_l",
+            "header": "If your account is registered, you can use these commands without appending a summoner name to have them trigger on your own summoner name.",
+            "commands": [
+                {
+                    "usage": "lolregister `your summoner name`",
+                    "description": "*Registers* your summoner name to your Discord ID."
+                },
+                {
+                    "usage": "lollevel `summoner`",
+                    "description": "Returns a summoner's account level."
+                },
+                {
+                    "usage": "lolmastery `summoner`",
+                    "description": "Returns a summoner's top three mastery champions."
+                },
+                {
+                    "usage": "lolrank `summoner`",
+                    "description": "Returns data on a summoner's ladder rankings."
+                },
+                {
+                    "usage": "lastmatch `summoner`",
+                    "description": "Returns the time elapsed since a summoner's last match."
+                },
+                {
+                    "usage": "lastrmatch `summoner`",
+                    "description": "Returns the time elapsed since a summoner's last ranked match."
+                },
+                {
+                    "usage": "lolrole `summoner`",
+                    "description": "Returns data on a summoner's role preference."
+                },
+                {
+                    "usage": "lolrrole `summoner`",
+                    "description": "Returns data on a summoner's role preference in ranked play."
+                },
+                {
+                    "usage": "lolwr `summoner`",
+                    "description": "Returns data on a summoner's winrate."
+                },
+                {
+                    "usage": "lolrwr `summoner`",
+                    "description": "Returns data on a summoner's ranked winrate."
+                },
+                {
+                    "usage": "livematch `summoner`",
+                    "description": "Returns teams and masteries in a live match."
+                },
+                {
+                    "usage": "livematchr `summoner`",
+                    "description": "Returns teams, masteries, and ranks in a live match."
+                }
+            ]
+        },
+        "admin": {
+            "title": "Admin Functions",
+            "desc": "Change Sobbot's server settings",
+            "emoji": "gear",
+            "header": "These commands require certain permissions. Administrator permissions give access to ALL admin commands.",
+            "commands": [
+                {
+                    "usage": "prefix `new prefix`",
+                    "description": "Changes Sobbot's server prefix."
+                },
+                {
+                    "usage": "prefix `(blank)`",
+                    "description": "Resets Sobbot's server prefix."
+                }
+            ]
+        },
+        "misc": {
+            "title": "Miscellaneous Functions",
+            "desc": "Fun functions :D",
+            "emoji": "tada",
+            "header": "",
+            "commands": [
+                {
+                    "usage": "flipcoin",
+                    "description": "Flips a coin."
+                },
+                {
+                    "usage": "d`number`",
+                    "description": "Rolls a die with `number` sides."
+                },
+                {
+                    "usage": "sobbleimage",
+                    "description": "Returns a cute Sobble image."
+                },
+                {
+                    "usage": "math `expression`",
+                    "description": "Returns the answer to your expression."
+                },
+                {
+                    "usage": "pkmn `pokedex number`",
+                    "description": "Returns data on a given Pokedex entry."
+                },
+                {
+                    "usage": "pkmn `name`",
+                    "description": "Returns data on a given Pokemon."
+                },
+                {
+                    "usage": "uptime",
+                    "description": "Returns how long Sobbot has been running."
+                },
+                {
+                    "usage": "starttime",
+                    "description": "Returns when Sobbot last started."
+                },
+                {
+                    "usage": "randblue",
+                    "description": "Returns a random shade of blue."
+                }
+            ]
+        },
+        "finance": {
+            "title": "Finance Functions",
+            "desc": "Manage your personal portfolio",
+            "emoji": "chart_with_upwards_trend",
+            "header": "You must register your account to save your portfolio.",
+            "commands": [
+                {
+                    "usage": "ticker `symbol`",
+                    "description": "Returns current market data for `symbol`."
+                },
+                {
+                    "usage": "pfstart",
+                    "description": "*Registers* your Discord ID to open your portfolio."
+                },
+                {
+                    "usage": "pfshow",
+                    "description": "Returns your portfolio."
+                },
+                {
+                    "usage": "pf `symbol` `count`",
+                    "description": "Updates your portfolio to have `count` shares of `symbol`."
+                },
+                {
+                    "usage": "pf `symbol` 0",
+                    "description": "Removes `symbol` from your portfolio."
+                }
+            ]
+        }
     },
-    "admin": {
-        "title": "Admin Functions",
-        "desc": "Change Sobbot's server settings",
-        "emoji": "gear",
-        "header": "These commands require certain permissions. Administrator permissions give access to ALL admin commands.",
-        "commands": [
-            {
-                "usage": "prefix `new prefix`",
-                "description": "Changes Sobbot's server prefix."
-            },
-            {
-                "usage": "prefix `(blank)`",
-                "description": "Resets Sobbot's server prefix."
-            }
-        ]
-    },
-    "misc": {
-        "title": "Miscellaneous Functions",
-        "desc": "Fun functions :D",
-        "emoji": "tada",
-        "header": "",
-        "commands": [
-            {
-                "usage": "flipcoin",
-                "description": "Flips a coin."
-            },
-            {
-                "usage": "d`number`",
-                "description": "Rolls a die with `number` sides."
-            },
-            {
-                "usage": "sobbleimage",
-                "description": "Returns a cute Sobble image."
-            },
-            {
-                "usage": "math `expression`",
-                "description": "Returns the answer to your expression."
-            },
-            {
-                "usage": "pkmn `pokedex number`",
-                "description": "Returns data on a given Pokedex entry."
-            },
-            {
-                "usage": "pkmn `name`",
-                "description": "Returns data on a given Pokemon."
-            },
-            {
-                "usage": "uptime",
-                "description": "Returns how long Sobbot has been running."
-            },
-            {
-                "usage": "starttime",
-                "description": "Returns when Sobbot last started."
-            },
-            {
-                "usage": "randblue",
-                "description": "Returns a random shade of blue."
-            }
-        ]
-    },
-    "finance": {
-        "title": "Finance Functions",
-        "desc": "Manage your personal portfolio",
-        "emoji": "chart_with_upwards_trend",
-        "header": "You must register your account to save your portfolio.",
-        "commands": [
-            {
-                "usage": "ticker `symbol`",
-                "description": "Returns current market data for `symbol`."
-            },
-            {
-                "usage": "pfstart",
-                "description": "*Registers* your Discord ID to open your portfolio."
-            },
-            {
-                "usage": "pfshow",
-                "description": "Returns your portfolio."
-            },
-            {
-                "usage": "pf `symbol` `count`",
-                "description": "Updates your portfolio to have `count` shares of `symbol`."
-            },
-            {
-                "usage": "pf `symbol` 0",
-                "description": "Removes `symbol` from your portfolio."
-            }
-        ]
+    "singles": {
+        "ratelimit": {
+            "text": "The Riot API is a server allowing registered apps such as Sobbot to retrieve data from Riot's databases. Personal projects such as Sobbot have very strict rate limits:\n**10 requests every second**\n**100 requests every 2 minutes**\nApps which egreiously hit their rate limits can have their key banned from the API. Sobbot's functions are designed to have a kill switch in the case of hitting a rate limit and will never hit a rate limit in a single use. However, multiple uses of functions will often hit the rate cap. For example, `livematch` makes ~32 requests to the api. This isn't a problem, however, please avoid hitting the rate cap too much as it risks Sobbot reveiving a ban from Riot's API. Loss of this key would all but kill the project."
+        }
     }
 }
