@@ -9,7 +9,6 @@
 
 
 from random import Random
-from sys import prefix
 from discord import player
 from dotenv import load_dotenv
 import requests, os, json, discord
@@ -17,6 +16,7 @@ from datetime import datetime
 import concurrent
 import warnings
 from time import sleep
+from admin import getGuildPrefix
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
@@ -323,11 +323,12 @@ def getSummonerData(s):
         headers = headers
     )
     summonerData = response.json()
-    if response.status_code != 200:
-        if response.status_code == 429:
+    code = response.status_code
+    if code != 200:
+        if code == 429:
             print("Rate limit exceeded in getSummonerData()")
             return "rate"
-        print(f"Uncaught error code in getSummonerData - {response.status_code}")
+        print(f"Error {code} in getSummonerData wasn't explicitly handled. Returning Nonetype.")
         return None
     else: return Summoner(summonerData)
 
@@ -486,8 +487,8 @@ def embedRankedData(s):
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
-    if summoner == None:
-        return None
+    if summoner == "rate":
+        return "rate"
     if not isinstance(champ, int):
         try: champ = int(champ)
         except ValueError:
@@ -916,6 +917,8 @@ def getBanData(matchList):
 def getLiveMatch(summoner):
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
+    if summoner == "rate":
+        return "rate"
     data = requests.get(
             (url + f"/lol/spectator/v4/active-games/by-summoner/{summoner.esid}"),
             headers = headers
@@ -926,9 +929,7 @@ def getLiveMatch(summoner):
         return "no"
     else: return LiveMatch(data.json(), summoner)
 
-async def getLiveMatchEmbed(summoner, message):
-
-    start = datetime.now()
+async def getLiveMatchEmbed(summoner, message, hasRanked=False):
 
     class PlayerString():
         def __init__(self, data, team):
@@ -936,12 +937,17 @@ async def getLiveMatchEmbed(summoner, message):
             self.team = team
 
     async def rateCancel():
-        embed.title = "Rate limit exceeded!"
-        embed.description = "<@!312012475761688578> Too many workers/requests."
-        embed.set_footer(text = "FAILED")
-        embed.color = 0x840029
-        await sentEmbed.edit(embed=embed)
-        return False
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            embed.title = "Rate limit exceeded!"
+            embed.description = (
+                "You're requesting too fast!\n" +
+                "Use command `" + 
+                getGuildPrefix(message.guild.id) +
+                "about ratelimit` for more info.")
+            embed.color = 0x840029
+            await sentEmbed.edit(embed=embed)
+            return False
 
     def parseLiveMatchPlayerString(player):
         d = ""
@@ -951,20 +957,17 @@ async def getLiveMatchEmbed(summoner, message):
         targetName = match.targetPlayer.summonerName
         summoner = getSummonerData(player.summonerName)
         if summoner == "rate":
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore") #can't properly await rateCancel() because of executor, so it's okay to bypass the warning
-                rateCancel()
+            rateCancel()
             return "rate"
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         if champData != None:
-            rankStrAddition = (summoner.getRank())
-            if rankStrAddition == "rate":
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
+            if hasRanked:
+                rankStrAddition = (summoner.getRank())
+                if rankStrAddition == "rate":
                     rateCancel()
-                return "rate"
-            else:
-                rankStr = f" - {rankStrAddition}"
+                    return "rate"
+                else:
+                    rankStr = f" - {rankStrAddition}"
             level, points = champData["level"], champData["points"]
             msDec = ""
             if level >= 3:
@@ -978,9 +981,7 @@ async def getLiveMatchEmbed(summoner, message):
                     msDec = "`"
                 masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
         else:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                rateCancel()
+            rateCancel()
             return "rate"
         if player.summonerName == targetName:
             d = "**"
@@ -999,53 +1000,57 @@ async def getLiveMatchEmbed(summoner, message):
             return False
     summoner = data
     match = getLiveMatch(summoner)
+    if match == "rate":
+        rateCancel()
+        return "rate"
     if isinstance(match, str):
         if match == "rate":
-            embed.title = "Rate limit exceeded!"
-            embed.description = "<@!312012475761688578> Sobbot will now exit."
-            await sentEmbed.edit(embed=embed)
+            rateCancel()
             return False
         elif match == "no":
             embed.title = "Match not found"
             embed.description = f"Summoner {summoner.name} isn't in a match right now!"
             await sentEmbed.edit(embed=embed)
             return False
+
     text = ""
     if match.targetPlayer.teamID == 100:
         embed.color = 0x3366cc    # blue
     else: embed.color = 0xff5050  # red
     embed.title = "Populating data..."
+    embed.description = text
+
+    # 5 workers tested to be most optimal for all setups
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
+
+    blueTeamLines, redTeamLines = [], []
+    for playerString in res:
+        if playerString == "rate":
+            await rateCancel()
+            return False
+        else:
+            if playerString.team == 100:
+                blueTeamLines.append(playerString.dataString)
+            elif playerString.team == 200:
+                redTeamLines.append(playerString.dataString)
+
     text += "`Blue Team`\n"
+    for line in blueTeamLines:
+        text += line
+    text += "\n`Red Team`\n"
+    for line in redTeamLines:
+        text += line
     embed.description = text
-    for team in range(0, 2):
-        res = []
-        WorkerCount = 1
-        with concurrent.futures.ThreadPoolExecutor(max_workers=WorkerCount) as executor: #testing rate limit!
-            res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
-        for playerString in res:
-            if playerString == "rate":
-                await rateCancel()
-                return False
-            elif playerString.team == (team+1)*100: # if result on team:
-                text += playerString.dataString   # print player result
-        embed.description = text
-        await sentEmbed.edit(embed=embed)
-        if team == 0:
-            text += "\n`Red Team`\n"
-    # embed.description = str(match)
+    await sentEmbed.edit(embed=embed)
+    
     embed.description = text
-    title = ""
     elapsed = match.elapsedTime
-    m, s = divmod(elapsed, 60)
-    title += f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
+    if elapsed <= 0:
+        title = f"Live Match - Loading In - {match.gameMode}"
+    else:
+        m, s = divmod(elapsed, 60)
+        title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
     embed.title = title
-    #testing START
-    timeTaken = datetime.now() - start
-    footerText = (
-        f"workers: {WorkerCount} " +
-        f"~ time: {timeTaken} secs " +
-        f"~ efficiency: {timeTaken/WorkerCount}")
-    embed.set_footer(text=footerText) #test workers by incrementing
-    #testing END
     await sentEmbed.edit(embed=embed)
     return True
