@@ -103,6 +103,9 @@ async def on_message(message):
 			if c.startswith("info"):
 				topic = c[4:].strip()
 				await message.channel.send(helpDir.getHelpSingle(message, topic))
+			
+			if c == "about":
+				await message.channel.send("https://github.com/lucs100/sobbot")
 
 			
 			# Admin Functions
