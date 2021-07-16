@@ -2,7 +2,6 @@ import os
 import discord
 import time
 
-from numpy.lib.arraysetops import isin
 import functions as sob
 import riotapi
 import currency as coin
@@ -41,6 +40,15 @@ async def on_ready():
 	await channel.send("im conected")
 	# await sob.setActivity(client) #not working yet
 	await client.change_presence(activity=discord.Game(name="sobling")) # placeholder until i set up activity
+
+@client.event
+async def on_guild_join(guild):
+    for channel in guild.text_channels:
+        if channel.permissions_for(guild.me).send_messages:
+            await channel.send(
+				"hi, i'm sobbot! my default prefix in this server is `s!`\n"+
+				"use `s!help` to see a list of commands! happy sobbing!")
+        break
 
 @client.event
 async def on_message(message):
