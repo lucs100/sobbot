@@ -84,7 +84,7 @@ async def on_message(message):
 			
 			if c.startswith("about"):
 				topic = c[5:].strip()
-				await message.channel.send(helpDir.getHelpSingle(topic))
+				await message.channel.send(helpDir.getHelpSingle(message, topic))
 
 			
 			# Admin Functions
