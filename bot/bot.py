@@ -44,9 +44,10 @@ async def on_ready():
 @client.event
 async def on_guild_join(guild):
 	print("NEW GUILD JOINED!")
-	print(
+	dataString = (
 		f"{guild.name} ({guild.id}, " +
 		f"owned by {guild.owner}#{guild.owner.discriminator}.")
+	print(dataString)
 	for channel in guild.text_channels:
 		if channel.permissions_for(guild.me).send_messages:
 			await channel.send(
@@ -54,6 +55,10 @@ async def on_guild_join(guild):
 				"use `s!help` to see a list of commands! happy sobbing!" +
 				"contact lucs#9492 if you have any questions!")
 		break
+	alertChannel = client.get_channel(865471884786925568)
+	await alertChannel.send("<@312012475761688578> NEW SERVER CONNECTED.")
+	await alertChannel.send(dataString)
+	await alertChannel.send("IF YOU AREN'T OKAY WITH THIS, TURN OFF SOBBOT IMMEDIATELY.")
 
 @client.event
 async def on_message(message):
