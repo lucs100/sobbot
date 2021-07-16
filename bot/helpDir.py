@@ -41,7 +41,7 @@ def getSingleList(message):
     pf = admin.getGuildPrefix(message.guild.id)
     text = f"Use one of the commands below to learn more!\n\n"
     for topic in helpSingles:
-        text += f"`{pf}about {topic}`\n"
+        text += f"`{pf}info {topic}`\n"
     return text
 
 def getHelpSingle(message, topic):
