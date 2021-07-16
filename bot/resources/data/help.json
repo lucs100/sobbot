@@ -143,6 +143,34 @@
                     "description": "Removes `symbol` from your portfolio."
                 }
             ]
+        },
+        "help": {
+            "title": "Help Functions",
+            "desc": "Get info about me and my features",
+            "emoji": "books",
+            "header": "",
+            "commands": [
+                {
+                    "usage": "help",
+                    "description": "Get a list of command directories."
+                },
+                {
+                    "usage": "help `directory`",
+                    "description": "Get a list of commands in `directory`."
+                },
+                {
+                    "usage": "info",
+                    "description": "Get a list of info on Sobbot's more niche features."
+                },
+                {
+                    "usage": "info `topic`",
+                    "description": "Get info on `topic`."
+                },
+                {
+                    "usage": "about",
+                    "description": "Get a link to Sobbot's Github repository."
+                }
+            ]
         }
     },
     "singles": {
