@@ -43,12 +43,17 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild):
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).send_messages:
-            await channel.send(
-				"hi, i'm sobbot! my default prefix in this server is `s!`\n"+
-				"use `s!help` to see a list of commands! happy sobbing!")
-        break
+	print("NEW GUILD JOINED!")
+	print(
+		f"{guild.name} ({guild.id}, " +
+		f"owned by {guild.owner}#{guild.owner.discriminator}.")
+	for channel in guild.text_channels:
+		if channel.permissions_for(guild.me).send_messages:
+			await channel.send(
+				"hi, i'm sobbot! my default prefix in this server is `s!`\n" +
+				"use `s!help` to see a list of commands! happy sobbing!" +
+				"contact lucs#9492 if you have any questions!")
+		break
 
 @client.event
 async def on_message(message):
