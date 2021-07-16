@@ -2,11 +2,13 @@ import json, discord
 import admin
 
 helpData = {}
+helpSingles = {}
 helpfulGreen = 0x22bb45
 
 with open('bot/resources/data/help.json') as f:
     data = json.loads(f.read()) # unpacking data
-    helpData = data
+    helpData = data["subdirectories"]
+    helpSingles = data["singles"]
 
 def getMainHelpDirectory(message):
     title = "Sobbot - Command Directory"
@@ -34,3 +36,7 @@ def getHelpDirectoryEmbed(message, topic):
     for command in data["commands"]:
         description += f"• {px}{command['usage']} - {command['description']}\n"
     return discord.Embed(title=title, description=description, color=helpfulGreen)
+
+def getHelpSingle(topic):
+    if topic in helpSingles:
+        return helpSingles[topic]["text"]

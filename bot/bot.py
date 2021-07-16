@@ -81,6 +81,10 @@ async def on_message(message):
 				topic = c[4:].strip()
 				embed = helpDir.getHelpDirectoryEmbed(message, topic)
 				await message.channel.send(embed=embed)
+			
+			if c.startswith("about"):
+				topic = c[5:].strip()
+				await message.channel.send(helpDir.getHelpSingle(topic))
 
 			
 			# Admin Functions
