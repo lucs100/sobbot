@@ -30,7 +30,7 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-MatchLimit = 80
+MatchLimit = 25
 
 
 # Class Declarations
@@ -270,8 +270,10 @@ def updateUserData():
         json.dump(users, fp, indent=4)
     return True
 
-def updateMatchBase(force=False):
+def updateMatchBase(force=False, clean=True):
     def push():
+        if clean:
+            cleanMatchBase()
         with open('bot/resources/data/private/matchdata.json', 'w') as fp: # updates .json of all user data
             json.dump(pulledMatches, fp, indent=4)
         return True
@@ -296,7 +298,7 @@ def cleanMatchBase():
             deleteList.append(entry)
     for entry in deleteList:
         pulledMatches.pop(entry)
-    updateMatchBase(force=True)
+    updateMatchBase(force=True, clean=False)
 
 cleanMatchBase() # run this on startup to prune malformed matches!
 
@@ -746,9 +748,9 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     codes = ["rate", "sum"]
     if data in codes:
         if data == "rate":
-            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!** Sobbot will now exit to avoid API blacklisting."
+            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!**" 
+            text += "Consider lowering max workers if this happens a lot."
             await sentMessage.edit(content=text)
-            exit()
         elif data == "sum":
             text = f"Summoner {summoner} doesn't exist."
             await sentMessage.edit(content=text)
