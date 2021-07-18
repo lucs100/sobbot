@@ -30,7 +30,7 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-MatchLimit = 25
+MatchLimit = 70
 
 
 # Class Declarations
@@ -48,8 +48,12 @@ class MatchKey:
         self.champID = int(matchData["champion"])
         self.champ = getChampNameById(self.champID)
         self.queue = int(matchData["queue"])
+        self.map = getModeFromQueueID(self.queue)["map"]
         self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
-        self.role = getRole(matchData["role"], matchData["lane"])
+        if self.map == "Summoner's Rift":
+            self.role = getRole(matchData["role"], matchData["lane"])
+        else:
+            self.role = None
         self.debugData = (matchData["role"], matchData["lane"])
 
 class Match:
@@ -608,9 +612,12 @@ def getMatchInfo(match, autosave=True):
             headers = headers
         )
     if data.status_code == 400:
-        return None
-    addToMatchBase(data.json(), gameID, autosave)
-    return data.json()
+        return "sum"
+    elif data.status_code == 429:
+        return "rate"
+    else:
+        addToMatchBase(data.json(), gameID, autosave)
+        return data.json()
 
 def getPlayerRespectiveInfo(match, esid):
     for player in match["participantIdentities"]:
@@ -724,7 +731,7 @@ def getWinLossTrend(summonerName, maxMatches=MatchLimit, ranked=False, turboMode
     awr = 0 #adjusted winrate
     m = 0 #maximum
     for i in range(len(matchList)):
-        value = (1 - (i/maxMatches)**3)
+        value = (1 - (i/maxMatches)**3) #todo - this might need a bit of tuning! my 3r dropped after winning several games
         win = didPlayerWin(sID, getMatchInfo(matchList[i]))
         if isinstance(win, str):
             return win #error code
@@ -823,7 +830,11 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
         name = getSummonerData(name).name
     except KeyError:
         return "sum"
-    matchHistory = getMatchHistory(name, ranked)
+    matchList = getMatchHistory(name, ranked) # all games
+    matchHistory = list() # only SR games
+    for match in matchList:
+        if match.role != None:
+            matchHistory.append(match)
     gp = len(matchHistory)
     totalWeight = 0
     roleDict = {
@@ -884,7 +895,7 @@ def getRolePlayDataEmbed(name, ranked=False):
     rt = ""
     if ranked:
         rt = "ranked "
-    footertext = f"{gp} {rt}games analyzed."
+    footertext = f"{gp} {rt}SR games analyzed."
     embed = discord.Embed(title=title, description=description, color=discord.Color.random())
     embed.set_footer(text=footertext)
     return embed
