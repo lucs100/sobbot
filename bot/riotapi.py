@@ -8,7 +8,7 @@
 # Library Imports and Other Formalities
 
 
-import requests, os, json, discord, concurrent, warnings
+import requests, urllib.request, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
 from datetime import datetime
 from admin import getGuildPrefix
@@ -31,7 +31,7 @@ summSpells = {}
 summonerList = []
 
 MatchLimit = 70
-
+CurrentPatch = "11.14.1" #todo - get from ddrag
 
 # Class Declarations
 
@@ -1068,5 +1068,34 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     await sentEmbed.edit(embed=embed)
     return True
 
-def getWikiLink(champ):
-    return f"https://www.leagueoflegends.fandom.com/wiki/{getCorrectChampName(champ)}/LoL"
+def ddGetAbilityName(champ, code):
+    if code not in ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive']:
+        return None
+    champ = getCorrectChampName(champ)
+    if champ == None:
+        return None
+    if code in ['ult', 'ultimate', 'ulti']:
+        code = 'r'
+    if code == 'passive':
+        code = 'p'
+    response = requests.get(
+                (f"http://ddragon.leagueoflegends.com/cdn/{CurrentPatch}/data/en_US/champion/{champ}.json"),
+            )
+    data = response.json()
+    spellDict = {
+        'q': data["data"][champ]["spells"][0]["name"],
+        'w': data["data"][champ]["spells"][1]["name"],
+        'e': data["data"][champ]["spells"][2]["name"],
+        'r': data["data"][champ]["spells"][3]["name"],
+        'p': data["data"][champ]["passive"]["name"],
+    }
+    return champ, spellDict[code]
+
+def getWikiLink(message):
+    def scoreSpaces(input):
+        return input.replace(" ", "_")
+    champ, code = message[:-1].strip(), message[-1:].strip()
+    champ, spell = ddGetAbilityName(champ, code)
+    champ, spell = scoreSpaces(champ), scoreSpaces(spell)
+    return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
+
