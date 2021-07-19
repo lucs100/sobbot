@@ -125,31 +125,37 @@ class Summoner():
         if response.status_code == 429:
             return "rate"
         datajson = response.json()
-        data = {}
+
+        wr, g = 0, 0 #init to cover case when no ranked data
+        found = False
         for q in datajson:
             try:
                 if q["queueType"] == queue:
-                    data = {
-                        "tier": q["tier"],
-                        "division": q["rank"],
-                        "lp": q["leaguePoints"]
-                        }
+                    found = True
+                    tier = q["tier"].capitalize()
+                    division = q["rank"] #todo - wtf why is it formatted like a tuple
+                    lp = q["leaguePoints"]
                     if hasWR:
                         g = (q["wins"]+q["losses"])
+                        if g == 0:
+                            hasWR = False #no games, will break wr calc
+                            break
                         wr = (100*q["wins"])/g
             except TypeError:
                 if q == "status":
                     print(f"TypeError caught in Summoner.getRank() - {datajson}")
                     return None
+
         wrStr = ""
+        lpStr = ""
         if hasWR:
             wrStr = f"({wr:.1f}% / {g}gp)"
-        if data != {}:
-            if hasLP:
-                return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP {wrStr}")
-            else:
-                return (f"{data['tier'].capitalize()} {data['division']} {wrStr}")
-        else: return "Unranked"
+        if hasLP:
+            lpStr = f", {lp} LP "
+
+        if found:
+            return (f"{tier} {division}, {lpStr}{wrStr}")
+        else: return ""
     
     def getSingleMastery(self, champ):
         if not isinstance(champ, int):
@@ -984,7 +990,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 if rankStrAddition == "rate":
                     rateCancel()
                     return "rate"
-                else:
+                elif rankStrAddition != "":
                     rankStr = f" - {rankStrAddition}"
             level, points = champData["level"], champData["points"]
             msDec = ""
@@ -1038,6 +1044,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     embed.description = text
 
     # 5 workers tested to be most optimal for all setups
+    # res = []
     # for player in match.participants.values():
     #     print(parseLiveMatchPlayerString(player))
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
