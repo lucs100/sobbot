@@ -395,7 +395,9 @@ async def on_message(message):
 
 			if c.startswith("lwk"):
 				c = c[3:].strip()
-				await message.channel.send(riotapi.getWikiLink(c))
+				link = (riotapi.getWikiLink(c))
+				if link != None:
+					await message.channel.send(link)
 
 
 			# Currency Functions

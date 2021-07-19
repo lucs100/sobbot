@@ -1083,10 +1083,10 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
 
 def ddGetAbilityName(champ, code):
     if code not in ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive']:
-        return None
+        return None, None
     champ = getCorrectChampName(champ)
     if champ == None:
-        return None
+        return None, None
     if code in ['ult', 'ultimate', 'ulti']:
         code = 'r'
     if code == 'passive':
@@ -1107,8 +1107,11 @@ def ddGetAbilityName(champ, code):
 def getWikiLink(message):
     def scoreSpaces(input):
         return input.replace(" ", "_")
-    champ, code = message[:-1].strip(), message[-1:].strip()
-    champ, spell = ddGetAbilityName(champ, code)
-    champ, spell = scoreSpaces(champ), scoreSpaces(spell)
-    return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
-
+    if getCorrectChampName(message).lower() == message.lower(): # assume no ability code
+        return f"https://www.leagueoflegends.fandom.com/wiki/{message.capitalize()}"
+    else: # assume passed champ + ability
+        champ, code = message[:-1].strip(), message[-1:].strip()
+        champ, spell = ddGetAbilityName(champ, code)
+        if champ != None and spell != None: # result passed
+            champ, spell = scoreSpaces(champ), scoreSpaces(spell)
+            return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
