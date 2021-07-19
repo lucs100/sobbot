@@ -393,6 +393,11 @@ async def on_message(message):
 				response = await riotapi.getLiveMatchEmbed(summoner, message)
 				return True
 
+			if c.startswith("lolwiki"):
+				c = c[7:].strip()
+				await message.channel.send(riotapi.getWikiLink(c))
+
+
 			# Currency Functions
 
 

@@ -241,6 +241,11 @@ def getChampIdByName(q):
             return id
     return -1 # returns -1 if no match
 
+def getCorrectChampName(q):
+    cID = getChampIdByName(q)
+    return getChampNameById(cID)
+
+
 def getRole(role, lane):
     if lane == "MID":
         return "Middle"
@@ -1062,3 +1067,6 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     embed.title = title
     await sentEmbed.edit(embed=embed)
     return True
+
+def getWikiLink(champ):
+    return f"https://www.leagueoflegends.fandom.com/wiki/{getCorrectChampName(champ)}/LoL"
