@@ -42,6 +42,7 @@ def getSingleList(message):
     text = f"Use one of the commands below to learn more!\n\n"
     for topic in helpSingles:
         text += f"`{pf}info {topic}`\n"
+    text += f"`{pf}about`\n"
     return text
 
 def getHelpSingle(message, topic):
