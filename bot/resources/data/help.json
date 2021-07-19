@@ -51,8 +51,8 @@
                     "description": "Returns teams and masteries in a live match."
                 },
                 {
-                    "usage": "livematchr `summoner`",
-                    "description": "Returns teams, masteries, and ranks in a live match."
+                    "usage": "lwk `champion` `ability`",
+                    "description": "Links LoLWiki's entry on `champion`. Optionally, links to `ability` on the page."
                 }
             ]
         },
