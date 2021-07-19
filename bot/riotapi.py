@@ -114,7 +114,7 @@ class Summoner():
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
 
-    def getRank(self, hasLP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+    def getRank(self, hasLP=False, hasWR=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
         try:
             response = requests.get(
                 (url + f"/lol/league/v4/entries/by-summoner/{self.esid}"),
@@ -134,15 +134,21 @@ class Summoner():
                         "division": q["rank"],
                         "lp": q["leaguePoints"]
                         }
+                    if hasWR:
+                        g = (q["wins"]+q["losses"])
+                        wr = (100*q["wins"])/g
             except TypeError:
                 if q == "status":
                     print(f"TypeError caught in Summoner.getRank() - {datajson}")
                     return None
+        wrStr = ""
+        if hasWR:
+            wrStr = f"({wr:.1f}% / {g}gp)"
         if data != {}:
             if hasLP:
-                return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP")
+                return (f"{data['tier'].capitalize()} {data['division']}, {data['lp']} LP {wrStr}")
             else:
-                return (f"{data['tier'].capitalize()} {data['division']}")
+                return (f"{data['tier'].capitalize()} {data['division']} {wrStr}")
         else: return "Unranked"
     
     def getSingleMastery(self, champ):
@@ -161,7 +167,6 @@ class Summoner():
         if response.status_code == 404:
             return None
         return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
-
 
 # File Imports / Setup
 
@@ -244,7 +249,6 @@ def getChampIdByName(q):
 def getCorrectChampName(q):
     cID = getChampIdByName(q)
     return getChampNameById(cID)
-
 
 def getRole(role, lane):
     if lane == "MID":
@@ -508,9 +512,9 @@ def anonGetSingleMastery(summoner, champ):
             headers = headers
         )
     if response.status_code == 404:
-        return None
-    # elif response.status_code == 429:
-    #     return None #rate limit
+        return "no"
+    elif response.status_code == 429:
+        return "rate" #rate limit
     try:
         return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
     except KeyError:
@@ -973,9 +977,10 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             rateCancel()
             return "rate"
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
-        if champData != None:
+        codes = ["no", "rate"]
+        if champData not in codes:
             if hasRanked:
-                rankStrAddition = (summoner.getRank())
+                rankStrAddition = (summoner.getRank(hasWR=True))
                 if rankStrAddition == "rate":
                     rateCancel()
                     return "rate"
@@ -993,8 +998,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 if points >= 1000000:
                     msDec = "`"
                 masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
-        else:
-            rateCancel()
+        elif champData == "rate":
             return "rate"
         if player.summonerName == targetName:
             d = "**"
@@ -1034,6 +1038,8 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     embed.description = text
 
     # 5 workers tested to be most optimal for all setups
+    # for player in match.participants.values():
+    #     print(parseLiveMatchPlayerString(player))
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
 
