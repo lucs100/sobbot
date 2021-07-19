@@ -12,7 +12,7 @@ from re import match
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Test Commit
+# Test Commit 2
 
 load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
