@@ -1148,7 +1148,6 @@ def getWikiLink(message):
 
     message = message.capitalize().strip()
     # assume passed champ + ability
-
     
     champ, spell = ddGetAbilityName(message)
     try:
@@ -1163,5 +1162,3 @@ def getWikiLink(message):
             return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
     except: # something threw exception
         return "Something went wrong. Let <@312012475761688578> know."
-while True:
-    print(getWikiLink(input()))
