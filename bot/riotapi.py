@@ -960,7 +960,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             self.team = team
 
     async def rateCancel():
-        with warnings.catch_warnings():
+        with warnings.catch_warnings(): #todo - this isnt silent :(
             warnings.simplefilter("ignore")
             embed.title = "Rate limit exceeded!"
             embed.description = (
@@ -1040,13 +1040,15 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     if match.targetPlayer.teamID == 100:
         embed.color = 0x3366cc    # blue
     else: embed.color = 0xff5050  # red
-    embed.title = "Populating data..."
+    embed.title = "Requesting data..."
     embed.description = text
 
-    # 5 workers tested to be most optimal for all setups
+    ## test code
     # res = []
     # for player in match.participants.values():
     #     print(parseLiveMatchPlayerString(player))
+
+    # 5 workers tested to be most optimal for all setups
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
 
@@ -1061,14 +1063,16 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             elif playerString.team == 200:
                 redTeamLines.append(playerString.dataString)
 
-    text += "`Blue Team`\n"
+    blueText, redText = "", ""
+
     for line in blueTeamLines:
-        text += line
-    text += "\n`Red Team`\n"
+        blueText += line
     for line in redTeamLines:
-        text += line
+        redText += line
     embed.description = text
-    await sentEmbed.edit(embed=embed)
+    
+    embed.add_field(name="Blue Team", value=blueText, inline=True)
+    embed.add_field(name="Red Team", value=redText, inline=True)
     
     embed.description = text
     elapsed = match.elapsedTime
@@ -1077,6 +1081,8 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     else:
         m, s = divmod(elapsed, 60)
         title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
+        if m >= 60:
+            embed.set_footer(text="Time may be inaccurate")
     embed.title = title
     await sentEmbed.edit(embed=embed)
     return True
