@@ -117,7 +117,7 @@ def messageBonus(id):
         return False
     if isinstance(getUserCoins(id), int):
         luck = getUserLuck(id)
-        if random.randint(x+luck, y) == 1:
+        if random.randint(x+luck, y) == x+luck:
             users[id]["coins"] += coinsOnMessage
             updateUserData(f"{id} earned {coinsOnMessage}")
     return True
