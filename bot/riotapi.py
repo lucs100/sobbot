@@ -31,7 +31,7 @@ summSpells = {}
 summonerList = []
 
 MatchLimit = 70
-CurrentPatch = "11.14.1" #todo - get from ddrag
+CurrentPatch = "11.15.1" #todo - get from ddrag
 
 # Class Declarations
 
@@ -1087,37 +1087,81 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     await sentEmbed.edit(embed=embed)
     return True
 
-def ddGetAbilityName(champ, code):
-    if code not in ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive']:
-        return None, None
+def ddGetAbilityName(message):
+    def parseQuery(q): # screw you riot
+        return q.replace(".", "").replace('\'', "").replace(" ", "")
+
+    ValidCodes = ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive', 'pass']
+
+    champ, code = None, None # fix this
+    try:
+        test1, test2 = message.split(" ")
+        if test2 in ValidCodes:
+            champ, code = test1, test2
+    except ValueError:
+        for testCode in ValidCodes:
+            if len(testCode) >= 2 and message.endswith(testCode):
+                code = testCode
+                champ = message.replace(testCode, "").strip()
+
+    if (champ, code) == (None, None): # no longer code hit
+        champ, code = message[:-1].strip(), message[-1:].strip()
+        if code not in ValidCodes:
+            return None, None
+
     champ = getCorrectChampName(champ)
-    if champ == None:
+    if champ == "None":
         return None, None
     if code in ['ult', 'ultimate', 'ulti']:
         code = 'r'
-    if code == 'passive':
+    if code in ['passive', 'pass']:
         code = 'p'
-    response = requests.get(
-                (f"http://ddragon.leagueoflegends.com/cdn/{CurrentPatch}/data/en_US/champion/{champ}.json"),
+    champKey = parseQuery(champ)
+    response = requests.get( # todo - use the ddrag file
+                (f"http://ddragon.leagueoflegends.com/cdn/{CurrentPatch}/data/en_US/champion/{parseQuery(champKey)}.json"),
             )
+    if response.status_code == 403:
+        return "err", "err"
     data = response.json()
     spellDict = {
-        'q': data["data"][champ]["spells"][0]["name"],
-        'w': data["data"][champ]["spells"][1]["name"],
-        'e': data["data"][champ]["spells"][2]["name"],
-        'r': data["data"][champ]["spells"][3]["name"],
-        'p': data["data"][champ]["passive"]["name"],
+        'q': data["data"][champKey]["spells"][0]["name"],
+        'w': data["data"][champKey]["spells"][1]["name"],
+        'e': data["data"][champKey]["spells"][2]["name"],
+        'r': data["data"][champKey]["spells"][3]["name"],
+        'p': data["data"][champKey]["passive"]["name"],
     }
     return champ, spellDict[code]
 
 def getWikiLink(message):
     def scoreSpaces(input):
+        if input == None or input == "None": # stupid gCCN returns string
+            return None
         return input.replace(" ", "_")
-    if getCorrectChampName(message).lower() == message.lower(): # assume no ability code
-        return f"https://www.leagueoflegends.fandom.com/wiki/{message.capitalize()}"
-    else: # assume passed champ + ability
-        champ, code = message[:-1].strip(), message[-1:].strip()
-        champ, spell = ddGetAbilityName(champ, code)
-        if champ != None and spell != None: # result passed
+    
+    def isNoCode(message):
+        if getCorrectChampName(message) == getCorrectChampName(message[:-1]):
+            if getCorrectChampName(message) != "None": # returns string instead of None
+                return True
+    
+    def getFormat(q):
+        return scoreSpaces(getCorrectChampName(q))
+
+    message = message.capitalize().strip()
+    # assume passed champ + ability
+
+    
+    champ, spell = ddGetAbilityName(message)
+    try:
+        if champ == "err": # out of date?
+            return "Something went wrong. Riot's API might be down."
+        if champ != None and spell != None: # result passed # todo - "she" => "ashe / e"
             champ, spell = scoreSpaces(champ), scoreSpaces(spell)
             return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
+        elif isNoCode(message): # assume no ability code + long enough
+            return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
+        elif getFormat(message) != None and len(message) >= 3: # separate case if can be refactored later
+            return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
+    except: # something threw exception
+        return "Something went wrong. Let <@312012475761688578> know."
+while True:
+    print(getWikiLink(input()))
