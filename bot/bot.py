@@ -264,14 +264,14 @@ async def on_message(message):
 				except:
 					return True
 
-			if c == "lolapireload":
-				if message.author.id == 312012475761688578:
-					if await riotapi.updateAPIKey():
-						await message.channel.send("Successfully set key!")
-					else:
-						await message.channel.send("Key update failed.")
-				else:
-					await message.channel.send("You don't have the permissions to do this.")
+			# if c == "lolapireload":
+			# 	if message.author.id == 312012475761688578:
+			# 		if await riotapi.updateAPIKey():
+			# 			await message.channel.send("Successfully set key!")
+			# 		else:
+			# 			await message.channel.send("Key update failed.")
+			# 	else:
+			# 		await message.channel.send("You don't have the permissions to do this.")
 			
 			if c.startswith("lastmatch"):
 				summoner = c[9:].strip()
