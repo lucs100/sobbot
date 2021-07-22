@@ -8,7 +8,7 @@
 # Library Imports and Other Formalities
 
 
-import requests, urllib.request, os, json, discord, concurrent, warnings
+import requests, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
 from datetime import datetime
 from admin import getGuildPrefix
@@ -33,6 +33,7 @@ summonerList = []
 MatchLimit = 70
 CurrentPatch = "11.15.1" #todo - get from ddrag
 
+
 # Class Declarations
 
 
@@ -41,6 +42,17 @@ class SummSpell():
         self.name = data["name"]
         self.cooldown = data["cooldown"][0]
         self.id = int(data["key"])
+
+class Rank:
+    def __init__(self, data, name):
+        self.queue = data["queueType"]
+        self.tier = data["tier"]
+        self.division = data["rank"]
+        self.lp = data["leaguePoints"]
+        self.wins = int(data["wins"])
+        self.losses = int(data["losses"])
+        self.gp = int(self.wins) + int(self.losses)
+        self.name = name
 
 class MatchKey:
     def __init__(self, matchData):
@@ -115,7 +127,7 @@ class Summoner():
         self.level = data["summonerLevel"]
 
     def getRank(self, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
-        try: # add deco string based on player winrate
+        try: # todo - refactor to work with class Rank rework
             response = requests.get(
                 (url + f"/lol/league/v4/entries/by-summoner/{self.esid}"),
                 headers = headers
@@ -365,22 +377,16 @@ def getRankedData(s): # todo - refactor getRank to be class Rank
     except:
         return False
     datajson = response.json()
-    data = {}
+    data = []
     for i in range(len(datajson)):
-        data[i] = {
-            "queue": datajson[i]["queueType"],
-            "tier": datajson[i]["tier"],
-            "division": datajson[i]["rank"],
-            "lp": datajson[i]["leaguePoints"],
-            "wins": datajson[i]["wins"],
-            "losses": datajson[i]["losses"],
-            "gp": int(datajson[i]["wins"]) + int(datajson[i]["losses"])
-        }
-    try:
-        name = datajson[i]["summonerName"]
-    except:
-        name = summoner.name
-    return data, name
+        try:
+            name = datajson[i]["summonerName"]
+        except:
+            name = summoner.name
+        data.append(Rank(datajson[i], name))
+    if len(data) > 0:
+        return data # list of Rank objects
+    else: return summoner.name
 
 def getMaxRank(list):
     rankSet = set()
@@ -471,21 +477,25 @@ def parseQueue(queue):
     return queueTable[queue]
 
 def embedRankedData(s):
-    data = getRankedData(s) # either False, for error 2, or {data, s}
+    data = getRankedData(s) # either False, for error 2, or data
     if checkKeyInvalid():   
         return 1 # key invalid error
     if data == False:
-        return 2 # summoner does not exist
-    data, s = data[0], data[1]
+        return 2 # summoner does not exist'
+    try:
+        s = data[0].name
+    except:
+        s = data
+        data = []
     title=f"{s}  -  Ranked Status"
     description, rankDict = "", []
     color = 0x64686e
     for i in range(0, len(data)):
-        rank = parseRank(data[i]["tier"], data[i]["division"])
-        q = parseQueue(data[i]["queue"])
-        lp, w, l, gp, wr = data[i]["lp"], data[i]["wins"], data[i]["losses"], data[i]["gp"], ((data[i]["wins"] * 100) / (data[i]["gp"]))
+        rank = parseRank(data[i].tier, data[i].division)
+        q = parseQueue(data[i].queue)
+        lp, w, l, gp, wr = data[i].lp, data[i].wins, data[i].losses, data[i].gp, ((data[i].wins * 100) / (data[i].gp))
         awr = (w+10)*100 / (gp+20) # 3b1b's method of review checking, applied to winrate
-        rmx = calculateRankMultiplier(data[i]["tier"], data[i]["division"]) # rank multiplier
+        rmx = calculateRankMultiplier(data[i].tier, data[i].division) # rank multiplier
         rs = int((w**2.5 * wr)*rmx / gp)
         description += (f"**{q}** - **{rank}** - {lp} LP")
         description += "\n"
@@ -496,7 +506,7 @@ def embedRankedData(s):
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
-        rankDict.append(data[i]["tier"])
+        rankDict.append(data[i].tier)
     if len(rankDict) > 0:
         color = getTierColor(getMaxRank(rankDict))
     else:
@@ -504,6 +514,8 @@ def embedRankedData(s):
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
+
+print(embedRankedData("CHIELERY").description)
 
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
