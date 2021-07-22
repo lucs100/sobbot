@@ -1092,12 +1092,14 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     text += "Blue Team"
     embed.add_field(name="Players", value=blueSumms, inline=True)
     embed.add_field(name="Champions", value=blueChamps, inline=True)
-    embed.add_field(name="Ranks", value=blueRanks, inline=True)
+    if hasRanked:
+        embed.add_field(name="Ranks", value=blueRanks, inline=True)
 
     text += "Red Team"
     embed.add_field(name="Players", value=redSumms, inline=True)
     embed.add_field(name="Champions", value=redChamps, inline=True)
-    embed.add_field(name="Ranks", value=redRanks, inline=True)
+    if hasRanked:
+        embed.add_field(name="Ranks", value=redRanks, inline=True)
     
     embed.description = text
     elapsed = match.elapsedTime
