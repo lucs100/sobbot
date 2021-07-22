@@ -114,8 +114,8 @@ class Summoner():
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
 
-    def getRank(self, hasLP=False, hasWR=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
-        try:
+    def getRank(self, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+        try: # add deco string based on player winrate
             response = requests.get(
                 (url + f"/lol/league/v4/entries/by-summoner/{self.esid}"),
                 headers = headers
@@ -149,7 +149,12 @@ class Summoner():
         wrStr = ""
         lpStr = ""
         if hasWR:
-            wrStr = f"({wr:.1f}% / {g}gp)"
+            deco = ' '
+            if wr < 45 and g >= 50:
+                deco = '*'
+            elif wr > 55 and g >= 50:
+                deco = '**'
+            wrStr = f"({deco}{wr:.1f}%{deco} / {g}gp)" # todo - test deco string
         if hasLP:
             lpStr = f", {lp} LP "
 
@@ -425,24 +430,24 @@ def getTierColor(tier):
         return 0x64686e
     
 def calculateRankMultiplier(tier, div):
-    tierDex = {
-        "IRON": 0.1,
-        "BRONZE": 0.35,
+    tierDict = {
+        "IRON": 0.3,
+        "BRONZE": 0.5,
         "SILVER": 0.8,
-        "GOLD": 1.5,
-        "PLATINUM": 3,
-        "DIAMOND": 10,
-        "MASTER": 25,
-        "GRANDMASTER": 50,
-        "CHALLENGER": 100
+        "GOLD": 1,
+        "PLATINUM": 2,
+        "DIAMOND": 4,
+        "MASTER": 10,
+        "GRANDMASTER": 20,
+        "CHALLENGER": 50
     }
-    divDex = {
-        "IV": 1,
-        "III": 1.4,
-        "II": 1.6,
-        "I": 1.8,
+    divDict = {
+        "IV": 0.9,
+        "III": 1,
+        "II": 1.1,
+        "I": 1.2,
     }
-    return round((tierDex[tier] * divDex[div])**2, 2)
+    return round((tierDict[tier] * divDict[div])**2, 2)
 
 def parseRank(tier, div):
     # divTable = {
@@ -878,7 +883,6 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
 def getTopRoles(data):
     primary, secondary = None, None
     temp = dict(data) # pass by sharing workaround
-    temp = dict(temp)
     temp.pop("Unknown")
     primary = max(temp, key=temp.get)
     temp.pop(primary)
@@ -986,7 +990,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         codes = ["no", "rate"]
         if champData not in codes:
             if hasRanked:
-                rankStrAddition = (summoner.getRank(hasWR=True))
+                rankStrAddition = (summoner.getRank(hasWR=True, deco=True))
                 if rankStrAddition == "rate":
                     rateCancel()
                     return "rate"
@@ -1087,7 +1091,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     await sentEmbed.edit(embed=embed)
     return True
 
-def ddGetAbilityName(message):
+def ddGetAbilityName(message): # dd = datadragon
     def parseQuery(q): # screw you riot
         return q.replace(".", "").replace('\'', "").replace(" ", "")
 
@@ -1147,9 +1151,10 @@ def getWikiLink(message):
         return scoreSpaces(getCorrectChampName(q))
 
     message = message.capitalize().strip()
+
     # assume passed champ + ability
-    
     champ, spell = ddGetAbilityName(message)
+    
     try:
         if champ == "err": # out of date?
             return "Something went wrong. Riot's API might be down."
@@ -1158,7 +1163,8 @@ def getWikiLink(message):
             return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
         elif isNoCode(message): # assume no ability code + long enough
             return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
-        elif getFormat(message) != None and len(message) >= 3: # separate case if can be refactored later
+        elif getFormat(message) != None and len(message) >= 2: # separate case if can be refactored later
             return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
     except: # something threw exception
         return "Something went wrong. Let <@312012475761688578> know."
+
