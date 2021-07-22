@@ -133,7 +133,7 @@ class Summoner():
                 if q["queueType"] == queue:
                     found = True
                     tier = q["tier"].capitalize()
-                    division = q["rank"] #todo - wtf why is it formatted like a tuple
+                    division = q["rank"]
                     lp = q["leaguePoints"]
                     if hasWR:
                         g = (q["wins"]+q["losses"])
@@ -149,17 +149,17 @@ class Summoner():
         wrStr = ""
         lpStr = ""
         if hasWR:
-            deco = ' '
-            if wr < 45 and g >= 50:
+            deco = ''
+            if wr < 44.5 and g >= 50: # 5.5% edge considered significant (5/9 theory)
                 deco = '*'
-            elif wr > 55 and g >= 50:
+            elif wr > 55.5 and g >= 50:
                 deco = '**'
-            wrStr = f"({deco}{wr:.1f}%{deco} / {g}gp)" # todo - test deco string
+            wrStr = f"({deco}{wr:.1f}%{deco} / {g}g)" # todo - test deco string
         if hasLP:
-            lpStr = f", {lp} LP "
+            lpStr = f", {lp} LP"
 
         if found:
-            return (f"{tier} {division}, {lpStr}{wrStr}")
+            return (f"{tier} {division} {lpStr} {wrStr}") #maybe refactor to return a Rank object?
         else: return ""
     
     def getSingleMastery(self, champ):
@@ -353,7 +353,7 @@ def getSummonerData(s):
         return None
     else: return Summoner(summonerData)
 
-def getRankedData(s):
+def getRankedData(s): # todo - refactor getRank to be class Rank 
     if checkKeyInvalid():
         return False
     summoner = getSummonerData(s)
@@ -986,6 +986,10 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         level, points = 0, 0
         targetName = match.targetPlayer.summonerName
         summoner = getSummonerData(player.summonerName)
+        if player.summonerName == targetName:
+            summonerName = f"*{player.summonerName}*"
+        else:
+            summonerName = player.summonerName
         if summoner == "rate":
             rateCancel()
             return "rate"
@@ -993,32 +997,34 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         codes = ["no", "rate"]
         if champData not in codes:
             if hasRanked:
-                rankStrAddition = (summoner.getRank(hasWR=True, deco=True))
-                if rankStrAddition == "rate":
+                rankedData = (summoner.getRank(hasWR=True, deco=True))
+                if rankedData == "rate":
                     rateCancel()
                     return "rate"
-                elif rankStrAddition != "":
-                    rankStr = f" - {rankStrAddition}"
-            level, points = champData["level"], champData["points"]
+                elif rankedData != "":
+                    rankStr = rankedData
+                else:
+                    rankStr = f"Level {summoner.level}"
+            level, points = champData["level"], (champData["points"]/1000) # points in 1000s
             msDec = ""
             if level >= 3:
-                if points >= 50000:
-                    msDec = "*"
-                if points >= 200000:
-                    msDec = "**"
-                if points >= 500000:
-                    msDec = "***"
-                if points >= 1000000:
+                if points >= 1000:
                     msDec = "`"
-                masteryStr = f"  -  {msDec}(M{level} / {points:,}){msDec}"
+                    masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}"
+                else:
+                    if points >= 500:
+                        msDec = "***"
+                    elif points >= 200:
+                        msDec = "**"
+                    elif points >= 50:
+                        msDec = "*"
+                    masteryStr = f"{msDec}(M{level} / {points:.1f}K){msDec}"
         elif champData == "rate":
             return "rate"
-        if player.summonerName == targetName:
-            d = "**"
         data = {
-            "summoner": f"{d}{player.summonerName}{d}",
-            "champ": f"{player.champName}{masteryStr}",
-            "rank": f"{rankStr}",
+            "summoner": summonerName,
+            "champ": f"{player.champName} {masteryStr}",
+            "rank": rankStr,
             "team": player.teamID
         }
         return PlayerString(data=data, hasRanked=hasRanked)
