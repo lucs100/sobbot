@@ -959,9 +959,12 @@ def getLiveMatch(summoner):
 async def getLiveMatchEmbed(summoner, message, hasRanked=False):
 
     class PlayerString():
-        def __init__(self, data, team):
-            self.dataString = data
-            self.team = team
+        def __init__(self, data, hasRanked):
+            self.summoner = data["summoner"]
+            self.champ = data["champ"]
+            if hasRanked:
+                self.rank = data["rank"]
+            self.team = data["team"]
 
     async def rateCancel():
         with warnings.catch_warnings(): #todo - this isnt silent :(
@@ -1012,7 +1015,13 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             return "rate"
         if player.summonerName == targetName:
             d = "**"
-        return PlayerString(data=f"{d}{player.summonerName}{d}  -  {player.champName}{masteryStr} {rankStr}\n", team=player.teamID)
+        data = {
+            "summoner": f"{d}{player.summonerName}{d}",
+            "champ": f"{player.champName}{masteryStr}",
+            "rank": f"{rankStr}",
+            "team": player.teamID
+        }
+        return PlayerString(data=data, hasRanked=hasRanked)
         
     title = "Requesting match data..."
     description = "Hang tight!"
@@ -1056,27 +1065,39 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
 
-    blueTeamLines, redTeamLines = [], []
+    blueSumms = ""
+    blueChamps = ""
+    blueRanks = ""
+
+    redSumms = ""
+    redChamps = "" # gotta be a better way to do this?
+    redRanks = ""  # maybe lists but i still have to iterate
+
     for playerString in res:
         if playerString == "rate":
             await rateCancel()
             return False
         else:
             if playerString.team == 100:
-                blueTeamLines.append(playerString.dataString)
+                blueSumms += (playerString.summoner) + "\n"
+                blueChamps += (playerString.champ) + "\n"
+                if hasRanked:
+                    blueRanks += (playerString.rank) + "\n"
             elif playerString.team == 200:
-                redTeamLines.append(playerString.dataString)
+                redSumms += (playerString.summoner) + "\n"
+                redChamps += (playerString.champ) + "\n"
+                if hasRanked:
+                    redRanks += (playerString.rank) + "\n"
 
-    blueText, redText = "", ""
+    text += "Blue Team"
+    embed.add_field(name="Players", value=blueSumms, inline=True)
+    embed.add_field(name="Champions", value=blueChamps, inline=True)
+    embed.add_field(name="Ranks", value=blueRanks, inline=True)
 
-    for line in blueTeamLines:
-        blueText += line
-    for line in redTeamLines:
-        redText += line
-    embed.description = text
-    
-    embed.add_field(name="Blue Team", value=blueText, inline=True)
-    embed.add_field(name="Red Team", value=redText, inline=True)
+    text += "Red Team"
+    embed.add_field(name="Players", value=redSumms, inline=True)
+    embed.add_field(name="Champions", value=redChamps, inline=True)
+    embed.add_field(name="Ranks", value=redRanks, inline=True)
     
     embed.description = text
     elapsed = match.elapsedTime
