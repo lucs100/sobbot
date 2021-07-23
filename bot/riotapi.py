@@ -54,6 +54,17 @@ class Rank:
         self.gp = int(self.wins) + int(self.losses)
         self.name = name
 
+class ChampionMastery:
+    def __init__(self, data):
+        try:
+            self.champ = getChampNameById(data["championId"])
+            self.level = data["championLevel"]
+            self.points = data["championPoints"]
+        except KeyError:
+            self.champ = None
+            self.level = 0
+            self.points = 0
+
 class MatchKey:
     def __init__(self, matchData):
         self.gameID = matchData["gameId"]
@@ -144,7 +155,7 @@ class Summoner():
             )
         if response.status_code == 404:
             return None
-        return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
+        return ChampionMastery(response.json())
 
     def getRank(self):
         return getRankedData(self) # bad!!!!!!!!!!!!!!!!!!!!
@@ -349,14 +360,12 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_
             return tier.capitalize()
         return f"{tierList[tier]}{divList[div]}"
 
-    try: # todo - refactor to work with class Rank rework
+    try:
         data = getRankedData(s)
     except:
         return "Summoner not found"
     if data == "rate":
         return "rate"
-    # if isinstance(data, str): # doesnt work bc never returns "rate" + level returns name!
-    #     return "rate"
     wr, g = 0, 0 #init to cover case when no ranked data
     found = False
     if isinstance(data, list):
@@ -393,7 +402,7 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_
         return (f"{rank} {lpStr} {wrStr}") #maybe refactor to return a Rank object?
     else: return "" # necessary?
 
-def getRankedData(s): # todo - refactor getRank to be class Rank 
+def getRankedData(s):
     if checkKeyInvalid():
         return False
     summoner = getSummonerData(s)
@@ -566,10 +575,7 @@ def anonGetSingleMastery(summoner, champ):
         return "no"
     elif response.status_code == 429:
         return "rate" #rate limit
-    try:
-        return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
-    except KeyError:
-        return {"level": 0, "points": 0}
+    return ChampionMastery(response.json())
     
 def getTopMasteries(s):
     if checkKeyInvalid():
@@ -581,18 +587,13 @@ def getTopMasteries(s):
         )
     except:
         return False
-    datajson = response.json()
-    data = []
+    masteryList = []
     for i in range(0, 3): #top three masteries, can be altered
         try:
-            data.append({
-                "name": getChampNameById(datajson[i]["championId"]),
-                "level": datajson[i]["championLevel"],
-                "points": datajson[i]["championPoints"]
-                })
+            masteryList.append(ChampionMastery(response.json()[i]))
         except:
             break # if none left, ie. two or less champs
-    return data
+    return masteryList
 
 def embedTopMasteries(s):
     if checkKeyInvalid():
@@ -600,8 +601,10 @@ def embedTopMasteries(s):
     data = getTopMasteries(s)
     title=f"{s}  -  Top Masteries"
     description = ""
-    for i in range(0, len(data)):
-        l, n, p = data[i]["level"], data[i]["name"], data[i]["points"]
+    for item in data:
+        l = item.level
+        n = item.champ
+        p = item.points
         description += (f"Mastery {l} with *{n}*  -  **{p:,}** points")
         description += "\n"
     if description == "": #no loops, ie. no data
@@ -1046,7 +1049,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                     rankStr = rankedData
                 else:
                     rankStr = f"Lv. {summoner.level}"
-            level, points = champData["level"], (champData["points"]/1000) # points in 1000s
+            level, points = champData.level, (champData.points/1000) # points in 1000s
             msDec = ""
             if level >= 3:
                 if points >= 1000:
@@ -1239,4 +1242,3 @@ def getWikiLink(message):
             return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
     except: # something threw exception
         return "Something went wrong. Let <@312012475761688578> know."
-
