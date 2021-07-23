@@ -353,6 +353,8 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_
         data = getRankedData(s)
     except:
         return "Summoner not found"
+    if data == "rate":
+        return "rate"
     # if isinstance(data, str): # doesnt work bc never returns "rate" + level returns name!
     #     return "rate"
     wr, g = 0, 0 #init to cover case when no ranked data
@@ -402,7 +404,8 @@ def getRankedData(s): # todo - refactor getRank to be class Rank
         )
     except:
         return False
-    # return somethign for rate limit (429)
+    if response.status_code == 429:
+        return "rate"
     datajson = response.json()
     data = []
     for i in range(len(datajson)):
@@ -413,7 +416,7 @@ def getRankedData(s): # todo - refactor getRank to be class Rank
         data.append(Rank(datajson[i], name))
     if len(data) > 0:
         return data # list of Rank objects
-    else: return summoner.name # bad!!!!!!!
+    else: return summoner
 
 def getMaxRank(list):
     rankSet = set()
@@ -1135,17 +1138,17 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 if hasRanked:
                     redRanks += (playerString.rank) + "\n"
 
-    # text += "Blue Team"
     embed.add_field(name="Blue Players", value=blueSumms, inline=True)
     embed.add_field(name="Champions", value=blueChamps, inline=True)
     if hasRanked:
         embed.add_field(name="Ranks", value=blueRanks, inline=True)
+    else: embed.add_field(name = chr(173), value = chr(173)) # null field
 
-    # text += "Red Team"
     embed.add_field(name="Red Players", value=redSumms, inline=True)
     embed.add_field(name="Champions", value=redChamps, inline=True)
     if hasRanked:
         embed.add_field(name="Ranks", value=redRanks, inline=True)
+    else: embed.add_field(name = chr(173), value = chr(173))
     
     embed.description = text
     elapsed = match.elapsedTime
