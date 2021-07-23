@@ -1232,11 +1232,11 @@ def getWikiLink(message):
             return "Something went wrong. Riot's API might be down."
         if champ != None and spell != None: # result passed # todo - "she" => "ashe / e"
             champ, spell = scoreSpaces(champ), scoreSpaces(spell)
-            return f"https://www.leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}"
+            return f"<https://leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}>"
         elif isNoCode(message): # assume no ability code + long enough
-            return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
+            return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
         elif getFormat(message) != None and len(message) >= 2: # separate case if can be refactored later
-            return f"https://www.leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL"
+            return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
     except: # something threw exception
         return "Something went wrong. Let <@312012475761688578> know."
 
