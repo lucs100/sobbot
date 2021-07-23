@@ -373,8 +373,8 @@ async def on_message(message):
 				if response in codes:
 					await message.channel.send(codes[response])
 
-			if c.startswith("livematchr"):
-				summoner = c[10:].strip()
+			if c.startswith("lmr"):
+				summoner = c[3:].strip()
 				if summoner == "":
 					summoner = riotapi.isUserRegistered(message.author.id)
 					if summoner == False:
@@ -383,8 +383,8 @@ async def on_message(message):
 				response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
 				return True	
 			
-			if c.startswith("livematch"):
-				summoner = c[9:].strip()
+			if c.startswith("lm"):
+				summoner = c[2:].strip()
 				if summoner == "":
 					summoner = riotapi.isUserRegistered(message.author.id)
 					if summoner == False:

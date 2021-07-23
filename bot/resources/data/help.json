@@ -47,8 +47,12 @@
                     "description": "Returns data on a summoner's ranked winrate."
                 },
                 {
-                    "usage": "livematch `summoner`",
+                    "usage": "lm `summoner`",
                     "description": "Returns teams and masteries in a live match."
+                },
+                {
+                    "usage": "lmr `summoner`",
+                    "description": "Returns teams, masteries, and ranks in a live match."
                 },
                 {
                     "usage": "lwk `champion` `ability`",
