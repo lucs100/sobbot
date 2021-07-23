@@ -291,7 +291,7 @@ async def on_message(message):
 				else:
 					await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
 
-			if c.startswith("lastrmatch"):
+			if c.startswith("lastmatchr"):
 				summoner = c[10:].strip()
 				if summoner == "":
 					summoner = riotapi.isUserRegistered(message.author.id)
@@ -326,7 +326,7 @@ async def on_message(message):
 				else:
 					await message.channel.send(embed=response)
 			
-			if c.startswith("lolrrole"):
+			if c.startswith("lolroler"):
 				summoner = c[8:].strip()
 				if summoner == "":
 					summoner = riotapi.isUserRegistered(message.author.id)
@@ -358,7 +358,7 @@ async def on_message(message):
 				if response in codes:
 					await message.channel.send(codes[response])
 
-			if c.startswith("lolrwr"):
+			if c.startswith("lolwrr"):
 				summoner = c[6:].strip()
 				if summoner == "":
 					summoner = riotapi.isUserRegistered(message.author.id)
