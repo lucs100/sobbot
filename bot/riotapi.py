@@ -100,7 +100,10 @@ class LiveMatch():
         if not isinstance(targetSummoner, Summoner):
             targetSummoner = getSummonerData(targetSummoner)
         self.targetSummoner = targetSummoner
-        self.gameMode = getModeFromQueueID(data["gameQueueConfigId"])["description"]
+        if "gameQueueConfigId" in data:
+            self.gameMode = getModeFromQueueID(data["gameQueueConfigId"])["description"]
+        else:
+            self.gameMode = "Custom Match"
         self.participants = {}
         for player in data["participants"]:
             if player["summonerName"] == self.targetSummoner.name:
@@ -125,54 +128,6 @@ class Summoner():
         self.icon = data["profileIconId"]
         self.timestamp = data["revisionDate"]
         self.level = data["summonerLevel"]
-
-    def getRank(self, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
-        try: # todo - refactor to work with class Rank rework
-            response = requests.get(
-                (url + f"/lol/league/v4/entries/by-summoner/{self.esid}"),
-                headers = headers
-            )
-        except:
-            return "Summoner not found"
-        if response.status_code == 429:
-            return "rate"
-        datajson = response.json()
-
-        wr, g = 0, 0 #init to cover case when no ranked data
-        found = False
-        for q in datajson:
-            try:
-                if q["queueType"] == queue:
-                    found = True
-                    tier = q["tier"].capitalize()
-                    division = q["rank"]
-                    lp = q["leaguePoints"]
-                    if hasWR:
-                        g = (q["wins"]+q["losses"])
-                        if g == 0:
-                            hasWR = False #no games, will break wr calc
-                            break
-                        wr = (100*q["wins"])/g
-            except TypeError:
-                if q == "status":
-                    print(f"TypeError caught in Summoner.getRank() - {datajson}")
-                    return None
-
-        wrStr = ""
-        lpStr = ""
-        if hasWR:
-            deco = ''
-            if wr < 44.5 and g >= 50: # 5.5% edge considered significant (5/9 theory)
-                deco = '*'
-            elif wr > 55.5 and g >= 50:
-                deco = '**'
-            wrStr = f"({deco}{wr:.1f}%{deco} / {g}g)" # todo - test deco string
-        if hasLP:
-            lpStr = f", {lp} LP"
-
-        if found:
-            return (f"{tier} {division} {lpStr} {wrStr}") #maybe refactor to return a Rank object?
-        else: return ""
     
     def getSingleMastery(self, champ):
         if not isinstance(champ, int):
@@ -190,6 +145,10 @@ class Summoner():
         if response.status_code == 404:
             return None
         return {"level": response.json()["championLevel"], "points": response.json()["championPoints"]}
+
+    def getRank(self):
+        return getRankedData(self) # bad!!!!!!!!!!!!!!!!!!!!
+
 
 # File Imports / Setup
 
@@ -365,6 +324,73 @@ def getSummonerData(s):
         return None
     else: return Summoner(summonerData)
 
+def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+    def parseRank(div, tier):
+        divList = {
+            #"V": "5",
+            "IV": "4",
+            "III": "3",
+            "II": "2",
+            "I": "1",
+        }
+        tierList = {
+            "IRON": "I",
+            "BRONZE": "B",
+            "SILVER": "S",
+            "GOLD": "G",
+            "PLATINUM": "P",
+            "DIAMOND": "D",
+            "MASTER": "Master",
+            "GRANDMASTER": "GM",
+            "CHALLENGER": "Challenger"
+        }
+        apex = ["MASTER", "GRANDMASTER", "CHALLENGER"]
+        if tier in apex:
+            return tier.capitalize()
+        return f"{tierList[tier]}{divList[div]}"
+
+    try: # todo - refactor to work with class Rank rework
+        data = getRankedData(s)
+    except:
+        return "Summoner not found"
+    # if isinstance(data, str): # doesnt work bc never returns "rate" + level returns name!
+    #     return "rate"
+    wr, g = 0, 0 #init to cover case when no ranked data
+    found = False
+    if isinstance(data, list):
+        for q in data:
+            try:
+                if q.queue == queue:
+                    found = True
+                    rank = parseRank(q.division, q.tier)
+                    lp = q.lp
+                    if hasWR:
+                        g = (q.wins+q.losses)
+                        if g == 0:
+                            hasWR = False #no games, will break wr calc
+                            break
+                        wr = (100*q.wins)/g
+            except TypeError:
+                if q == "status": #what
+                    print(f"TypeError caught in getRankedString() - {vars(q)}")
+                    return None
+    else: return ""
+    wrStr = ""
+    lpStr = ""
+    if hasWR:
+        deco = ''
+        if wr < 44.5 and g >= 50: # 5.5% edge considered significant (5/9 theory)
+            deco = '*'
+        elif wr > 55.5 and g >= 50:
+            deco = '**'
+        wrStr = f"({deco}{wr:.1f}%{deco})" # gonna pass on the winrate stuff
+    if hasLP:
+        lpStr = f", {lp} LP"
+
+    if found:
+        return (f"{rank} {lpStr} {wrStr}") #maybe refactor to return a Rank object?
+    else: return "" # necessary?
+
 def getRankedData(s): # todo - refactor getRank to be class Rank 
     if checkKeyInvalid():
         return False
@@ -376,6 +402,7 @@ def getRankedData(s): # todo - refactor getRank to be class Rank
         )
     except:
         return False
+    # return somethign for rate limit (429)
     datajson = response.json()
     data = []
     for i in range(len(datajson)):
@@ -386,7 +413,7 @@ def getRankedData(s): # todo - refactor getRank to be class Rank
         data.append(Rank(datajson[i], name))
     if len(data) > 0:
         return data # list of Rank objects
-    else: return summoner.name
+    else: return summoner.name # bad!!!!!!!
 
 def getMaxRank(list):
     rankSet = set()
@@ -514,8 +541,6 @@ def embedRankedData(s):
     if description == "": #no data returned
         description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
-
-print(embedRankedData("CHIELERY").description)
 
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
@@ -1009,20 +1034,22 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         codes = ["no", "rate"]
         if champData not in codes:
             if hasRanked:
-                rankedData = (summoner.getRank(hasWR=True, deco=True))
+                # rankedData = (summoner.getRank(hasWR=False, deco=True))
+                rankedData = getRankedString(summoner, hasWR=False, deco=True)
                 if rankedData == "rate":
                     rateCancel()
                     return "rate"
                 elif rankedData != "":
                     rankStr = rankedData
                 else:
-                    rankStr = f"Level {summoner.level}"
+                    rankStr = f"Lv. {summoner.level}"
             level, points = champData["level"], (champData["points"]/1000) # points in 1000s
             msDec = ""
             if level >= 3:
                 if points >= 1000:
                     msDec = "`"
-                    masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}"
+                    # masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}" # too long
+                    masteryStr = f"{msDec}({points:.2f}M){msDec}"
                 else:
                     if points >= 500:
                         msDec = "***"
@@ -1030,12 +1057,13 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                         msDec = "**"
                     elif points >= 50:
                         msDec = "*"
-                    masteryStr = f"{msDec}(M{level} / {points:.1f}K){msDec}"
+                    # masteryStr = f"{msDec}(M{level} / {points:.1f}K){msDec}" # too long
+                    masteryStr = f"{msDec}({points:.1f}K){msDec}"
         elif champData == "rate":
             return "rate"
         data = {
             "summoner": summonerName,
-            "champ": f"{player.champName} {masteryStr}",
+            "champ": f"{player.champName}  {masteryStr}",
             "rank": rankStr,
             "team": player.teamID
         }
@@ -1107,14 +1135,14 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 if hasRanked:
                     redRanks += (playerString.rank) + "\n"
 
-    text += "Blue Team"
-    embed.add_field(name="Players", value=blueSumms, inline=True)
+    # text += "Blue Team"
+    embed.add_field(name="Blue Players", value=blueSumms, inline=True)
     embed.add_field(name="Champions", value=blueChamps, inline=True)
     if hasRanked:
         embed.add_field(name="Ranks", value=blueRanks, inline=True)
 
-    text += "Red Team"
-    embed.add_field(name="Players", value=redSumms, inline=True)
+    # text += "Red Team"
+    embed.add_field(name="Red Players", value=redSumms, inline=True)
     embed.add_field(name="Champions", value=redChamps, inline=True)
     if hasRanked:
         embed.add_field(name="Ranks", value=redRanks, inline=True)
