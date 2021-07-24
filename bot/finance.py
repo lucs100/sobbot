@@ -100,9 +100,9 @@ def getPhaseChangeTiming(phase=(getMarketPhase())):
     elif phase == 3: 
         comp = now.replace(hour=20, minute=0, second=0, microsecond=0)
     else:
-        comp = now.replace(hour=4, minute=0, second=0, microsecond=0)
+        comp = now.replace(hour=4, minute=0, second=0, microsecond=0) + timedelta(days=1) 
     totalSeconds = int((comp-now).total_seconds())
-    if totalSeconds < 0:
+    if totalSeconds < 0: # dont think this is neccesary anymore?
         totalSeconds += 24*60*60 #timedeltas become negative sometimes
     hours, remainder = divmod(totalSeconds, 3600)
     minutes, seconds = divmod(remainder, 60)
