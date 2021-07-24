@@ -69,20 +69,24 @@ async def on_message(message):
 		#special interaction/command messages, do not require prefix
 		if c == "hello sobbot":
 			await message.channel.send("hi :pleading_face:")
+			return True
 			
 		if c == "ping":
 			await message.channel.send("pong! ({0}ms)".format(int(client.latency*1000)))
+			return True
 		
 		if match("<@!?835251884104482907>", c) is not None:
 			px = admin.getGuildPrefix(message.guild.id)
 			await message.channel.send(f"My current prefix in this server is `{px}`.\n" +
 			f"Use `{px}help` for a directory of valid commands!  :blue_heart:")
+			return True
 
 		#special channels
 		if message.channel.id == 835388133959794699:
 			content = sob.parseMath(c)
 			if content != None:
 				await message.channel.send(content)
+				return True
 
 		#prefixed messages
 		if c.startswith(admin.getGuildPrefix(message.guild.id)):
@@ -94,18 +98,22 @@ async def on_message(message):
 
 			if c == "help":
 				await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+				return True
 
 			if c.startswith("help") and (c != "help"):
 				topic = c[4:].strip()
 				embed = helpDir.getHelpDirectoryEmbed(message, topic)
 				await message.channel.send(embed=embed)
+				return True
 			
 			if c.startswith("info"):
 				topic = c[4:].strip()
 				await message.channel.send(helpDir.getHelpSingle(message, topic))
+				return True
 			
 			if c == "about":
 				await message.channel.send("https://github.com/lucs100/sobbot")
+				return True
 
 			
 			# Admin Functions
@@ -133,6 +141,7 @@ async def on_message(message):
 						await message.channel.send(f"Server prefix is now `{c}`!")
 						return True
 				await message.channel.send(f"Something went wrong. Server prefix unchanged.")
+				return True
 
 
 			# Miscellaneous Functions
@@ -140,6 +149,7 @@ async def on_message(message):
 
 			if c == "flipcoin":
 				await message.channel.send(sob.flipCoin())
+				return True
 
 			if c.startswith('d'):
 				try:
@@ -147,13 +157,16 @@ async def on_message(message):
 					await message.channel.send(sob.die(n))
 				except:
 					pass
+				return True
 
 			if c == "sobbleimage":
 				await message.channel.send(file = sob.sobbleImage())
+				return True
 
 			if c.startswith("math"):
 				content = sob.parseMath(c[4:].strip())
 				await message.channel.send(content)
+				return True
 			
 			if c.startswith("pkmn"):
 				data = c[4:].strip()      #query
@@ -165,18 +178,22 @@ async def on_message(message):
 					embed = sob.pkmnLookup(data)
 					if embed != None: 	  #result found
 						await message.channel.send(embed=sob.pkmnLookup(data))
+				return True
 			
 			if c == "uptime":
 				await message.channel.send(sob.timeRunning(startTime))
+				return True
 
 			if c == "starttime":
 				startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
 				await message.channel.send(f"Sobbot has been online since {startingTime}!")
+				return True
 				#maybe format this a little nicer?
 			
 			if c == "randblue" or c == "randbluw":
 				embed, file = (sob.randomBlue())
 				await message.channel.send(embed=embed, file=file)
+				return True
 			
 			if c.startswith("link"):
 				try:
@@ -187,6 +204,7 @@ async def on_message(message):
 				print("Link successful.")
 				await sob.pipeline(channel)
 				print("Link ended.")
+				return True
 			
 
 			# LoL Functions
@@ -224,7 +242,7 @@ async def on_message(message):
 					await message.channel.send(embed=embed)
 				except: # bad!!!!
 					await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
-					return True
+				return True
 			
 			if c.startswith("lolregister"):
 				# name = message.content[13:].strip()
@@ -260,9 +278,9 @@ async def on_message(message):
 							await message.channel.send(f"Summoner **{name}** doesn't exist.")
 							return True
 					await message.channel.send(embed=embed)
-					return True
 				except:
-					return True
+					pass
+				return True
 
 			# if c == "lolapireload":
 			# 	if message.author.id == 312012475761688578:
@@ -290,6 +308,7 @@ async def on_message(message):
 					await message.channel.send(codes[response])
 				else:
 					await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
+				return True
 
 			if c.startswith("lastmatchr"):
 				summoner = c[10:].strip()
@@ -308,6 +327,7 @@ async def on_message(message):
 					await message.channel.send(codes[response])
 				else:
 					await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
+				return True
 			
 			if c.startswith("lolrole"):
 				summoner = c[7:].strip()
@@ -325,6 +345,7 @@ async def on_message(message):
 					await message.channel.send(codes[response])
 				else:
 					await message.channel.send(embed=response)
+				return True
 			
 			if c.startswith("lolroler"):
 				summoner = c[8:].strip()
@@ -342,6 +363,7 @@ async def on_message(message):
 					await message.channel.send(codes[response])
 				else:
 					await message.channel.send(embed=response)
+				return True
 
 			if c.startswith("lolwr"):
 				summoner = c[5:].strip()
@@ -357,6 +379,7 @@ async def on_message(message):
 				# if isinstance(response, str):
 				if response in codes:
 					await message.channel.send(codes[response])
+				return True
 
 			if c.startswith("lolwrr"):
 				summoner = c[6:].strip()
@@ -372,6 +395,7 @@ async def on_message(message):
 				# if isinstance(response, str):
 				if response in codes:
 					await message.channel.send(codes[response])
+				return True
 
 			if c.startswith("lmr"):
 				summoner = c[3:].strip()
@@ -398,12 +422,14 @@ async def on_message(message):
 				link = (riotapi.getWikiLink(c))
 				if link != None:
 					await message.channel.send(link)
+				return True
 			
 			if c.startswith("lollobby"):
 				c = c[8:].strip()
 				embed = riotapi.lobbyRankedReport(c) #make embed later
 				if embed != None:
 					await message.channel.send(embed)
+				return True
 
 
 			# Currency Functions
@@ -458,6 +484,7 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
 				else:
 					await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+				return True
 
 			if c.startswith("roll"):
 				value = c[4:].strip()
@@ -476,9 +503,11 @@ async def on_message(message):
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
 					if multi < 1:
 						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+				return True
 			
 			if c == "shop":
 				await message.channel.send(embed = coin.getShop(message))
+				return True
 			
 			if c.startswith("buy"):
 				c = c[3:].strip()
@@ -494,9 +523,11 @@ async def on_message(message):
 					await message.channel.send(messages[code])
 				else:
 					await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
+				return True
 
 			if c == "inventory":
 				await message.channel.send(coin.getInventoryEmbed(message.author.id))
+				return True
 			
 
 			# Finance Functions
@@ -508,7 +539,8 @@ async def on_message(message):
 				if embed != None:
 					await message.channel.send(embed=embed)
 				else:
-					await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist :(")
+					await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist.")
+				return True
 
 			if c == "pfstart":
 				ok = finance.createPortfolio(message.author.id)
@@ -516,7 +548,7 @@ async def on_message(message):
 					await message.channel.send("Portfolio created successfully!")
 				else:
 					await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
-				return True #required to avoid next condition being hit
+				return True
 			
 			if c == "pfshow":
 				data = await finance.getUserPortfolioEmbed(message)
@@ -528,7 +560,7 @@ async def on_message(message):
 					await message.channel.send(codes[data])
 				return True
 
-			if c.startswith("pf"):
+			if c.startswith("pf"): # must after all portfolio functions!
 				#slow
 				id = message.author.id
 				symbol, count = c[2:].split()
@@ -546,6 +578,7 @@ async def on_message(message):
 					"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
 				}
 				await message.channel.send(codes[status])
+				return True
 
 	return True
 				
