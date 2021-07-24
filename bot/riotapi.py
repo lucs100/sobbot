@@ -130,7 +130,7 @@ class LiveMatch():
 
 class Summoner():
     def __init__(self, data):
-        if isinstance(data, str):
+        if isinstance(data, str): # i dont rly like this
             self = getSummonerData(data)
         self.eaid = data["accountId"]
         self.esid = data["id"]
@@ -331,6 +331,8 @@ def getSummonerData(s):
         if code == 429:
             print("Rate limit exceeded in getSummonerData()")
             return "rate"
+        if code == 404:
+            return None
         print(f"Error {code} in getSummonerData wasn't explicitly handled. Returning Nonetype.")
         return None
     else: return Summoner(summonerData)
@@ -391,16 +393,16 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_
     if hasWR:
         deco = ''
         if wr < 44.5 and g >= 50: # 5.5% edge considered significant (5/9 theory)
-            deco = '*'
+            deco = '*'            # 50 games arbitrarily considered significant
         elif wr > 55.5 and g >= 50:
             deco = '**'
-        wrStr = f"({deco}{wr:.1f}%{deco})" # gonna pass on the winrate stuff
+        wrStr = f"({deco}{wr:.1f}%{deco})"
     if hasLP:
-        lpStr = f", {lp} LP"
+        lpStr = f", {lp} LP "
 
     if found:
-        return (f"{rank} {lpStr} {wrStr}") #maybe refactor to return a Rank object?
-    else: return "" # necessary?
+        return (f"{rank}{lpStr} {wrStr}")
+    else: return ""
 
 def getRankedData(s):
     if checkKeyInvalid():
@@ -1242,3 +1244,29 @@ def getWikiLink(message):
             return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
     except: # something threw exception
         return "Something went wrong. Let <@312012475761688578> know."
+
+def lobbyRankedReport(message):
+    class NullSumm: # todo - extend to rest of file?
+        def __init__(self, name):
+            self.name = name
+
+    message = message.replace("joined the lobby", "").split("\n")
+    names = []
+    for name in message:
+        currentName = getSummonerData(name.strip())
+        if isinstance(currentName, Summoner): 
+            names.append(currentName)
+        else:
+            names.append(NullSumm(name))
+    
+    description = ""
+
+    for name in names:
+        if isinstance(name, Summoner):
+            description += (f"{name.name} - ")
+            description += (f"{getRankedString(name, hasWR=True, deco=True)}\n")
+        elif isinstance(name, NullSumm):
+            description += (f"Couldn't get data for {name.name}\n")
+
+    return description
+    

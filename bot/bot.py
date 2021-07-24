@@ -63,7 +63,7 @@ async def on_guild_join(guild):
 @client.event
 async def on_message(message):
 	if message.author.id != 835251884104482907: #not from sobbot
-		c = (message.content).lower()
+		c = (message.content).lower() #change to cl? idk this might suck later
 		coin.messageBonus(message.author.id) #check droprate for passive coin earning
 		
 		#special interaction/command messages, do not require prefix
@@ -222,7 +222,7 @@ async def on_message(message):
 						await message.channel.send("Key expired.")
 						return True
 					await message.channel.send(embed=embed)
-				except:
+				except: # bad!!!!
 					await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
 					return True
 			
@@ -398,6 +398,12 @@ async def on_message(message):
 				link = (riotapi.getWikiLink(c))
 				if link != None:
 					await message.channel.send(link)
+			
+			if c.startswith("lollobby"):
+				c = c[8:].strip()
+				embed = riotapi.lobbyRankedReport(c) #make embed later
+				if embed != None:
+					await message.channel.send(embed)
 
 
 			# Currency Functions
