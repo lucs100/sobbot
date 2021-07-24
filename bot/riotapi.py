@@ -341,7 +341,7 @@ def getSummonerData(s):
         return None
     else: return Summoner(summonerData)
 
-def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
+def getRankedString(s, hasLP=False, hasWR=False, deco=False, hasGP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
     def parseRank(div, tier):
         divList = {
             #"V": "5",
@@ -392,15 +392,19 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, queue="RANKED_SOLO_
                     print(f"TypeError caught in getRankedString() - {vars(q)}")
                     return None
     else: return ""
+
     wrStr = ""
     lpStr = ""
+    gpStr = ""
     if hasWR:
+        if hasGP:
+            gpStr = f", {g}g"
         deco = ''
         if wr < 44.5 and g >= 50: # 5.5% edge considered significant (5/9 theory)
             deco = '*'            # 50 games arbitrarily considered significant
         elif wr > 55.5 and g >= 50:
             deco = '**'
-        wrStr = f"({deco}{wr:.1f}%{deco})"
+        wrStr = f"({deco}{wr:.1f}%{deco}{gpStr})"
     if hasLP:
         lpStr = f", {lp} LP "
 
@@ -1264,7 +1268,7 @@ def lobbyRankedReport(message):
     for name in names:
         if isinstance(name, Summoner):
             description += (f"{name.name} - ")
-            description += (f"{getRankedString(name, hasWR=True, deco=True)}\n") #thread this? idk
+            description += (f"{getRankedString(name, hasWR=True, hasGP=True, deco=True)}\n") #thread this? idk
         elif isinstance(name, NullSumm):
             description += (f"Couldn't get data for {name.name}\n")
 
