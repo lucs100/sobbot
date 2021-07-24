@@ -128,6 +128,10 @@ class LiveMatch():
         self.elapsedTime = (datetime.now() - self.startTime).seconds
         self.spectatorKey = data["observers"]["encryptionKey"]
 
+class NullSumm: # todo - add use cases instead of returning Nonetype in summ
+    def __init__(self, name):
+        self.name = name
+
 class Summoner():
     def __init__(self, data):
         if isinstance(data, str): # i dont rly like this
@@ -1246,10 +1250,6 @@ def getWikiLink(message):
         return "Something went wrong. Let <@312012475761688578> know."
 
 def lobbyRankedReport(message):
-    class NullSumm: # todo - extend to rest of file?
-        def __init__(self, name):
-            self.name = name
-
     message = message.replace("joined the lobby", "").split("\n")
     names = []
     for name in message:
