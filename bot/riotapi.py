@@ -1061,7 +1061,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 if points >= 1000:
                     msDec = "`"
                     # masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}" # too long
-                    masteryStr = f"{msDec}({points:.2f}M){msDec}"
+                    masteryStr = f"{msDec}({(points/1000):.2f}M){msDec}"
                 else:
                     if points >= 500:
                         msDec = "***"
@@ -1264,7 +1264,7 @@ def lobbyRankedReport(message):
     for name in names:
         if isinstance(name, Summoner):
             description += (f"{name.name} - ")
-            description += (f"{getRankedString(name, hasWR=True, deco=True)}\n")
+            description += (f"{getRankedString(name, hasWR=True, deco=True)}\n") #thread this? idk
         elif isinstance(name, NullSumm):
             description += (f"Couldn't get data for {name.name}\n")
 
