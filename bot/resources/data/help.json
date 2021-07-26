@@ -57,6 +57,10 @@
                 {
                     "usage": "lwk `champion` `ability`",
                     "description": "Links LoLWiki's entry on `champion`. Optionally, links to `ability` on the page."
+                },
+                {
+                    "usage": "lollobby `paste lobby chat`",
+                    "description": "Gets basic ranked info for your current lobby."
                 }
             ]
         },
