@@ -1262,6 +1262,8 @@ def lobbyRankedReport(message):
         elif isinstance(name, NullSumm):
             description += (f"Couldn't get data for {name.name}\n")
         return description
+    
+    embed = discord.Embed(color=0x728cf3)
 
     message = message.replace("joined the lobby", "").split("\n")
     names = []
@@ -1279,6 +1281,9 @@ def lobbyRankedReport(message):
     
     for playerString in res:
         description += playerString.result()
+    
+    embed.description = description
+    embed.title = "Lobby Overview"
         
-    return description
+    return embed
     

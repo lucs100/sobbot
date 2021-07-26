@@ -428,7 +428,7 @@ async def on_message(message):
 				c = c[8:].strip()
 				embed = riotapi.lobbyRankedReport(c) #make embed later
 				if embed != None:
-					await message.channel.send(embed)
+					await message.channel.send(embed=embed)
 				return True
 
 
