@@ -1122,10 +1122,10 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     # res = []
     # for player in match.participants.values():
     #     print(parseLiveMatchPlayerString(player))
-
-    # 5 workers tested to be most optimal for all setups
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
+
+    # 5 workers tested to be most optimal for all setups
 
     blueSumms = ""
     blueChamps = ""
@@ -1254,6 +1254,15 @@ def getWikiLink(message):
         return "Something went wrong. Let <@312012475761688578> know."
 
 def lobbyRankedReport(message):
+    def getReport(name):
+        description = ""
+        if isinstance(name, Summoner):
+            description += (f"{name.name} - ")
+            description += (f"{getRankedString(name, hasWR=True, hasGP=True, deco=True)}\n") #thread this? idk
+        elif isinstance(name, NullSumm):
+            description += (f"Couldn't get data for {name.name}\n")
+        return description
+
     message = message.replace("joined the lobby", "").split("\n")
     names = []
     for name in message:
@@ -1265,12 +1274,11 @@ def lobbyRankedReport(message):
     
     description = ""
 
-    for name in names:
-        if isinstance(name, Summoner):
-            description += (f"{name.name} - ")
-            description += (f"{getRankedString(name, hasWR=True, hasGP=True, deco=True)}\n") #thread this? idk
-        elif isinstance(name, NullSumm):
-            description += (f"Couldn't get data for {name.name}\n")
-
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        res = [executor.submit(getReport, name) for name in names]
+    
+    for playerString in res:
+        description += playerString.result()
+        
     return description
     
