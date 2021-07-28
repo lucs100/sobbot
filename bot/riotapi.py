@@ -1162,20 +1162,25 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     if hasRanked:
         embed.add_field(name="Ranks", value=redRanks, inline=True)
     else: embed.add_field(name = chr(173), value = chr(173))
-    
+
+    def dumpFile():
+        dumpStr = json.dumps(match.__dict__)
+        file = open(f"resources/data/private/logs/{str(match.gameID)}", "a")
+        file.write(f"Game timer might have failed! Dumping game log: {dumpStr}")
+        file.close()
+
     embed.description = text
     elapsed = match.elapsedTime
-    if elapsed <= 0:
+    if not (0 <= elapsed >= 90*60):
         title = f"Live Match - Loading In - {match.gameMode}"
+        dumpFile()
     else:
         m, s = divmod(elapsed, 60)
-        title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
         if m >= 60:
             embed.set_footer(text="Time may be inaccurate")
-            dumpStr = json.dumps(match.__dict__)
-            file = open(f"resources/data/private/{str(match.gameID)}", "a")
-            file.write(f"Game timer might have failed! Dumping game log: {dumpStr}")
-            file.close()
+            dumpFile()
+            m = m % 60
+        title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
     embed.title = title
     await sentEmbed.edit(embed=embed)
     return True
