@@ -1172,6 +1172,10 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
         if m >= 60:
             embed.set_footer(text="Time may be inaccurate")
+            dumpStr = json.dumps(match.__dict__)
+            file = open(f"resources/data/private/{str(match.gameID)}", "a")
+            file.write(f"Game timer might have failed! Dumping game log: {dumpStr}")
+            file.close()
     embed.title = title
     await sentEmbed.edit(embed=embed)
     return True
