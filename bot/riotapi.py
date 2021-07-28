@@ -227,19 +227,35 @@ def getChampNameById(id):
 def getChampIdByName(q):
     for id, n in champs.items():
         n = n.lower()
-        if n == q.lower(): # quick and dirty algorithm to search for champ id by name
+        if n == q.lower(): # there HAS to be a way to refactor all these conditions 
+            return id      # rn this is the best solution to solve the "sh" -> "ashe" error
+    for id, n in champs.items():
+        n = n.lower()
+        if n.replace('\'', " ") == q.lower():
             return id
-        elif n.replace('\'', " ") == q.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if n.replace('.', " ") == q.lower():
             return id
-        elif n.replace('.', " ") == q.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if n.replace('\'', "") == q.lower():
             return id
-        elif n.replace('\'', "") == q.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if n.replace('.', "") == q.lower():
             return id
-        elif n.replace('.', "") == q.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if n.replace(' ', "") == q.lower():
             return id
-        elif n.replace(' ', "") == q.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if n[0:len(q)] == q[0:len(q)].lower():
             return id
-        elif q.lower() in n.lower():
+    for id, n in champs.items():
+        n = n.lower()
+        if q.lower() in n.lower():
             return id
     return -1 # returns -1 if no match
 
@@ -1295,4 +1311,3 @@ def lobbyRankedReport(message):
     embed.title = "Lobby Overview"
         
     return embed
-    
