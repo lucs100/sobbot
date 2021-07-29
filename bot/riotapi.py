@@ -1036,17 +1036,16 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             self.team = data["team"]
 
     async def rateCancel():
-        with warnings.catch_warnings(): #todo - this isnt silent :(
-            warnings.simplefilter("ignore")
-            embed.title = "Rate limit exceeded!"
-            embed.description = (
-                "You're requesting too fast!\n" +
-                "Use command `" + 
-                getGuildPrefix(message.guild.id) +
-                "about ratelimit` for more info.")
-            embed.color = 0x840029
-            await sentEmbed.edit(embed=embed)
-            return False
+        print("Cancelling...")
+        embed.title = "Rate limit exceeded!"
+        embed.description = (
+            "You're requesting too fast!\n" +
+            "Use command `" + 
+            getGuildPrefix(message.guild.id) +
+            "about ratelimit` for more info.")
+        embed.color = 0x840029
+        await sentEmbed.edit(embed=embed)
+        return False
 
     def parseLiveMatchPlayerString(player):
         d = ""
@@ -1060,7 +1059,6 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         else:
             summonerName = player.summonerName
         if summoner == "rate":
-            rateCancel()
             return "rate"
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         codes = ["no", "rate"]
@@ -1069,7 +1067,6 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 # rankedData = (summoner.getRank(hasWR=False, deco=True))
                 rankedData = getRankedString(summoner, hasWR=False, deco=True)
                 if rankedData == "rate":
-                    rateCancel()
                     return "rate"
                 elif rankedData != "":
                     rankStr = rankedData
@@ -1115,11 +1112,11 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     summoner = data
     match = getLiveMatch(summoner)
     if match == "rate":
-        rateCancel()
+        await rateCancel()
         return "rate"
     if isinstance(match, str):
         if match == "rate":
-            rateCancel()
+            await rateCancel()
             return False
         elif match == "no":
             embed.title = "Match not found"
