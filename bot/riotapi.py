@@ -1180,14 +1180,13 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     else: embed.add_field(name = chr(173), value = chr(173))
 
     def dumpFile():
-        dumpStr = json.dumps(match.__dict__)
         file = open(f"resources/data/private/logs/{str(match.gameID)}", "a")
-        file.write(f"Game timer might have failed! Dumping game log: {dumpStr}")
+        file.write(f"Game timer might have failed! Dumping game log: {vars(match)}")
         file.close()
 
     embed.description = text
     elapsed = match.elapsedTime
-    if not (0 <= elapsed >= 90*60):
+    if not (0 <= elapsed <= 90*60):
         title = f"Live Match - Loading In - {match.gameMode}"
         dumpFile()
     else:
