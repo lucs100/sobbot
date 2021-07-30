@@ -1077,7 +1077,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             if level >= 3:
                 if points >= 1000:
                     msDec = "`"
-                    # masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}" # too long
+                    # masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}" # too long, maybe use showLevel flag?
                     masteryStr = f"{msDec}({(points/1000):.2f}M){msDec}"
                 else:
                     if points >= 500:
@@ -1177,7 +1177,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     else: embed.add_field(name = chr(173), value = chr(173))
 
     def dumpFile():
-        file = open(f"resources/data/private/logs/{str(match.gameID)}", "a")
+        file = open(f"resources/data/private/logs/{str(match.gameID)}.txt", "x")
         file.write(f"Game timer might have failed! Dumping game log: {vars(match)}")
         file.close()
 
