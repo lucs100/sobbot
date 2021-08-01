@@ -125,7 +125,10 @@ class LiveMatch():
         for ban in data["bannedChampions"]:
             self.bans[data["bannedChampions"].index(ban)] = LiveMatchBan(ban)
         self.startTime = datetime.fromtimestamp(data["gameStartTime"]/1000)
-        self.elapsedTime = (datetime.now() - self.startTime).seconds
+        if datetime.timestamp(self.startTime) < 0:
+            self.elapsedTime = -1
+        else:
+            self.elapsedTime = (datetime.now() - self.startTime).seconds
         self.spectatorKey = data["observers"]["encryptionKey"]
 
 class NullSumm: # todo - add use cases instead of returning Nonetype in summ
@@ -1177,9 +1180,12 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
     else: embed.add_field(name = chr(173), value = chr(173))
 
     def dumpFile():
-        file = open(f"resources/data/private/logs/{str(match.gameID)}.txt", "x")
-        file.write(f"Game timer might have failed! Dumping game log: {vars(match)}")
-        file.close()
+        try:
+            file = open(f"{str(match.gameID)}.txt", "x")
+            file.write(f"Game timer might have failed! Dumping game log: {vars(match)}")
+            file.close()
+        except:
+            pass
 
     embed.description = text
     elapsed = match.elapsedTime
