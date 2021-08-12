@@ -1,0 +1,110 @@
+[
+    {
+        "name": "smiley",
+        "rarity": "common",
+        "value": 10
+    },
+    {
+        "name": "smile",
+        "rarity": "common",
+        "value": 11
+    },
+    {
+        "name": "worried",
+        "rarity": "common",
+        "value": 12
+    },
+    {
+        "name": "frowning",
+        "rarity": "common",
+        "value": 13
+    },
+    {
+        "name": "slight_smile",
+        "rarity": "common",
+        "value": 14
+    },
+
+    {
+        "name": "confused",
+        "rarity": "uncommon",
+        "value": 20
+    },
+    {
+        "name": "cry",
+        "rarity": "uncommon",
+        "value": 22
+    },
+    {
+        "name": "relieved",
+        "rarity": "uncommon",
+        "value": 23
+    },
+    {
+        "name": "kissing_heart",
+        "rarity": "uncommon",
+        "value": 25
+    },
+
+    {
+        "name": "yum",
+        "rarity": "rare",
+        "value": 35
+    },
+    {
+        "name": "heart_eyes",
+        "rarity": "rare",
+        "value": 36
+    },
+    {
+        "name": "sunglasses",
+        "rarity": "rare",
+        "value": 38
+    },
+    {
+        "name": "perservere",
+        "rarity": "rare",
+        "value": 40
+    },
+
+    
+    {
+        "name": "rage",
+        "rarity": "superrare",
+        "value": 50
+    },
+    
+    {
+        "name": "face_with_symbols_over_mouth",
+        "rarity": "ultrarare",
+        "value": 60
+    },
+
+    
+    {
+        "name": "star_struck",
+        "rarity": "epic",
+        "value": 70
+    },
+    {
+        "name": "sob",
+        "rarity": "epic",
+        "value": 74
+    },
+    {
+        "name": "stuck_out_tongue_closed_eyes",
+        "rarity": "epic",
+        "value": 77
+    },
+    {
+        "name": "face_with_hand_over_mouth",
+        "rarity": "epic",
+        "value": 80
+    },
+
+    {
+        "name": "pleading",
+        "rarity": "legendary",
+        "value": 120
+    }
+]
