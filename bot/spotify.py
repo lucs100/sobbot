@@ -1,4 +1,4 @@
-import spotipy, os, requests, discord
+import spotipy, os, requests, discord, json
 from spotipy import client
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
@@ -11,20 +11,30 @@ load_dotenv()
 # crduri = os.getenv("SPOTIFYRDURI")
 sobbotID = os.getenv("SPOTIFYBOTID")
 
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-    scope="playlist-modify-public"))
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
+    scope="playlist-modify-public")) 
+
+guildPlaylists = dict()
+
+with open('bot/resources/data/private/guilds.json') as f:
+    guilds = json.loads(f.read()) # unpacking data
+    f.close()
 
 url = "https://api.spotify.com"
 
 class PlaylistHeader:
     def __init__(self, data):
-        self.id = data["id"]
-        self.link = data["external_urls"]["spotify"]
+        if isinstance(data, dict):
+            self.id = data["id"]
+            self.link = data["external_urls"]["spotify"]
+        if isinstance(data, PlaylistHeader):
+            self.id = data.id
+            self.link = data.link
 
-class ServerPlaylistHeader:
+class GuildPlaylistHeader:
     def __init__(self, name, playlistHeader, creatorID, guildID):
         self.name = name
-        self.header = playlistHeader
+        self.header = PlaylistHeader(playlistHeader)
         self.createdBy = str(creatorID)
         self.guildID = guildID
 
@@ -40,13 +50,30 @@ def createPlaylist(name, targetUserID=sobbotID, description=None, public=True, g
     except:
         return None #failed, somehow
 
-def createServerPlaylist(message):
-    creatorID = message.author.id
+def updateGuildData():
+    with open('bot/resources/data/private/guildPlaylists.json', 'w') as fp:
+        json.dump(guildPlaylists, fp, indent=4)
+    return True
+
+def saveGuildPlaylist(gph):
+    if not isinstance(gph, GuildPlaylistHeader):
+        return False
+    if gph.guildID in guilds:
+        if "playlists" in guilds[gph.guildID]:
+            numPlaylists = len(guilds[gph.guildID]["playlists"])
+            guilds[gph.guildID]["playlists"][numPlaylists] = gph
+        else:
+            guilds[gph.guildID]["playlists"] = {0: gph}
+    updateGuildData()
+    return True
+
+def createGuildPlaylist(message):
+    creatorID = str(message.author.id)
     guildName = message.guild.name
-    guildID = message.guild.id
+    guildID = str(message.guild.id)
     playlistName = f"{guildName}'s Server Playlist"
     playlisth = createPlaylist(playlistName, guildMode=True)
     if playlisth != None:
-        sp = ServerPlaylistHeader(playlistName, playlisth, creatorID, guildID)
-        #update list of guild playlists!
+        sp = GuildPlaylistHeader(playlistName, playlisth, creatorID, guildID)
+        saveGuildPlaylist(sp)
 
