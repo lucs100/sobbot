@@ -22,6 +22,27 @@ with open('bot/resources/data/private/guilds.json') as f:
 
 url = "https://api.spotify.com"
 
+class AlbumImage:
+    def __init__(self, data):
+        pass
+
+class Artist:
+    def __init__(self, data):
+        pass
+
+class Song:
+    def __init__(self, data):
+        self.name = data["name"]
+        self.images = []
+        for image in data["images"]:
+            self.images.append(AlbumImage(image))
+        self.artists = []
+        for artist in data["artists"]:
+            self.artists.append(Artist(artist))
+        self.id = data["id"]
+        self.popularity = data["popularity"]
+        self.preview = data["preview_url"]
+
 class PlaylistHeader:
     def __init__(self, data):
         if isinstance(data, dict):
@@ -37,6 +58,10 @@ class GuildPlaylistHeader:
         self.header = PlaylistHeader(playlistHeader)
         self.createdBy = str(creatorID)
         self.guildID = guildID
+    
+    def addSong(self, song):
+        if isinstance(song, Song):
+            sp.playlist_add_items(self.header.id, song.id)
 
 def createPlaylist(name, targetUserID=sobbotID, description=None, public=True, guildMode=False):
     if description == None:
@@ -67,7 +92,11 @@ def saveGuildPlaylist(gph):
     updateGuildData()
     return True
 
-def createGuildPlaylist(message):
+def getFirstSongResult(query):
+    data = sp.search(query, type="track")["tracks"]["items"][0]
+    return(Song(data))
+
+async def createGuildPlaylist(message):
     creatorID = str(message.author.id)
     guildName = message.guild.name
     guildID = str(message.guild.id)
@@ -76,4 +105,7 @@ def createGuildPlaylist(message):
     if playlisth != None:
         sp = GuildPlaylistHeader(playlistName, playlisth, creatorID, guildID)
         saveGuildPlaylist(sp)
+    else:
+        await message.channel.send("Failed.")
 
+print(getFirstSongResult(input()))
