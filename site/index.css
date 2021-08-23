@@ -1,4 +1,7 @@
-@font-face { font-family: paintball; src: url('./assets/paintball.ttf'); } 
+@font-face {
+    font-family: paintball;
+    src: url("./assets/paintball.ttf");
+}
 
 html {
     min-height: 100%
