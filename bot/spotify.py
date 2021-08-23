@@ -17,7 +17,7 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
 guildPlaylists = dict()
 
 with open('bot/resources/data/private/guilds.json') as f:
-    guilds = json.loads(f.read()) # unpacking data
+    guildPlaylists = json.loads(f.read()) # unpacking data
     f.close()
 
 url = "https://api.spotify.com"
@@ -55,7 +55,8 @@ class PlaylistHeader:
 class GuildPlaylistHeader:
     def __init__(self, name, playlistHeader, creatorID, guildID):
         self.name = name
-        self.header = PlaylistHeader(playlistHeader)
+        self.id = playlistHeader.id
+        self.link = playlistHeader.link
         self.createdBy = str(creatorID)
         self.guildID = guildID
     
@@ -80,15 +81,25 @@ def updateGuildData():
         json.dump(guildPlaylists, fp, indent=4)
     return True
 
+def getGuildPlaylist(guildID):
+    try:
+        if "playlists" in guildPlaylists[guildID]:
+            return guildPlaylists[guildID]["playlists"][0]
+    except:
+        pass
+    return None
+
 def saveGuildPlaylist(gph):
     if not isinstance(gph, GuildPlaylistHeader):
         return False
-    if gph.guildID in guilds:
-        if "playlists" in guilds[gph.guildID]:
-            numPlaylists = len(guilds[gph.guildID]["playlists"])
-            guilds[gph.guildID]["playlists"][numPlaylists] = gph
-        else:
-            guilds[gph.guildID]["playlists"] = {0: gph}
+    data = gph.__dict__
+    if gph.guildID not in guildPlaylists.keys():
+        guildPlaylists[gph.guildID] = {}
+    if "playlists" in guildPlaylists[gph.guildID]:
+        guildPlaylists[gph.guildID]["playlists"].append(data)
+    else:
+        guildPlaylists[gph.guildID]["playlists"] = []
+        guildPlaylists[gph.guildID]["playlists"].append(data)
     updateGuildData()
     return True
 
@@ -96,16 +107,22 @@ def getFirstSongResult(query):
     data = sp.search(query, type="track")["tracks"]["items"][0]
     return(Song(data))
 
-async def createGuildPlaylist(message):
+async def createGuildPlaylistGuildSide(message):
     creatorID = str(message.author.id)
     guildName = message.guild.name
     guildID = str(message.guild.id)
+    currentPlaylist = getGuildPlaylist(guildID)
+    if currentPlaylist != None:
+        await message.channel.send(f"**{guildName}** already has a playlist!")
+        return currentPlaylist
     playlistName = f"{guildName}'s Server Playlist"
     playlisth = createPlaylist(playlistName, guildMode=True)
     if playlisth != None:
-        sp = GuildPlaylistHeader(playlistName, playlisth, creatorID, guildID)
-        saveGuildPlaylist(sp)
-    else:
-        await message.channel.send("Failed.")
-
-print(getFirstSongResult(input()))
+        gph = GuildPlaylistHeader(playlistName, playlisth, creatorID, guildID)
+        if gph != None:
+            saveGuildPlaylist(gph)
+            await message.channel.send("Success!")
+            return True
+    await message.channel.send("Failed.")
+    return False
+    

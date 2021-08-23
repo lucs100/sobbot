@@ -4,6 +4,7 @@ import time
 
 import functions as sob
 import riotapi
+import spotify as sp
 import currency as coin
 import finance
 import admin
@@ -580,6 +581,15 @@ async def on_message(message):
 				}
 				await message.channel.send(codes[status])
 				return True
+			
+
+			# Spotify Functions
+
+
+			if c == "createserverplaylist":
+				await sp.createGuildPlaylistServerSide(message)
+				return True
+
 
 	return True
 				
