@@ -114,6 +114,7 @@ async def createGuildPlaylistGuildSide(message):
     currentPlaylist = getGuildPlaylist(guildID)
     if currentPlaylist != None:
         await message.channel.send(f"**{guildName}** already has a playlist!")
+        await message.channel.send(currentPlaylist.link)
         return currentPlaylist
     playlistName = f"{guildName}'s Server Playlist"
     playlisth = createPlaylist(playlistName, guildMode=True)
@@ -122,6 +123,7 @@ async def createGuildPlaylistGuildSide(message):
         if gph != None:
             saveGuildPlaylist(gph)
             await message.channel.send("Success!")
+            await message.channel.send(gph.link)
             return True
     await message.channel.send("Failed.")
     return False
