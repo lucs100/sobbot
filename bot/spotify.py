@@ -69,27 +69,11 @@ class GuildPlaylistHeader:
         self.guildID = guildID
         self.songs = songs
 
-def loadGuildPlaylistHeader(savedGPH):
-    name = savedGPH["name"]
-    miniHeader = {
-        "id": savedGPH["id"],
-        "link": savedGPH["link"]
-    }
-    createdBy = savedGPH["createdBy"]
-    guildID = savedGPH["guildID"]
-    songs = savedGPH["songs"]
-    gph = GuildPlaylistHeader(name, miniHeader, createdBy, guildID, songs=songs)
-    return gph
-
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
-    # tempGuildPlaylists = json.loads(f.read()) # unpacking data
-    # for guild, data in tempGuildPlaylists.items():
-    #     if "playlists" in data:
-    #         for idx in range(len(data["playlists"])):
-    #             loadedGPH = loadGuildPlaylistHeader(data["playlists"][idx])
-    #             data["playlists"][idx] = loadedGPH
-    # guildPlaylists = tempGuildPlaylists
-    guildPlaylists = dill.load(f)
+    try:
+        guildPlaylists = dill.load(f)
+    except EOFError:
+        guildPlaylists = []
     f.close()
 
 def createPlaylist(name, targetUserID=sobbotID, description=None, public=True, guildMode=False):
@@ -106,7 +90,6 @@ def createPlaylist(name, targetUserID=sobbotID, description=None, public=True, g
 
 def updateGuildData():
     with open('bot/resources/data/private/guildPlaylists.pkl', 'wb') as f:
-        # json.dump(guildPlaylists, f, indent=4)
         dill.dump(guildPlaylists, f, recurse=True)
     return True
 
