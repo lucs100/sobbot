@@ -69,6 +69,12 @@ async def on_message(message):
 		coin.messageBonus(message.author.id) #check droprate for passive coin earning
 		
 		#special interaction/command messages, do not require prefix
+		if c == "jenna":
+			# jenna easter egg
+			with open("bot/resources/images/misc/jenna.jpeg", "rb") as f:
+				picture = discord.File(f)
+			await message.channel.send("Jenna", file=picture)
+
 		if c == "hello sobbot":
 			await message.channel.send("hi :pleading_face:")
 			return True
