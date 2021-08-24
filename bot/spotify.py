@@ -20,8 +20,9 @@ url = "https://api.spotify.com"
 
 class Artist:
     def __init__(self, data):
-        self = None
-        pass
+        self.link = data["external_urls"]["spotify"]
+        self.id = data["id"]
+        self.name = data["name"]
 
 class Album:
     def __init__(self, data):
@@ -68,12 +69,23 @@ class GuildPlaylistHeader:
         self.createdBy = str(creatorID)
         self.guildID = guildID
         self.songs = songs
+    
+    def addSong(self, song, addedBy):
+        if isinstance(song, str):
+            song = getFirstSongResult(song, addedBy)
+        if song == None:
+            return False, song
+        song.addedBy = addedBy
+        sp.playlist_add_items(self.id, [song.id])
+        self.songs.append(song)
+        updateGuildData()
+        return True, song
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
         guildPlaylists = dill.load(f)
-    except EOFError:
-        guildPlaylists = []
+    except:
+        guildPlaylists = {}
     f.close()
 
 def createPlaylist(name, targetUserID=sobbotID, description=None, public=True, guildMode=False):
@@ -105,7 +117,7 @@ def getGuildPlaylist(guildID):
 def saveGuildPlaylist(gph):
     if not isinstance(gph, GuildPlaylistHeader):
         return False
-    if gph.guildID not in guildPlaylists.keys():
+    if gph.guildID not in guildPlaylists:
         guildPlaylists[gph.guildID] = {}
     if "playlists" in guildPlaylists[gph.guildID]:
         guildPlaylists[gph.guildID]["playlists"].append(gph)
@@ -115,16 +127,6 @@ def saveGuildPlaylist(gph):
     updateGuildData()
     return True
 
-def addSong(playlist, song, addedBy):
-    if isinstance(song, str):
-        song = getFirstSongResult(song, addedBy)
-    if song == None:
-        return False
-    song.addedBy = addedBy
-    sp.playlist_add_items(playlist["id"], song.id)
-    playlist["songs"].append(song)
-    updateGuildData()
-    return True
 
 def getFirstSongResult(query, addedBy):
     try:

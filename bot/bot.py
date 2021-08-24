@@ -592,7 +592,7 @@ async def on_message(message):
 			# Spotify Functions
 
 
-			if c == "createserverplaylist":
+			if c == "spcreate":
 				await sp.createGuildPlaylistGuildSide(message)
 				return True
 			
@@ -602,7 +602,10 @@ async def on_message(message):
 				senderID = str(message.author.id)
 				gph = sp.getGuildPlaylist(guildID)
 				if gph != None:
-					sp.addSong(gph, c, senderID)
+					ok, song = gph.addSong(c, senderID)
+					if ok:
+						await message.channel.send(f"Successfully added *{song.name}* " +
+						f"by **{song.artists[0].name}**!")
 				else:
 					await message.channel.send("Your server doesn't have a server playlist yet!\n" + 
 						f"Use {admin.getGuildPrefix(guildID)}createServerPlaylist to make one.")
