@@ -14,7 +14,7 @@ sobbotID = os.getenv("SPOTIFYBOTID")
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
     scope="playlist-modify-public")) 
 
-guildPlaylists = None
+guildPlaylists = {}
 
 url = "https://api.spotify.com"
 
@@ -122,14 +122,13 @@ def getGuildPlaylist(guildID):
 def saveGuildPlaylist(gph):
     if not isinstance(gph, GuildPlaylistHeader):
         return False
-    data = gph.__dict__
     if gph.guildID not in guildPlaylists.keys():
         guildPlaylists[gph.guildID] = {}
     if "playlists" in guildPlaylists[gph.guildID]:
-        guildPlaylists[gph.guildID]["playlists"].append(data)
+        guildPlaylists[gph.guildID]["playlists"].append(gph)
     else:
         guildPlaylists[gph.guildID]["playlists"] = []
-        guildPlaylists[gph.guildID]["playlists"].append(data)
+        guildPlaylists[gph.guildID]["playlists"].append(gph)
     updateGuildData()
     return True
 
