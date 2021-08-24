@@ -21,6 +21,8 @@ Use s!help for a directory Sobbot's commands. Alternatively, use s!about for inf
 
 Sobbot's default prefix is s!, which can be changed using s!prefix `yourprefixhere`.
 
+[sobbot.xyz](https://sobbot.xyz)
+
 ## Disclaimer, due to repository name and content:
 
 This repository is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Nintendo. Use of any and all trademarked names in this product are purely coincidental and not endorsed by Nintendo.
