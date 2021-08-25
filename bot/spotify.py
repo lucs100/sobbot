@@ -1,5 +1,4 @@
-import spotipy, os, discord, json, dill, admin
-from spotipy import client
+import spotipy, os, discord, dill, admin
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 
@@ -45,6 +44,12 @@ class Song:
         self.popularity = data["popularity"]
         self.preview = data["preview_url"]
         self.addedBy = addedBy
+        
+    def getTruncatedName(self, maxLen=30):
+        if len(self.name) <= maxLen:
+            return self.name
+        else:
+            return self.name[0:30] + "..."
 
 class PlaylistHeader:
     def __init__(self, data):
@@ -117,6 +122,7 @@ def updateGuildData():
 
 def getGuildPlaylist(guildID):
     guildID = str(guildID)
+    # todo - update playlist based on data from spotipy api?
     try:
         if "playlists" in guildPlaylists[guildID]:
             return guildPlaylists[guildID]["playlists"][0]
@@ -178,3 +184,55 @@ async def addToGuildPlaylistGuildSide(message, c):
     else:
         await message.channel.send("This server doesn't have a server playlist yet!\n" + 
             f"Use `{admin.getGuildPrefix(guildID)}spcreate` to make one.")
+
+async def createGuildPlaylistOverview(guildID, members):
+
+    def getMemberNick(memberID):
+        def getMember(localMemberID):
+            for member in members:
+                if member.id == int(localMemberID):
+                    return member
+            return None
+
+        member = getMember(memberID)
+        if member == None:
+            return "*Unknown*"
+        if member.nick != None:
+            return member.nick
+        return member.name
+
+    target = getGuildPlaylist(guildID)
+    embed = discord.Embed()
+    if target == None:
+        embed.title = "No server playlist found."
+        embed.description = f"Use `{admin.getGuildPrefix(guildID)}spcreate` to make one."
+        return embed
+    title = f"{target.name} - Overview"
+    # description = ""
+    tracks = ""
+    artists = ""
+    addUser = ""
+
+    for song in target.songs:
+        tracks += song.getTruncatedName() + "\n"
+        artists += song.artists[0].name + "\n"
+        user = getMemberNick(song.addedBy)
+        addUser += f"{user}\n"
+    
+    embed.add_field(name="Song", value=tracks, inline=True)
+    embed.add_field(name="Artist", value=artists, inline=True)
+    embed.add_field(name="Contributor", value=addUser, inline=True)
+
+    embed.title = title
+    songCount = len(target.songs)
+    embed.set_footer(text=f"Playlist has {songCount} tracks.")
+    embed.color = 0x1DB954
+    # embed.description = description
+    return embed
+
+async def fetchGuildPlaylistOverviewGuildSide(message, members):
+    guildID = str(message.guild.id)
+    overviewEmbed = await createGuildPlaylistOverview(guildID, members)
+    await message.channel.send(embed=overviewEmbed)
+    return True
+
