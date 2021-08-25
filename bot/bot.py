@@ -17,7 +17,10 @@ from dotenv import load_dotenv
 load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 
-client = discord.Client()
+intents = discord.Intents.default()
+intents.members = True
+
+client = discord.Client(intents=intents)
 
 startTime = time.time()
 
@@ -600,7 +603,24 @@ async def on_message(message):
 				c = c[5:].strip()
 				sp.addToGuildPlaylistGuildSide(message, c)
 				return True
+			
+			if c == "spoverview":
+				members = getMemberList(message.guild.id)
+				await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
+				return True
+			
+			if c == "splink":
+				link = sp.getGuildPlaylist(message.guild.id).link
+				await message.channel.send(link)
+
 
 	return True
-				
+
+def getMemberList(guildID):
+	targetGuild = client.get_guild(guildID)
+	memberList = []
+	for member in targetGuild.members:
+		memberList.append(member)
+	return memberList
+
 client.run(DISCORDTOKEN)
