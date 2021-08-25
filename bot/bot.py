@@ -598,17 +598,8 @@ async def on_message(message):
 			
 			if c.startswith("spadd"):
 				c = c[5:].strip()
-				guildID = str(message.guild.id)
-				senderID = str(message.author.id)
-				gph = sp.getGuildPlaylist(guildID)
-				if gph != None:
-					ok, song = gph.addSong(c, senderID)
-					if ok:
-						await message.channel.send(f"Successfully added *{song.name}* " +
-						f"by **{song.artists[0].name}**!")
-				else:
-					await message.channel.send("Your server doesn't have a server playlist yet!\n" + 
-						f"Use {admin.getGuildPrefix(guildID)}createServerPlaylist to make one.")
+				sp.addToGuildPlaylistGuildSide(message, c)
+				return True
 
 	return True
 				

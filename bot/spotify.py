@@ -1,4 +1,4 @@
-import spotipy, os, discord, json, dill
+import spotipy, os, discord, json, dill, admin
 from spotipy import client
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
@@ -71,15 +71,25 @@ class GuildPlaylistHeader:
         self.songs = songs
     
     def addSong(self, song, addedBy):
+        class songAddObject:
+            def __init__(self, song):
+                if song == None:
+                    self.ok = False
+                else:
+                    self.ok == True
+                self.name = song.name
+                self.artist = song.artists[0].name
+        
         if isinstance(song, str):
             song = getFirstSongResult(song, addedBy)
-        if song == None:
-            return False, song
+        response = songAddObject(song)
+        if response.ok == None:
+            return response
         song.addedBy = addedBy
         sp.playlist_add_items(self.id, [song.id])
         self.songs.append(song)
         updateGuildData()
-        return True, song
+        return response
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -155,3 +165,16 @@ async def createGuildPlaylistGuildSide(message):
             return True
     await message.channel.send("Failed.")
     return False
+
+async def addToGuildPlaylistGuildSide(message, c):
+    guildID = str(message.guild.id)
+    senderID = str(message.author.id)
+    gph = getGuildPlaylist(guildID)
+    if gph != None:
+        response = gph.addSong(c, senderID)
+        if response.ok:
+            await message.channel.send(f"Successfully added *{response.name}* " +
+            f"by **{response.name}**!")
+    else:
+        await message.channel.send("This server doesn't have a server playlist yet!\n" + 
+            f"Use `{admin.getGuildPrefix(guildID)}spcreate` to make one.")
