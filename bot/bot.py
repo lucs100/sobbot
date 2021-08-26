@@ -625,6 +625,17 @@ async def on_message(message):
 					await message.add_reaction("👎")
 					return False
 
+			if c.startswith("spsetdesc"):
+				desc = message.content[len(admin.getGuildPrefix(message.guild.id))+9:].strip()
+				perms = (message.author.guild_permissions.manage_guild)
+				response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
+				if response:
+					await message.add_reaction("👍")
+					return True
+				else:
+					await message.add_reaction("👎")
+					return False
+
 	return True
 
 def getMemberList(guildID):

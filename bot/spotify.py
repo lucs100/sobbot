@@ -109,10 +109,10 @@ class GuildPlaylistHeader:
     def setDescription(self, newDesc):
         try:
             sp.playlist_change_details(self.id, description=newDesc)
+            # GPH doesn't store description
             return True
         except:
             return False
-        # GPH doesn't store description
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -268,4 +268,16 @@ async def setGuildPlaylistTitleGuildSide(message, c, hasAdminPerms):
         return False
     else:
         ok = target.setTitle(c)
+        return ok
+
+async def setGuildPlaylistDescGuildSide(message, c, hasAdminPerms):
+    if not hasAdminPerms:
+        await message.channel.send("You'll need Manage Server perms to do that.")
+        return False
+    target = getGuildPlaylist(message.guild.id)
+    if target == None:
+        reportNoGP(message)
+        return False
+    else:
+        ok = target.setDescription(c)
         return ok
