@@ -601,7 +601,7 @@ async def on_message(message):
 			
 			if c.startswith("spadd"):
 				c = c[5:].strip()
-				sp.addToGuildPlaylistGuildSide(message, c)
+				await sp.addToGuildPlaylistGuildSide(message, c)
 				return True
 			
 			if c == "spoverview":
@@ -612,7 +612,18 @@ async def on_message(message):
 			if c == "splink":
 				link = sp.getGuildPlaylist(message.guild.id).link
 				await message.channel.send(link)
+				return True
 
+			if c.startswith("spsettitle"):
+				title = message.content[len(admin.getGuildPrefix(message.guild.id))+10:].strip()
+				perms = (message.author.guild_permissions.manage_guild)
+				response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
+				if response:
+					await message.add_reaction("👍")
+					return True
+				else:
+					await message.add_reaction("👎")
+					return False
 
 	return True
 

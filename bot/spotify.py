@@ -77,24 +77,42 @@ class GuildPlaylistHeader:
     
     def addSong(self, song, addedBy):
         class songAddObject:
-            def __init__(self, song):
-                if song == None:
+            def __init__(self, songToAdd):
+                if songToAdd == None:
                     self.ok = False
+                    self.name = None
+                    self.artist = None
                 else:
-                    self.ok == True
-                self.name = song.name
-                self.artist = song.artists[0].name
+                    self.ok = True
+                    self.name = songToAdd.name
+                    self.artist = songToAdd.artists[0].name
         
         if isinstance(song, str):
             song = getFirstSongResult(song, addedBy)
         response = songAddObject(song)
-        if response.ok == None:
+        if response.ok == False:
             return response
         song.addedBy = addedBy
         sp.playlist_add_items(self.id, [song.id])
         self.songs.append(song)
         updateGuildData()
         return response
+
+    def setTitle(self, newTitle):
+        try:
+            sp.playlist_change_details(self.id, name=newTitle)
+            self.name = newTitle
+            return True
+        except:
+            return False
+
+    def setDescription(self, newDesc):
+        try:
+            sp.playlist_change_details(self.id, description=newDesc)
+            return True
+        except:
+            return False
+        # GPH doesn't store description
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -143,6 +161,9 @@ def saveGuildPlaylist(gph):
     updateGuildData()
     return True
 
+async def reportNoGP(message):
+    await message.channel.send("This server doesn't have a server playlist yet!\n" + 
+            f"Use `{admin.getGuildPrefix(message.guild.id)}spcreate` to make one.")
 
 def getFirstSongResult(query, addedBy):
     try:
@@ -180,10 +201,11 @@ async def addToGuildPlaylistGuildSide(message, c):
         response = gph.addSong(c, senderID)
         if response.ok:
             await message.channel.send(f"Successfully added *{response.name}* " +
-            f"by **{response.name}**!")
+            f"by **{response.artist}**!")
+        else:
+            await message.channel.send("That song doesn't seem to exist.")
     else:
-        await message.channel.send("This server doesn't have a server playlist yet!\n" + 
-            f"Use `{admin.getGuildPrefix(guildID)}spcreate` to make one.")
+        reportNoGP(message)
 
 async def createGuildPlaylistOverview(guildID, members):
 
@@ -236,3 +258,14 @@ async def fetchGuildPlaylistOverviewGuildSide(message, members):
     await message.channel.send(embed=overviewEmbed)
     return True
 
+async def setGuildPlaylistTitleGuildSide(message, c, hasAdminPerms):
+    if not hasAdminPerms:
+        await message.channel.send("You'll need Manage Server perms to do that.")
+        return False
+    target = getGuildPlaylist(message.guild.id)
+    if target == None:
+        reportNoGP(message)
+        return False
+    else:
+        ok = target.setTitle(c)
+        return ok
