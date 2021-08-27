@@ -664,6 +664,8 @@ async def on_message(message):
 			
 			if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
 				newImg = message.attachments[0]
+				gph = sp.getGuildPlaylist(message.guild.id)
+				sp.handleSetPlaylistCoverImage(message, newImg, gph)
 				# check size/aspect?? idk
 
 	return True

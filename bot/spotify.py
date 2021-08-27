@@ -1,4 +1,5 @@
 import spotipy, os, discord, dill, admin
+from PIL import Image
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
 
@@ -298,3 +299,5 @@ async def setGuildPlaylistDescGuildSide(message, c, hasAdminPerms):
         ok = target.setDescription(c)
         return ok
 
+async def handleSetPlaylistCoverImage(message, image, gph):
+    passs
