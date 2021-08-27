@@ -637,14 +637,14 @@ async def on_message(message):
 					await message.add_reaction("👎")
 					return False
 			
-			if c == "spdeleteplaylist":
+			if c == "spclear":
 				perms = (message.author.guild_permissions.manage_guild)
 				if not perms:
 					await message.channel.send("You'll need Manage Server perms to do that.")
 					return False
 				target = sp.getGuildPlaylist(message.guild.id)
 				if target == None:
-					sp.reportNoGP(message)
+					await sp.reportNoGP(message)
 					return False
 				else:
 					await message.channel.send("Are you sure? Type CONFIRM. Ignore to cancel.")
@@ -681,7 +681,7 @@ async def on_message(message):
 					await sp.reportNoGP(message)
 					return False
 			
-			if c == "spundo":
+			if c == "spdelnewest" or c == "spdeletenewest":
 				perms = (message.author.guild_permissions.manage_guild)
 				gph = sp.getGuildPlaylist(message.guild.id)
 				if gph != None:
@@ -700,11 +700,12 @@ async def on_message(message):
 					await sp.reportNoGP(message)
 					return False
 
-			if c.startswith("spdelete"):
+			if c.startswith("spdelete") or c.startswith("spremove"):
 				perms = (message.author.guild_permissions.manage_guild)
+				c = c[8:].strip()
 				gph = sp.getGuildPlaylist(message.guild.id)
 				if gph != None:
-					response = await sp.deleteSongGuildSide(message, gph, perms)
+					response = await sp.deleteSongGuildSide(message, gph, c, perms)
 					if response == True:
 						await message.add_reaction("👍")
 						return True

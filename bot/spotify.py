@@ -152,9 +152,14 @@ class GuildPlaylistHeader:
         if not self.songInPlaylist(song):
             return "notin"
         if (str(userRequesting) == song.addedBy) or bypassAuth:
+            removalList = []
+            for s in range(len(self.songs)):
+                if self.songs[s].id == song.id:
+                    removalList.append(s)
+            removalList.sort(reverse=True)
+            for n in removalList:
+                self.songs.pop(n)
             sp.playlist_remove_all_occurrences_of_items(self.id, [song.id])
-            self.songs.remove(song)
-            del song
             updateGuildData()
             return True
     
@@ -220,7 +225,7 @@ async def reportNoGP(message):
             f"Use `{admin.getGuildPrefix(message.guild.id)}spcreate` to make one.")
     return True
 
-def getFirstSongResult(query, addedBy):
+def getFirstSongResult(query, addedBy=None):
     try:
         data = sp.search(query, type="track")["tracks"]["items"][0]
         return(Song(data, addedBy))
@@ -386,4 +391,9 @@ async def encodeAndSetCoverImage(image, gph, isAsset=False):
 
 async def undoAdditionGuildSide(message, gph, hasPerms):
     response = gph.undoLastAdd(message.author.id, hasPerms)
+    return response
+
+async def deleteSongGuildSide(message, gph, song, hasPerms):
+    song = getFirstSongResult(song)
+    response = gph.deleteSong(song, message.author.id, hasPerms)
     return response
