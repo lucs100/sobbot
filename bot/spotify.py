@@ -1,4 +1,4 @@
-import spotipy, os, discord, dill, admin
+import spotipy, os, discord, dill, admin, io, requests, base64
 from PIL import Image
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ load_dotenv()
 sobbotID = os.getenv("SPOTIFYBOTID")
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
-    scope="playlist-modify-public")) 
+    scope="playlist-modify-public ugc-image-upload")) 
 
 guildPlaylists = {}
 
@@ -130,6 +130,10 @@ class GuildPlaylistHeader:
                 return True
             except KeyError:
                 return False
+    
+    def setCover(self, imageAsB64):
+        sp.playlist_upload_cover_image(self.id, imageAsB64)
+        return True
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -181,6 +185,7 @@ def saveGuildPlaylist(gph):
 async def reportNoGP(message):
     await message.channel.send("This server doesn't have a server playlist yet!\n" + 
             f"Use `{admin.getGuildPrefix(message.guild.id)}spcreate` to make one.")
+    return True
 
 def getFirstSongResult(query, addedBy):
     try:
@@ -204,6 +209,7 @@ async def createGuildPlaylistGuildSide(message):
         gph = GuildPlaylistHeader(playlistName, playlisth, creatorID, guildID)
         if gph != None:
             saveGuildPlaylist(gph)
+            await encodeAndSetCoverImage(message.guild.icon_url_as(format="jpeg"), gph, isAsset=True)
             await message.channel.send("Success!")
             await message.channel.send(f"<{gph.link}>")
             return True
@@ -299,5 +305,40 @@ async def setGuildPlaylistDescGuildSide(message, c, hasAdminPerms):
         ok = target.setDescription(c)
         return ok
 
-async def handleSetPlaylistCoverImage(message, image, gph):
-    passs
+async def encodeAndSetCoverImage(image, gph, isAsset=False):
+
+    def downloadImage(imageURL):
+        image = Image.open(requests.get(imageURL, stream=True).raw)
+        return image
+
+    def getMaxSize(image):
+        try:
+            h = image.height
+            w = image.width
+        except AttributeError:
+            return None
+        minSize = min([h, w])
+        left = (w - minSize)/2
+        top = (h - minSize)/2
+        right = (w + minSize)/2
+        bottom = (h + minSize)/2
+        return (left, top, right, bottom)
+
+    try:
+        if not isAsset:
+            imageToSet = downloadImage(image.url)
+        else:
+            imageToSet = downloadImage(image)
+        cropParams = getMaxSize(image)
+        if cropParams != None:
+            imageToSet = imageToSet.crop(cropParams)
+        imageToSet = imageToSet.resize((300, 300), Image.LANCZOS)
+        arr = io.BytesIO()
+        imageToSet.save(arr, format="JPEG", quality=95)
+        arr.seek(0)
+        finalImageData = arr.getvalue()
+        finalImage = base64.b64encode(finalImageData)
+        gph.setCover(finalImage)
+        return True
+    except:
+        return False

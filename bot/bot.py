@@ -663,11 +663,23 @@ async def on_message(message):
 					return False
 			
 			if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
-				newImg = message.attachments[0]
+				try:
+					newImg = message.attachments[0]
+				except IndexError:
+					await message.channel.send("Send an image with that command.")
+					return False
 				gph = sp.getGuildPlaylist(message.guild.id)
-				sp.handleSetPlaylistCoverImage(message, newImg, gph)
-				# check size/aspect?? idk
-
+				if gph != None:
+					response = await sp.encodeAndSetCoverImage(newImg, gph)
+					if response:
+						await message.add_reaction("👍")
+						return True
+					else:
+						await message.add_reaction("👎")
+						return False
+				else:
+					await sp.reportNoGP(message)
+					return False
 	return True
 
 def getMemberList(guildID):
