@@ -1,3 +1,4 @@
+from discord import user
 import spotipy, os, discord, dill, admin, io, requests, base64
 from PIL import Image
 from spotipy.oauth2 import SpotifyOAuth
@@ -136,6 +137,36 @@ class GuildPlaylistHeader:
     def setCover(self, imageAsB64):
         sp.playlist_upload_cover_image(self.id, imageAsB64)
         return True
+    
+    def songInPlaylist(self, song):
+        if isinstance(song, str):
+            song = getFirstSongResult(song)
+        for search in self.songs:
+            if song.id == search.id:
+                return True
+        return False
+    
+    def deleteSong(self, song, userRequesting, bypassAuth=False):
+        if isinstance(song, str):
+            song = getFirstSongResult(song)
+        if not self.songInPlaylist(song):
+            return "notin"
+        if (str(userRequesting) == song.addedBy) or bypassAuth:
+            sp.playlist_remove_all_occurrences_of_items(self.id, [song.id])
+            self.songs.remove(song)
+            del song
+            updateGuildData()
+            return True
+    
+    def undoLastAdd(self, userRequesting, bypassAuth=False):
+        try:
+            targetSong = self.songs[len(self.songs)-1]
+        except IndexError:
+            return "empty"
+        if (str(userRequesting) == targetSong.addedBy) or bypassAuth:
+            return self.deleteSong(targetSong, userRequesting)
+        else:
+            return "perm"
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -228,7 +259,7 @@ async def addToGuildPlaylistGuildSide(message, c):
     if gph != None:
         response = gph.addSong(c, senderID)
         if response == "empty":
-            await message.channel.send(f"Add a search query after that command to add it to the playlist!")
+            await message.channel.send(f"Add a query after that command to add it to the playlist!")
         elif response.ok:
             await message.channel.send(f"Successfully added *{response.name}* " +
             f"by **{response.artist}**!")
@@ -352,3 +383,7 @@ async def encodeAndSetCoverImage(image, gph, isAsset=False):
         return True
     except:
         return False
+
+async def undoAdditionGuildSide(message, gph, hasPerms):
+    response = gph.undoLastAdd(message.author.id, hasPerms)
+    return response

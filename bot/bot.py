@@ -637,7 +637,7 @@ async def on_message(message):
 					await message.add_reaction("👎")
 					return False
 			
-			if c == "spdelete":
+			if c == "spdeleteplaylist":
 				perms = (message.author.guild_permissions.manage_guild)
 				if not perms:
 					await message.channel.send("You'll need Manage Server perms to do that.")
@@ -676,6 +676,46 @@ async def on_message(message):
 						return True
 					else:
 						await message.add_reaction("👎")
+						return False
+				else:
+					await sp.reportNoGP(message)
+					return False
+			
+			if c == "spundo":
+				perms = (message.author.guild_permissions.manage_guild)
+				gph = sp.getGuildPlaylist(message.guild.id)
+				if gph != None:
+					response = await sp.undoAdditionGuildSide(message, gph, perms)
+					if response == True:
+						await message.add_reaction("👍")
+						return True
+					else:
+						await message.add_reaction("👎")
+						if response == "perm":
+							await message.channel.send("You don't have permission to do that.")
+						elif response == "empty":
+							await message.channel.send("The playlist is empty already.")
+						return False
+				else:
+					await sp.reportNoGP(message)
+					return False
+
+			if c.startswith("spdelete"):
+				perms = (message.author.guild_permissions.manage_guild)
+				gph = sp.getGuildPlaylist(message.guild.id)
+				if gph != None:
+					response = await sp.deleteSongGuildSide(message, gph, perms)
+					if response == True:
+						await message.add_reaction("👍")
+						return True
+					else:
+						await message.add_reaction("👎")
+						if response == "perm":
+							await message.channel.send("You don't have permission to do that.")
+						if response == "notin":
+							await message.channel.send(
+								"That song doesn't seem to " +
+								"be in your server's playlist.")
 						return False
 				else:
 					await sp.reportNoGP(message)
