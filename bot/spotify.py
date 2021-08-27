@@ -90,6 +90,8 @@ class GuildPlaylistHeader:
         
         if isinstance(song, str):
             song = getFirstSongResult(song, addedBy)
+            if song == "empty":
+                return "empty"
         response = songAddObject(song)
         if response.ok == False:
             return response
@@ -193,6 +195,8 @@ def getFirstSongResult(query, addedBy):
         return(Song(data, addedBy))
     except IndexError:
         return None
+    except spotipy.exceptions.SpotifyException:
+        return "empty"
 
 async def createGuildPlaylistGuildSide(message):
     creatorID = str(message.author.id)
@@ -203,6 +207,7 @@ async def createGuildPlaylistGuildSide(message):
         await message.channel.send(f"**{guildName}** already has a playlist!")
         await message.channel.send(f"<{currentPlaylist.link}>")
         return currentPlaylist
+    sentMessage = await message.channel.send("Working...")
     playlistName = f"{guildName}'s Server Playlist"
     playlisth = createPlaylist(playlistName, guildMode=True)
     if playlisth != None:
@@ -210,10 +215,10 @@ async def createGuildPlaylistGuildSide(message):
         if gph != None:
             saveGuildPlaylist(gph)
             await encodeAndSetCoverImage(message.guild.icon_url_as(format="jpeg"), gph, isAsset=True)
-            await message.channel.send("Success!")
+            await sentMessage.edit(content="Success!")
             await message.channel.send(f"<{gph.link}>")
             return True
-    await message.channel.send("Failed.")
+    await sentMessage.edit(content="Failed.")
     return False
 
 async def addToGuildPlaylistGuildSide(message, c):
@@ -222,7 +227,9 @@ async def addToGuildPlaylistGuildSide(message, c):
     gph = getGuildPlaylist(guildID)
     if gph != None:
         response = gph.addSong(c, senderID)
-        if response.ok:
+        if response == "empty":
+            await message.channel.send(f"Add a search query after that command to add it to the playlist!")
+        elif response.ok:
             await message.channel.send(f"Successfully added *{response.name}* " +
             f"by **{response.artist}**!")
         else:
@@ -264,9 +271,12 @@ async def createGuildPlaylistOverview(guildID, members):
         user = getMemberNick(song.addedBy)
         addUser += f"{user}\n"
     
-    embed.add_field(name="Song", value=tracks, inline=True)
-    embed.add_field(name="Artist", value=artists, inline=True)
-    embed.add_field(name="Contributor", value=addUser, inline=True)
+    if tracks == "":
+        embed.description = "No tracks yet!"
+    else:
+        embed.add_field(name="Song", value=tracks, inline=True)
+        embed.add_field(name="Artist", value=artists, inline=True)
+        embed.add_field(name="Contributor", value=addUser, inline=True)
 
     embed.title = title
     songCount = len(target.songs)
