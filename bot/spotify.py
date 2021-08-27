@@ -102,6 +102,7 @@ class GuildPlaylistHeader:
         try:
             sp.playlist_change_details(self.id, name=newTitle)
             self.name = newTitle
+            updateGuildData()
             return True
         except:
             return False
@@ -109,10 +110,25 @@ class GuildPlaylistHeader:
     def setDescription(self, newDesc):
         try:
             sp.playlist_change_details(self.id, description=newDesc)
+            updateGuildData()
             # GPH doesn't store description
             return True
         except:
             return False
+    
+    def delete(self, isConfirmed=False):
+        if not isConfirmed:
+            return False
+        else:
+            gphID = str(self.id)
+            guildID = str(self.guildID)
+            sp.user_playlist_unfollow(sobbotID, gphID)
+            try:
+                del guildPlaylists[guildID]["playlists"][0] # todo - change if more gphs?
+                updateGuildData()
+                return True
+            except KeyError:
+                return False
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -281,3 +297,4 @@ async def setGuildPlaylistDescGuildSide(message, c, hasAdminPerms):
     else:
         ok = target.setDescription(c)
         return ok
+

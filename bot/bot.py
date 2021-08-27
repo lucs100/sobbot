@@ -1,6 +1,7 @@
 import os
 import discord
 import time
+import asyncio
 
 import functions as sob
 import riotapi
@@ -635,6 +636,35 @@ async def on_message(message):
 				else:
 					await message.add_reaction("👎")
 					return False
+			
+			if c == "spdelete":
+				perms = (message.author.guild_permissions.manage_guild)
+				if not perms:
+					await message.channel.send("You'll need Manage Server perms to do that.")
+					return False
+				target = sp.getGuildPlaylist(message.guild.id)
+				if target == None:
+					sp.reportNoGP(message)
+					return False
+				else:
+					await message.channel.send("Are you sure? Type CONFIRM. Ignore to cancel.")
+					def check(msg):
+						return msg.author == message.author
+					try:
+						confirmMessage = await client.wait_for(event="message", timeout=15, check=check)
+						if confirmMessage.content.strip() == "CONFIRM":
+							target.delete(isConfirmed=True)
+							await message.channel.send("Deleted. :sob:")
+							return True
+					except asyncio.TimeoutError:
+						await message.channel.send("Not deleted. :grin:")
+						return False
+					await message.channel.send("Cancelled. :grin:")
+					return False
+			
+			if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
+				newImg = message.attachments[0]
+				# check size/aspect?? idk
 
 	return True
 
