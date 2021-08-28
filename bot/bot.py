@@ -1,16 +1,9 @@
-import os
-import discord
-import time
-import asyncio
-import sys
+import os, discord, time, asyncio, sys
 
 import functions as sob
-import riotapi
-import spotify as sp
 import currency as coin
-import finance
-import admin
-import helpDir
+import spotify as sp
+import riotapi, finance, admin, helpDir
 
 from re import match
 from datetime import datetime
@@ -22,10 +15,7 @@ botCreatorID = os.getenv('CREATORID')
 
 intents = discord.Intents.default()
 intents.members = True
-
 client = discord.Client(intents=intents)
-
-startTime = time.time()
 
 @client.event
 async def on_ready():
@@ -35,7 +25,7 @@ async def on_ready():
 
 	for guild in client.guilds:
 		print(f"Connected to {guild.name} ({guild.id}).")
-		guildCount = guildCount + 1 # print all connected guilds 
+		guildCount += 1 # print all connected guilds 
 
 	global startTime
 	startTime = time.time() # show time connected in console
@@ -51,6 +41,7 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild):
+	# this doesnt work i dont think
 	print("NEW GUILD JOINED!")
 	dataString = (
 		f"{guild.name} ({guild.id}), " +
