@@ -117,20 +117,24 @@ async def on_message(message):
 					await reportNotOwner(message)
 					return False
 			
-			if c == "ekoroshia":
-				await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
-				def check(msg):
-					return msg.author == message.author
-				try:
-					confirmMessage = await client.wait_for(event="message", timeout=10, check=check)
-					if confirmMessage.content.strip() == "CONFIRM":
-						await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
-						sys.exit("Kill command invoked by owner.")
-				except asyncio.TimeoutError:
+			if c == "ekoroshia" or c == "ikoroshia":
+				if userIsBotOwner(message.author):
+					await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
+					def check(msg):
+						return msg.author == message.author
+					try:
+						confirmMessage = await client.wait_for(event="message", timeout=10, check=check)
+						if confirmMessage.content.strip() == "CONFIRM":
+							await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
+							sys.exit("Kill command invoked by owner.")
+					except asyncio.TimeoutError:
+						await message.channel.send("Still running. :grin:")
+						return False
 					await message.channel.send("Still running. :grin:")
 					return False
-				await message.channel.send("Still running. :grin:")
-				return False
+				else:
+					await reportNotOwner(message)
+					return False
 
 
 			# Help Functions
@@ -663,7 +667,7 @@ async def on_message(message):
 					await sp.reportNoGP(message)
 					return False
 				else:
-					await message.channel.send("Are you sure? Type CONFIRM. Ignore to cancel.")
+					await message.channel.send("Are you sure? Type CONFIRM. (15s)")
 					def check(msg):
 						return msg.author == message.author
 					try:
