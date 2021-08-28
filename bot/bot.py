@@ -2,6 +2,7 @@ import os
 import discord
 import time
 import asyncio
+import sys
 
 import functions as sob
 import riotapi
@@ -17,6 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
+botCreatorID = os.getenv('CREATORID')
 
 intents = discord.Intents.default()
 intents.members = True
@@ -51,14 +53,14 @@ async def on_ready():
 async def on_guild_join(guild):
 	print("NEW GUILD JOINED!")
 	dataString = (
-		f"{guild.name} ({guild.id}, " +
+		f"{guild.name} ({guild.id}), " +
 		f"owned by {guild.owner}#{guild.owner.discriminator}.")
 	print(dataString)
 	for channel in guild.text_channels:
 		if channel.permissions_for(guild.me).send_messages:
 			await channel.send(
 				"hi, i'm sobbot! my default prefix in this server is `s!`\n" +
-				"use `s!help` to see a list of commands! happy sobbing!" +
+				"use `s!help` to see a list of commands! happy sobbing!\n" +
 				"contact lucs#9492 if you have any questions!")
 		break
 	alertChannel = client.get_channel(865471884786925568)
@@ -104,6 +106,40 @@ async def on_message(message):
 		if c.startswith(admin.getGuildPrefix(message.guild.id)):
 			#remove prefix from search
 			c = c[len(admin.getGuildPrefix(message.guild.id)):]
+
+			
+			# Owner Commands - can only be used by the bot creator.
+			
+
+			if c.startswith("link"):
+				if userIsBotOwner(message.author):
+					try:
+						channelid = int(c[4:].strip())
+						channel = client.get_channel(channelid)
+					except:
+						return False
+					print("Link successful.")
+					await sob.pipeline(channel)
+					print("Link ended.")
+					return True
+				else:
+					await reportNotOwner(message)
+					return False
+			
+			if c == "ekoroshia":
+				await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
+				def check(msg):
+					return msg.author == message.author
+				try:
+					confirmMessage = await client.wait_for(event="message", timeout=10, check=check)
+					if confirmMessage.content.strip() == "CONFIRM":
+						await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
+						sys.exit("Kill command invoked by owner.")
+				except asyncio.TimeoutError:
+					await message.channel.send("Still running. :grin:")
+					return False
+				await message.channel.send("Still running. :grin:")
+				return False
 
 
 			# Help Functions
@@ -205,17 +241,6 @@ async def on_message(message):
 			if c == "randblue" or c == "randbluw":
 				embed, file = (sob.randomBlue())
 				await message.channel.send(embed=embed, file=file)
-				return True
-			
-			if c.startswith("link"):
-				try:
-					channelid = int(c[4:].strip())
-					channel = client.get_channel(channelid)
-				except:
-					return True
-				print("Link successful.")
-				await sob.pipeline(channel)
-				print("Link ended.")
 				return True
 			
 
@@ -729,5 +754,11 @@ def getMemberList(guildID):
 	for member in targetGuild.members:
 		memberList.append(member)
 	return memberList
+
+def userIsBotOwner(user):
+	return str(user.id) == str(botCreatorID)
+
+async def reportNotOwner(message):
+	await message.channel.send("Only the bot owner can do that!")
 
 client.run(DISCORDTOKEN)
