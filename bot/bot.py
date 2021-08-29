@@ -412,7 +412,7 @@ async def on_message(message):
 				if response in codes:
 					await message.channel.send(codes[response])
 				return True
-				
+
 			if c.startswith("lolwr"):
 				summoner = c[5:].strip()
 				if summoner == "":
