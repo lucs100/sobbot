@@ -39,14 +39,22 @@ def getHelpDirectoryEmbed(message, topic):
 
 def getSingleList(message):
     pf = admin.getGuildPrefix(message.guild.id)
+    helpEmbed = discord.Embed()
+    helpEmbed.title = "Available Info Blurbs"
     text = f"Use one of the commands below to learn more!\n\n"
     for topic in helpSingles:
         text += f"`{pf}info {topic}`\n"
     text += f"`{pf}about`\n"
-    return text
+    helpEmbed.description = text
+    helpEmbed.color = helpfulGreen
+    return helpEmbed
 
 def getHelpSingle(message, topic):
     if topic == "":
         return getSingleList(message)
     if topic in helpSingles:
-        return helpSingles[topic]["text"]
+        helpEmbed = discord.Embed()
+        helpEmbed.title = helpSingles[topic]["title"]
+        helpEmbed.description = helpSingles[topic]["text"]
+        helpEmbed.color = helpfulGreen
+        return helpEmbed

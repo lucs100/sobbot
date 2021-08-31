@@ -151,7 +151,7 @@ async def on_message(message):
 			
 			if c.startswith("info"):
 				topic = c[4:].strip()
-				await message.channel.send(helpDir.getHelpSingle(message, topic))
+				await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
 				return True
 			
 			if c == "about":
