@@ -156,7 +156,7 @@
             "title": "Spotify Functions",
             "desc": "Create the perfect playlist with your friends",
             "emoji": "musical_note",
-            "header": "Commands with a * before their description require Manage Server permission. However, you have full control over your contributions to a server's playlist, and can remove any track you've added without admin permissions. Invoke the info blurb for `serverplaylists` to learn more.",
+            "header": "Commands with a # before their description require Manage Server permissions. However, you have full control over your contributions to a server's playlist, and can remove any track you've added without admin permissions. Invoke the info blurb for `serverplaylists` to learn more.",
             "commands": [
                 {
                     "usage": "spcreate",
@@ -176,27 +176,27 @@
                 },
                 {
                     "usage": "spsettitle `title`",
-                    "description": "*Renames the server playlist to `title`."
+                    "description": "#Renames the server playlist to `title`."
                 },
                 {
                     "usage": "spsetdesc `desc`",
-                    "description": "*Sets the server playlist description to `desc`."
+                    "description": "#Sets the server playlist description to `desc`."
                 },
                 {
                     "usage": "spsetcover",
-                    "description": "*Sets the playlist cover to the attached image."
+                    "description": "#Sets the playlist cover to the attached image."
                 },
                 {
                     "usage": "spdelnewest",
-                    "description": "*Undos the newest addition to the playlist."
+                    "description": "#Undos the newest addition to the playlist."
                 },
                 {
                     "usage": "spdelete `song`",
-                    "description": "*Removes all occurences of `song` from the playlist."
+                    "description": "#Removes all occurences of `song` from the playlist."
                 },
                 {
                     "usage": "spclear",
-                    "description": "*Deletes the server playlist. IRREVERSIBLE."
+                    "description": "#Deletes the server playlist. IRREVERSIBLE."
                 }
             ]
         },
@@ -237,13 +237,13 @@
             "text": "Soblecoins are a fun way to be rewarded for using Sobbot! By *registering* your account with soblecoins, you can claim coins every few hours, send them to your friends, or wager them on minigames! You can't send soblecoins to a user unless you're both registered. As well, registered users have a small chance to passively earn soblecoins each time they send a message in a server with Sobbot. There are also items to buy in the shop, which enhance your Sobbot experience in different ways.\nSoblecoins, of course, have no inherent value, they're just a fun currency to interact with Sobbot and your friends :)"
         },
         "ratelimit": {
-            "text": "The Riot API is a server allowing registered apps such as Sobbot to retrieve data from Riot's databases. Personal projects such as Sobbot have very strict rate limits:\n**10 requests every second**\n**100 requests every 2 minutes**\nApps which egreiously hit their rate limits can have their key banned from the API. Sobbot's functions are designed to have a kill switch in the case of hitting a rate limit and will never hit a rate limit in a single use. However, multiple uses of functions will often hit the rate cap. For example, `livematch` makes ~32 requests to the api. This isn't a problem, however, please avoid hitting the rate cap too much as it risks Sobbot reveiving a ban from Riot's API. Loss of this key would all but kill the project."
+            "text": "The Riot API is a server allowing registered apps such as Sobbot to retrieve data from Riot's databases. Personal projects such as Sobbot have very strict rate limits:\n**10 requests every second**\n**100 requests every 2 minutes**\nApps which egreiously hit their rate limits can have their key banned from the API. Sobbot's functions are designed to have a kill switch in the case of hitting a rate limit and will never hit a rate limit in a single use. However, multiple uses of functions will often hit the rate cap. For example, `livematch` makes ~32 requests to the API. This isn't a problem, however, please avoid hitting the rate cap too much as it risks Sobbot reveiving a ban from Riot's API. Loss of this key would all but kill the project."
         },
         "register": {
             "text": "Some of Sobbot's command types allow you to *register* yourself for convenience. This isn't actually 'registering' an account, but rather adding your Discord ID and related info to the database so your data can be saved and updated later! The most common use of registration with Sobbot is the LoL commands - using the `register (summonerName)` command, you can link your summoner name to your Discord ID. The next time you use a LoL command, you won't have to type your summoner name - if you leave the `summonerName` parameter blank on any command, it'll automatically use your registered summoner name as a default. This is also true for other command subsets - check out their help embeds (`help`) for more info!"
         },
-        "serverplaylists": {
-            "text": "Sobbot's Spotify commands all involve the use of *Server Playlists*. These are Spotify playlists that any user in a server can contribute to and listen to! They're a fun way to collaborate with your friends on a playlist with all of your music tastes.\nWhile only users with Manage Server permissions can use more destructive commands, you're allowed to delete any song that you have added to the playlist. Keep in mind that while you can have multiple instances of a song in a playlist, deleting a song deletes ALL occurences of it from the playlist!"
+        "sp": {
+            "text": "Sobbot's Spotify commands all involve the use of *Server Playlists*. These are Spotify playlists that any user in a server can contribute to and listen to! They're a fun way to collaborate with your friends on a playlist with all of your music tastes.\nWhile only users with Manage Server permissions can use more destructive commands, you're allowed to delete any song that you have added to the playlist.\nThis can be done through either the `spdelete` or the `spundo` commands, provided that you were the user who added the song those commands are targeted at.\nKeep in mind that while you can have multiple instances of a song in a playlist, deleting a song using one of those commands deletes ALL occurences of it from the playlist!"
         }
     }
 }
