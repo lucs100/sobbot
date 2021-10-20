@@ -128,7 +128,7 @@ class GuildPlaylistHeader:
             guildID = str(self.guildID)
             sp.user_playlist_unfollow(sobbotID, gphID)
             try:
-                del guildPlaylists[guildID]["playlists"][0] # todo - change if more gphs?
+                del guildPlaylists[guildID]["playlists"][0] # TODO - change if more gphs?
                 updateGuildData()
                 return True
             except KeyError:
@@ -199,7 +199,7 @@ def updateGuildData():
 
 def getGuildPlaylist(guildID):
     guildID = str(guildID)
-    # todo - update playlist based on data from spotipy api?
+    # TODO - update playlist based on data from spotipy api?
     try:
         if "playlists" in guildPlaylists[guildID]:
             return guildPlaylists[guildID]["playlists"][0]
