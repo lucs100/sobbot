@@ -121,6 +121,10 @@
                 {
                     "usage": "randblue",
                     "description": "Returns a random shade of blue."
+                },
+                {
+                    "usage": "scramble `length`",
+                    "description": "Generates a rubik's scramble."
                 }
             ]
         },
