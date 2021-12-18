@@ -190,6 +190,46 @@ async def pipeline(channel):
         except:
             pass
 
+def cubeScramble(count = 25):
+    # helper function, generates and returns a single move
+    def generateRotation(lastRotCode):
+        # inits 
+        rotationSet = ["U", "R", "F", "D", "L", "B"]
+        modificationSet = ["", "", "'", "2"]
+        rotIndex, modIndex = 0, 0
+
+        
+        if (lastRotCode == -1):
+            # choose move without repeat protection
+            rotIndex = random.randint(0, 5)
+        else:
+            # use lastRotCode to make sure move does not match last
+            while True:
+                rotIndex = random.randint(0, 5)
+                if (rotIndex % 3 != lastRotCode % 3):
+                    break
+        
+        lastRotCode = rotIndex
+        modIndex = random.randint(0, 3)
+        # return concatenated move and hacky PBRed lastRotCode 
+        return (rotationSet[rotIndex]+modificationSet[modIndex], lastRotCode)
+    
+    # init scramble string and last rotation code
+    scramble = ""
+    lastRotCode = -1
+    # apply bounds
+    count = max(count, 1)
+    count = min(count, 99)
+    # create a string of count moves
+    for i in range(count):
+        move, lastRotCode = generateRotation(lastRotCode)
+        scramble += move + " "
+        # every 5th move, add a space for readability 
+        if i % 5 == 4:
+            scramble += "  "
+    return scramble
+    
+
 # async def setActivity(client):
 #     name = "sobling"
 #     large_image = "bot/resources/status/sobblelook.png"

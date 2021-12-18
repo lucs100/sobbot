@@ -238,6 +238,16 @@ async def on_message(message):
 				await message.channel.send(embed=embed, file=file)
 				return True
 			
+			if c.startswith("scramble"):
+				count = c[8:].strip() # length if specified
+				print(count)
+				try:
+					count = int(count)
+					scramble = sob.cubeScramble(count)
+				except TypeError:
+					scramble = sob.cubeScramble()
+				await message.channel.send(scramble)
+			
 
 			# LoL Functions
 			
