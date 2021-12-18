@@ -5,6 +5,9 @@ startingCoins = 1000
 
 users = {}
 
+# TODO: hey so the shop kinda sucks?
+# maybe certain things like luck mod should just be ranks
+# like how mudae does it with eg. bronze is ONLY luck mod
 shop = {}
 
 with open('bot/resources/data/shop.json') as f:

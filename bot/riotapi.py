@@ -31,7 +31,7 @@ summSpells = {}
 summonerList = []
 
 MatchLimit = 70
-CurrentPatch = "11.15.1" #todo - get from ddrag
+CurrentPatch = "11.15.1" #TODO - get from ddrag
 
 
 # Class Declarations
@@ -82,7 +82,7 @@ class MatchKey:
 class Match:
     def __init__(self, matchData):
         pass
-        #todo
+        #TODO
 
 class LiveMatchParticipant():
     def __init__(self, data):
@@ -97,7 +97,7 @@ class LiveMatchParticipant():
         # self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
         # self.primaryRuneTree = data["perks"]["perkStyle"]
         # self.secondaryRuneTree = data["perks"]["perkSubStyle"]
-        # self.rank = getRank(self.summonerName) #todo
+        # self.rank = getRank(self.summonerName) #TODO
 
 class LiveMatchBan():
     def __init__(self, data):
@@ -131,7 +131,7 @@ class LiveMatch():
             self.elapsedTime = (datetime.now() - self.startTime).seconds
         self.spectatorKey = data["observers"]["encryptionKey"]
 
-class NullSumm: # todo - add use cases instead of returning Nonetype in summ
+class NullSumm: # TODO - add use cases instead of returning Nonetype in summ
     def __init__(self, name):
         self.name = name
 
@@ -724,7 +724,7 @@ def analyzePlayerPerformance(matchId, summoner):
     matchdata, playerdata = (getPlayerRespectiveInfo(match, summoner.esid))
     print(json.dumps(matchdata, indent=4))
     print(json.dumps(playerdata, indent=4))
-    #todo
+    #TODO
 
 def didPlayerWin(summonerId, matchData):
     playerIndex = 0
@@ -823,7 +823,7 @@ def getWinLossTrend(summonerName, maxMatches=MatchLimit, ranked=False, turboMode
     awr = 0 #adjusted winrate
     m = 0 #maximum
     for i in range(len(matchList)):
-        value = (1 - (i/maxMatches)**3) #todo - this might need a bit of tuning! my 3r dropped after winning several games
+        value = (1 - (i/maxMatches)**3) #TODO - this might need a bit of tuning! my 3r dropped after winning several games
         win = didPlayerWin(sID, getMatchInfo(matchList[i]))
         if isinstance(win, str):
             return win #error code
@@ -1233,7 +1233,7 @@ def ddGetAbilityName(message): # dd = datadragon
     if code in ['passive', 'pass']:
         code = 'p'
     champKey = parseQuery(champ)
-    response = requests.get( # todo - use the ddrag file
+    response = requests.get( # TODO - use the ddrag file
                 (f"http://ddragon.leagueoflegends.com/cdn/{CurrentPatch}/data/en_US/champion/{parseQuery(champKey)}.json"),
             )
     if response.status_code == 403:
@@ -1273,7 +1273,7 @@ def getWikiLink(message):
             return "Something went wrong. Riot's API might be down."
         if isNoCode(message): # assume no ability code + long enough
             return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
-        elif champ != None and spell != None: # result passed # todo - "she" => "ashe / e"
+        elif champ != None and spell != None: # result passed # TODO - "she" => "ashe / e"
             champ, spell = scoreSpaces(champ), scoreSpaces(spell)
             return f"<https://leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}>"
         elif getFormat(message) != None and len(message) >= 2: # separate case if can be refactored later
