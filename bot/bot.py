@@ -244,7 +244,7 @@ async def on_message(message):
 				try:
 					count = int(count)
 					scramble = sob.cubeScramble(count)
-				except TypeError:
+				except:
 					scramble = sob.cubeScramble()
 				await message.channel.send(scramble)
 			
