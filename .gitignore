@@ -144,3 +144,4 @@ __pycache__/
 *.bat
 *.code-workspace
 /bot/resources/data/private
+*.txt
