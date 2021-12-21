@@ -2,6 +2,53 @@ import random, discord, os, decimal, json, time, io
 from datetime import datetime
 from PIL import Image
 
+# Classes
+
+class RGBSet:
+    def __init__(self, r0, g0, b0):
+        self.r = r0
+        self.g = g0
+        self.b = b0
+    # helper class for Colour constructor
+
+class Color:
+    def __init__(self, data):
+        if isinstance(data, str):
+            rgbString = data 
+            if rgbString.startswith("rgb(") and rgbString[-1] == ")":
+                rgbString = rgbString[4:-1]
+            self.r, self.g, self.b = (rgbString.split(',')).strip()
+
+        elif isinstance(data, RGBSet):
+            self.r = data.r
+            self.g = data.g
+            self.b = data.b
+    
+    def getRgbString(self):
+        return f"rgb({self.r}, {self.g}, {self.b})"
+    
+    def getHexString(self):
+        return str(hex(self.r)[2:] + hex(self.g)[2:] + hex(self.b)[2:])
+
+    def generateColourEmbed(self):
+        color = self.getRgbString()
+        colorhex = self.getHexString()
+        img = Image.new(mode="RGB", size=(250, 250), color=color)
+        arr = io.BytesIO() # save image as datastream to avoid local saving
+        img.save(arr, format='PNG')
+        arr.seek(0)
+
+        file = discord.File(arr, filename="bluw.png") # pass stream to discord.File
+        title = (f"{color}, #{colorhex}")
+        embed = discord.Embed(title=title, color=discord.Colour.from_rgb(self.r, self.g, self.b))
+        embed.set_image(url="attachment://bluw.png") 
+        # discord requires embeds with nonurl files to be sent separately
+        return embed, file
+
+
+# Functions
+
+
 def flipCoin():
     coin = random.randint(0, 1)
     if coin == 0:
@@ -137,20 +184,9 @@ def randomBlue():
     r = random.randint(40, 60)
     g = random.randint(80, 180)
     b = random.randint(156, 255)
-    color = f"rgb({r}, {g}, {b})"
-    colorhex = str(hex(r)[2:] + hex(g)[2:] + hex(b)[2:]) # generate a blue colour randomly
-
-    img = Image.new(mode="RGB", size=(250, 250), color=color)
-    arr = io.BytesIO() # save image as datastream to avoid local saving
-    img.save(arr, format='PNG')
-    arr.seek(0)
-
-    file = discord.File(arr, filename="bluw.png") # pass stream to discord.File
-    title = (f"{color}, #{colorhex}")
-    embed = discord.Embed(title=title, color=discord.Colour.from_rgb(r, g, b))
-    embed.set_image(url="attachment://bluw.png") 
-    # discord requires embeds with nonurl files to be sent separately
-    return embed, file
+    # generate a random colour within specified bounds
+    blueGenerated = Color(RGBSet(r, g, b))
+    return blueGenerated.generateColourEmbed()
 
 def printfile(fp):
     textfile = open(fp, 'r')
