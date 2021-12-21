@@ -188,15 +188,23 @@ def randomBlue():
     blueGenerated = Color(RGBSet(r, g, b))
     return blueGenerated.generateColourEmbed()
 
+def randomColour():
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    # generate a random colour
+    colGenerated = Color(RGBSet(r, g, b))
+    return colGenerated.generateColourEmbed()
+
 def printfile(fp):
     textfile = open(fp, 'r')
     lines = textfile.readlines()
     for line in lines:
-        print("{}".format(line.strip())) # nonce function to print a txt line by line
+        print("{}".format(line.strip())) # helper function to print a txt line by line
 
 async def typingIndicator(channel):
     await channel.trigger_typing()
-    return True # nonce function
+    return True # trivial function
 
 async def pipeline(channel):
     name = channel.name

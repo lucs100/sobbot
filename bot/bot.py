@@ -238,6 +238,11 @@ async def on_message(message):
 				await message.channel.send(embed=embed, file=file)
 				return True
 			
+			if c == "randcolour" or c == "randcolor":
+				embed, file = (sob.randomColour())
+				await message.channel.send(embed=embed, file=file)
+				return True
+			
 			if c.startswith("scramble"):
 				count = c[8:].strip() # length if specified
 				print(count)
