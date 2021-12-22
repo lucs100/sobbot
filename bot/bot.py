@@ -231,7 +231,7 @@ async def on_message(message):
 				startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
 				await message.channel.send(f"Sobbot has been online since {startingTime}!")
 				return True
-				#maybe format this a little nicer?
+				#TODO: maybe format this a little nicer?
 			
 			if c == "randblue" or c == "randbluw":
 				embed, file = (sob.randomBlue())
@@ -239,9 +239,18 @@ async def on_message(message):
 				return True
 			
 			if c == "randcolour" or c == "randcolor":
-				embed, file = (sob.randomColour())
+				embed, file = (sob.randomColor())
 				await message.channel.send(embed=embed, file=file)
 				return True
+			
+			if c.startswith("colour"):
+				c = c[6:].strip()
+				embed, file = sob.colorPreview(c)
+				await message.channel.send(embed=embed, file=file)
+			elif c.startswith("color"):
+				c = c[5:].strip()
+				embed, file = sob.colorPreview(c)
+				await message.channel.send(embed=embed, file=file)
 			
 			if c.startswith("scramble"):
 				count = c[8:].strip() # length if specified
@@ -252,6 +261,7 @@ async def on_message(message):
 				except:
 					scramble = sob.cubeScramble()
 				await message.channel.send(scramble)
+				return True
 			
 
 			# LoL Functions

@@ -6,9 +6,9 @@ from PIL import Image
 
 class RGBSet:
     def __init__(self, r0, g0, b0):
-        self.r = r0
-        self.g = g0
-        self.b = b0
+        self.r = max(min(int(r0), 255), 0)
+        self.g = max(min(int(g0), 255), 0)
+        self.b = max(min(int(b0), 255), 0)
     # helper class for Colour constructor
 
 class Color:
@@ -27,10 +27,17 @@ class Color:
     def getRgbString(self):
         return f"rgb({self.r}, {self.g}, {self.b})"
     
-    def getHexString(self):
-        return str(hex(self.r)[2:] + hex(self.g)[2:] + hex(self.b)[2:])
+    def getHexString(self, hasHashtag = False):
+        hexString = ""
+        if hasHashtag:
+            hexString += "#"
+        for component in [self.r, self.g, self.b]:
+            if len(str(hex(component)[2:])) == 1:
+                hexString += "0"  # make sure each comp is 2 chars
+            hexString += str(hex(component)[2:])  # add each comp to string
+        return hexString
 
-    def generateColourEmbed(self):
+    def generateColorEmbed(self):
         color = self.getRgbString()
         colorhex = self.getHexString()
         img = Image.new(mode="RGB", size=(250, 250), color=color)
@@ -44,6 +51,9 @@ class Color:
         embed.set_image(url="attachment://bluw.png") 
         # discord requires embeds with nonurl files to be sent separately
         return embed, file
+    
+    def output(self):
+        return f"Red: {self.r}    Green: {self.g}    Blue: {self.b}    RGB: {self.getRgbString()}    Hex: {self.getHexString(True)}"
 
 
 # Functions
@@ -186,16 +196,47 @@ def randomBlue():
     b = random.randint(156, 255)
     # generate a random colour within specified bounds
     blueGenerated = Color(RGBSet(r, g, b))
-    return blueGenerated.generateColourEmbed()
+    return blueGenerated.generateColorEmbed()
 
-def randomColour():
+def randomColor():
     r = random.randint(0, 255)
     g = random.randint(0, 255)
     b = random.randint(0, 255)
     # generate a random colour
     colGenerated = Color(RGBSet(r, g, b))
-    return colGenerated.generateColourEmbed()
+    return colGenerated.generateColorEmbed()
 
+def colorPreview(input):
+    input = input.strip()
+    if input.count(", ") == 2: 
+        r, g, b = input.split(", ")
+        for component in [r, g, b]:
+            component = int(component.strip())
+    elif input.count(" ") == 2: 
+        r, g, b = input.split(" ")
+        for component in [r, g, b]:
+            component = int(component.strip())
+    elif input.count(",") == 2: 
+        r, g, b = input.split(",")
+        for component in [r, g, b]:
+            component = int(component.strip())
+    elif len(input) == 6 and input.count(" ") == 0: # hex code
+        r = int(input[0:2], 16)
+        g = int(input[2:4], 16)
+        b = int(input[4:6], 16)
+    elif len(input) == 7 and input.count(" ") == 0 and input[0] == "#": # hex code w/ hashtag notation
+        input = input[1:]
+        r = int(input[0:2], 16)
+        g = int(input[2:4], 16)
+        b = int(input[4:6], 16)
+    else:
+        return None
+    try:
+        inputColor = Color(RGBSet(r, g, b))
+    except ValueError:
+        return None
+    return inputColor.generateColorEmbed()
+    
 def printfile(fp):
     textfile = open(fp, 'r')
     lines = textfile.readlines()
