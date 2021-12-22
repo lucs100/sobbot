@@ -123,6 +123,14 @@
                     "description": "Returns a random shade of blue."
                 },
                 {
+                    "usage": "randcolour",
+                    "description": "Returns a random colour."
+                },
+                {
+                    "usage": "viewcolour `colour`",
+                    "description": "Returns info on `colour`."
+                },
+                {
                     "usage": "scramble `length`",
                     "description": "Generates a rubik's scramble."
                 }

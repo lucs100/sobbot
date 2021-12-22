@@ -243,12 +243,12 @@ async def on_message(message):
 				await message.channel.send(embed=embed, file=file)
 				return True
 			
-			if c.startswith("colour"):
-				c = c[6:].strip()
+			if c.startswith("viewcolour"):
+				c = c[10:].strip()
 				embed, file = sob.colorPreview(c)
 				await message.channel.send(embed=embed, file=file)
-			elif c.startswith("color"):
-				c = c[5:].strip()
+			elif c.startswith("viewcolor"):
+				c = c[9:].strip()
 				embed, file = sob.colorPreview(c)
 				await message.channel.send(embed=embed, file=file)
 			
