@@ -145,3 +145,4 @@ __pycache__/
 *.code-workspace
 /bot/resources/data/private
 *.txt
+/bot/resources/images
