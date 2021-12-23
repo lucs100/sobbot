@@ -139,7 +139,6 @@ cython_debug/
 
 /.vscode
 /priv
-/**/pics
 __pycache__/
 *.bat
 *.code-workspace

@@ -69,7 +69,7 @@ def die(n):
     return random.randint(1, n)
 
 def sobbleImage():
-    return (discord.File(fp=("bot/resources/pics/sobble/" + (random.choice(os.listdir("bot/resources/pics/sobble")))), filename="sobble.png"))
+    return (discord.File(fp=("bot/resources/images/sobble/" + (random.choice(os.listdir("bot/resources/images/sobble")))), filename="sobble.png"))
 
 def parseMath(exp):
     try:
