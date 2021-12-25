@@ -8,22 +8,25 @@ import riotapi, finance, admin, helpDir
 from re import match
 from datetime import datetime
 from dotenv import load_dotenv
+from discord.ext import commands
 
 load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 botCreatorID = os.getenv('CREATORID')
 
+
 intents = discord.Intents.default()
 intents.members = True
-client = discord.Client(intents=intents)
 
-@client.event
+bot = commands.Bot(command_prefix = "s!", intents=intents)
+
+@bot.event
 async def on_ready():
-	print(f"{client.user} initialized.")
+	print(f"{bot.user} initialized.")
 
 	guildCount = 0
 
-	for guild in client.guilds:
+	for guild in bot.guilds:
 		print(f"Connected to {guild.name} ({guild.id}).")
 		guildCount += 1 # print all connected guilds 
 
@@ -32,14 +35,14 @@ async def on_ready():
 	timeFormatted = datetime.fromtimestamp(startTime).strftime("%I:%M %p, %B %d %Y")
 
 	print(f"({guildCount}) total connected servers.")
-	print(f"{client.user} is ready!")
+	print(f"{bot.user} is ready!")
 	print(f"Time: {timeFormatted}")
-	channel = client.get_channel(835267335169245255) # sobblelink channel
+	channel = bot.get_channel(835267335169245255) # sobblelink channel
 	await channel.send("im conected")
-	# await sob.setActivity(client) #not working yet
-	await client.change_presence(activity=discord.Game(name="sobling")) # placeholder until i set up activity
+	# await sob.setActivity(bot) #not working yet
+	await bot.change_presence(activity=discord.Game(name="sobling")) # placeholder until i set up activity
 
-@client.event
+@bot.event
 async def on_guild_join(guild):
 	# this doesnt work i dont think
 	print("NEW GUILD JOINED!")
@@ -54,12 +57,12 @@ async def on_guild_join(guild):
 				"use `s!help` to see a list of commands! happy sobbing!\n" +
 				"contact lucs#9492 if you have any questions!")
 		break
-	alertChannel = client.get_channel(865471884786925568)
+	alertChannel = bot.get_channel(865471884786925568)
 	await alertChannel.send("<@312012475761688578> NEW SERVER CONNECTED.")
 	await alertChannel.send(dataString)
 	await alertChannel.send("IF YOU AREN'T OKAY WITH THIS, TURN OFF SOBBOT IMMEDIATELY.")
 
-@client.event
+@bot.event
 async def on_message(message):
 	if message.author.id != 835251884104482907: #not from sobbot
 		c = (message.content).lower() #change to cl? idk this might suck later
@@ -77,7 +80,7 @@ async def on_message(message):
 			return True
 			
 		if c == "ping":
-			await message.channel.send("pong! ({0}ms)".format(int(client.latency*1000)))
+			await message.channel.send("pong! ({0}ms)".format(int(bot.latency*1000)))
 			return True
 		
 		if match("<@!?835251884104482907>", c) is not None:
@@ -106,7 +109,7 @@ async def on_message(message):
 				if userIsBotOwner(message.author):
 					try:
 						channelid = int(c[4:].strip())
-						channel = client.get_channel(channelid)
+						channel = bot.get_channel(channelid)
 					except:
 						return False
 					print("Link successful.")
@@ -123,7 +126,7 @@ async def on_message(message):
 					def check(msg):
 						return msg.author == message.author
 					try:
-						confirmMessage = await client.wait_for(event="message", timeout=10, check=check)
+						confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
 						if confirmMessage.content.strip() == "CONFIRM":
 							await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
 							sys.exit("Kill command invoked by owner.")
@@ -223,9 +226,9 @@ async def on_message(message):
 						await message.channel.send(embed=sob.pkmnLookup(data))
 				return True
 			
-			if c == "uptime":
-				await message.channel.send(sob.timeRunning(startTime))
-				return True
+			# if c == "uptime":
+			# 	await message.channel.send(sob.timeRunning(startTime))
+			# 	return True
 
 			if c == "starttime":
 				startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
@@ -696,7 +699,7 @@ async def on_message(message):
 					def check(msg):
 						return msg.author == message.author
 					try:
-						confirmMessage = await client.wait_for(event="message", timeout=15, check=check)
+						confirmMessage = await bot.wait_for(event="message", timeout=15, check=check)
 						if confirmMessage.content.strip() == "CONFIRM":
 							target.delete(isConfirmed=True)
 							await message.channel.send("Deleted. :sob:")
@@ -766,10 +769,13 @@ async def on_message(message):
 				else:
 					await sp.reportNoGP(message)
 					return False
+
+	#LEAVE THIS AT THE END
+	await bot.process_commands(message)
 	return True
 
 def getMemberList(guildID):
-	targetGuild = client.get_guild(guildID)
+	targetGuild = bot.get_guild(guildID)
 	memberList = []
 	for member in targetGuild.members:
 		memberList.append(member)
@@ -781,4 +787,10 @@ def userIsBotOwner(user):
 async def reportNotOwner(message):
 	await message.channel.send("Only the bot owner can do that!")
 
-client.run(DISCORDTOKEN)
+@bot.command()
+async def uptime(ctx):
+	print("ok")
+	await ctx.send(sob.timeRunning(startTime))
+	return True
+
+bot.run(DISCORDTOKEN)

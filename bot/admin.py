@@ -8,6 +8,8 @@ with open('bot/resources/data/private/guilds.json') as f:
     guilds = json.loads(f.read())
 
 def getGuildPrefix(id):
+    return DefaultPrefix
+    #TODO: FIX PREFIX MANAGEMENT
     try:
         return guilds[str(id)]["prefix"]
     except KeyError:
