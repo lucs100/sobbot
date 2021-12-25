@@ -493,99 +493,99 @@ async def on_message(message):
 			# Currency Functions
 
 
-			if c == "coinstart":
-				ok = coin.addRegistration(message.author.id)
-				if ok:
-					await message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins.")
-					return True
-				await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
-				return False
+			# if c == "coinstart":
+			# 	ok = coin.addRegistration(message.author.id)
+			# 	if ok:
+			# 		await message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins.")
+			# 		return True
+			# 	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
+			# 	return False
 			
-			if c.startswith("give"):
-				try:
-					sender = message.author.id
-					recipient, value = c[4:].split()
-					recipient = recipient[3:-1]
-					value = int(value)
-					ok = coin.give(sender, recipient, value)
-					messages = {
-						#indexed by error code
-						0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
-						1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
-						2: f"Soblecoins not sent! You don't have enough soblecoins.",
-						3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-						4: f"You can't send coins to yourself!"
-					}
-					if ok in messages:
-						await message.channel.send(messages[ok])
-				except:
-					await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
-				return True
+			# if c.startswith("give"):
+			# 	try:
+			# 		sender = message.author.id
+			# 		recipient, value = c[4:].split()
+			# 		recipient = recipient[3:-1]
+			# 		value = int(value)
+			# 		ok = coin.give(sender, recipient, value)
+			# 		messages = {
+			# 			#indexed by error code
+			# 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
+			# 			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
+			# 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
+			# 			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			# 			4: f"You can't send coins to yourself!"
+			# 		}
+			# 		if ok in messages:
+			# 			await message.channel.send(messages[ok])
+			# 	except:
+			# 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
+			# 	return True
 			
-			if c == "balance":
-				value = coin.getUserCoins(message.author.id)
-				if isinstance(value, bool):
-					if value == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-						return True
-				await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+			# if c == "balance":
+			# 	value = coin.getUserCoins(message.author.id)
+			# 	if isinstance(value, bool):
+			# 		if value == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			# 			return True
+			# 	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
 			
-			if c == "claim":
-				ok, value = coin.claimHourly(message.author.id)
-				if isinstance(ok, str):
-					if ok == "reg":
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-				if ok:
-					if value == 1000:
-						await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
-					else:
-						await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
-				else:
-					await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
-				return True
+			# if c == "claim":
+			# 	ok, value = coin.claimHourly(message.author.id)
+			# 	if isinstance(ok, str):
+			# 		if ok == "reg":
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			# 	if ok:
+			# 		if value == 1000:
+			# 			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
+			# 		else:
+			# 			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
+			# 	else:
+			# 		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+			# 	return True
 
-			if c.startswith("roll"):
-				value = c[4:].strip()
-				status, change, multi = coin.luckyRoll(message.author.id, value)
-				codes = {
-					"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
-					"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-					"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
-				}
-				if status in codes:
-					await message.channel.send(codes[status])
-				else:
-					if multi > 1:
-						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
-					if multi == 1:
-						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
-					if multi < 1:
-						await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
-				return True
+			# if c.startswith("roll"):
+			# 	value = c[4:].strip()
+			# 	status, change, multi = coin.luckyRoll(message.author.id, value)
+			# 	codes = {
+			# 		"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
+			# 		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			# 		"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
+			# 	}
+			# 	if status in codes:
+			# 		await message.channel.send(codes[status])
+			# 	else:
+			# 		if multi > 1:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
+			# 		if multi == 1:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
+			# 		if multi < 1:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+			# 	return True
 			
-			if c == "shop":
-				await message.channel.send(embed = coin.getShop(message))
-				return True
+			# if c == "shop":
+			# 	await message.channel.send(embed = coin.getShop(message))
+			# 	return True
 			
-			if c.startswith("buy"):
-				c = c[3:].strip()
-				code, num = coin.buyFromShop(c, message.author.id)
-				messages = {
-					"exist": f"<@!{message.author.id}>, no item with the ID {c} exists!",
-					"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-					"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
-					"limit": f"<@!{message.author.id}>, you already own that limited item.",
-					"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
-				}
-				if code in messages:
-					await message.channel.send(messages[code])
-				else:
-					await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
-				return True
+			# if c.startswith("buy"):
+			# 	c = c[3:].strip()
+			# 	code, num = coin.buyFromShop(c, message.author.id)
+			# 	messages = {
+			# 		"exist": f"<@!{message.author.id}>, no item with the ID {c} exists!",
+			# 		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			# 		"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
+			# 		"limit": f"<@!{message.author.id}>, you already own that limited item.",
+			# 		"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
+			# 	}
+			# 	if code in messages:
+			# 		await message.channel.send(messages[code])
+			# 	else:
+			# 		await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
+			# 	return True
 
-			if c == "inventory":
-				await message.channel.send(coin.getInventoryEmbed(message.author.id))
-				return True
+			# if c == "inventory":
+			# 	await message.channel.send(coin.getInventoryEmbed(message.author.id))
+			# 	return True
 			
 
 			# Finance Functions
@@ -872,6 +872,123 @@ async def scramble(message, length=25):
 		scramble = sob.cubeScramble()
 	await message.channel.send(scramble)
 	return True
+
+
+# LoL Commands
+
+
+def dummy():
+	pass
+
+
+# Currency Functions
+#TODO: these commands suck 
+#TODO: rewrite all currency commands to use user objects rather than ids
+#TODO: refactor no wallet message into function? 
+#TODO: these really shouldnt @ that often
+
+@bot.command()
+async def coinstart(message):
+	ok = coin.addRegistration(message.author.id)
+	if ok:
+		await message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins.")
+		return True
+	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
+	return False
+
+@bot.command()
+async def give(message, recipient, value):
+	try:
+		sender = message.author.id
+		recipient = recipient[3:-1]
+		value = int(value)
+		ok = coin.give(sender, recipient, value)
+		responses = {
+			#indexed by error code
+			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
+			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
+			2: f"Soblecoins not sent! You don't have enough soblecoins.",
+			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			4: f"You can't send coins to yourself!"
+		}
+		if ok in responses:
+			await message.channel.send(responses[ok])
+	except:
+		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
+	return True
+
+@bot.command()
+async def balance(message):
+	value = coin.getUserCoins(message.author.id)
+	if isinstance(value, bool):
+		if value == False:
+			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			return True
+	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+
+#TODO: maybe give better name/alias?
+@bot.command()
+async def claim(message):
+	ok, value = coin.claimHourly(message.author.id)
+	if isinstance(ok, str):
+		if ok == "reg":
+			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			return False
+	if ok:
+		if value == 1000:
+			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
+		else:
+			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
+	else:
+		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+	return True
+
+@bot.command()
+async def roll(message, value):
+	status, change, multi = coin.luckyRoll(message.author.id, value)
+	codes = {
+		"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
+		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+		"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
+	}
+	if status in codes:
+		await message.channel.send(codes[status])
+	else:
+		if multi > 1:
+			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
+		if multi == 1:
+			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
+		if multi < 1:
+			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+	return True
+
+@bot.command()
+async def shop(message):
+	await message.channel.send(embed = coin.getShop(message))
+	return True
+
+@bot.command()
+async def buy(message, selectionID):
+	code, num = coin.buyFromShop(selectionID, message.author.id)
+	messages = {
+		"exist": f"<@!{message.author.id}>, no item with the ID {selectionID} exists!",
+		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+		"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
+		"limit": f"<@!{message.author.id}>, you already own that limited item.",
+		"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
+	}
+	if code in messages:
+		await message.channel.send(messages[code])
+	else:
+		await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
+	return True
+
+@bot.command()
+async def inventory(message):
+	await message.channel.send(coin.getInventoryEmbed(message.author.id))
+	return True
+
+
 
 
 bot.run(DISCORDTOKEN)
