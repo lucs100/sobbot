@@ -96,6 +96,7 @@ async def on_message(message):
 				await message.channel.send(content)
 				return True
 
+		#TODO: retire this.
 		#prefixed messages
 		if c.startswith(admin.getGuildPrefix(message.guild.id)):
 			#remove prefix from search
@@ -105,89 +106,89 @@ async def on_message(message):
 			# Owner Commands - can only be used by the bot creator.
 			
 
-			if c.startswith("link"):
-				if userIsBotOwner(message.author):
-					try:
-						channelid = int(c[4:].strip())
-						channel = bot.get_channel(channelid)
-					except:
-						return False
-					print("Link successful.")
-					await sob.pipeline(channel)
-					print("Link ended.")
-					return True
-				else:
-					await reportNotOwner(message)
-					return False
+			# if c.startswith("link"):
+			# 	if userIsBotOwner(message.author):
+			# 		try:
+			# 			channelid = int(c[4:].strip())
+			# 			channel = bot.get_channel(channelid)
+			# 		except:
+			# 			return False
+			# 		print("Link successful.")
+			# 		await sob.pipeline(channel)
+			# 		print("Link ended.")
+			# 		return True
+			# 	else:
+			# 		await reportNotOwner(message)
+			# 		return False
 			
-			if c == "ekoroshia" or c == "ikoroshia":
-				if userIsBotOwner(message.author):
-					await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
-					def check(msg):
-						return msg.author == message.author
-					try:
-						confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
-						if confirmMessage.content.strip() == "CONFIRM":
-							await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
-							sys.exit("Kill command invoked by owner.")
-					except asyncio.TimeoutError:
-						await message.channel.send("Still running. :grin:")
-						return False
-					await message.channel.send("Still running. :grin:")
-					return False
-				else:
-					await reportNotOwner(message)
-					return False
+			# if c == "ekoroshia" or c == "ikoroshia":
+			# 	if userIsBotOwner(message.author):
+			# 		await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
+			# 		def check(msg):
+			# 			return msg.author == message.author
+			# 		try:
+			# 			confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
+			# 			if confirmMessage.content.strip() == "CONFIRM":
+			# 				await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
+			# 				sys.exit("Kill command invoked by owner.")
+			# 		except asyncio.TimeoutError:
+			# 			await message.channel.send("Still running. :grin:")
+			# 			return False
+			# 		await message.channel.send("Still running. :grin:")
+			# 		return False
+			# 	else:
+			# 		await reportNotOwner(message)
+			# 		return False
 
 
 			# Help Functions
 
-			if c == "help":
-				await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
-				return True
+			# if c == "help":
+			# 	await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+			# 	return True
 
-			if c.startswith("help") and (c != "help"):
-				topic = c[4:].strip()
-				embed = helpDir.getHelpDirectoryEmbed(message, topic)
-				await message.channel.send(embed=embed)
-				return True
+			# if c.startswith("help") and (c != "help"):
+			# 	topic = c[4:].strip()
+			# 	embed = helpDir.getHelpDirectoryEmbed(message, topic)
+			# 	await message.channel.send(embed=embed)
+			# 	return True
 			
-			if c.startswith("info"):
-				topic = c[4:].strip()
-				await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
-				return True
+			# if c.startswith("info"):
+			# 	topic = c[4:].strip()
+			# 	await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
+			# 	return True
 			
-			if c == "about":
-				await message.channel.send("https://github.com/lucs100/sobbot")
-				return True
+			# if c == "about":
+			# 	await message.channel.send("https://github.com/lucs100/sobbot")
+			# 	return True
 
 			
 			# Admin Functions
 				# check perms before letting these functions proceed!!
 
 
-			if c.startswith("prefix"):
-				if not (message.author.guild_permissions.manage_guild):
-					await message.channel.send("You don't have permission to do that.")
-					return False
-				id = message.guild.id
-				c = c[6:].strip()
-				if c == "" or c == None:
-					ok = admin.resetGuildPrefix(id)
-					if ok == "ok":
-						await message.channel.send(f"Prefix reset to `{admin.getGuildPrefix(id)}`!")
-					elif ok == "nop":
-						await message.channel.send(f"This server is already using the default prefix (`{admin.getGuildPrefix(id)}`)!")
-					elif ok == "error":
-						await message.channel.send("Something went wrong.")
-					return True
-				ok = admin.updateGuildPrefix(id, c)
-				if ok:
-					if c == admin.getGuildPrefix(id):
-						await message.channel.send(f"Server prefix is now `{c}`!")
-						return True
-				await message.channel.send(f"Something went wrong. Server prefix unchanged.")
-				return True
+			# if c.startswith("prefix"):
+			# 	if not (message.author.guild_permissions.manage_guild):
+			# 		await message.channel.send("You don't have permission to do that.")
+			# 		return False
+			# 	id = message.guild.id
+			# 	c = c[6:].strip()
+			# 	if c == "" or c == None:
+			# 		ok = admin.resetGuildPrefix(id)
+			# 		if ok == "ok":
+			# 			await message.channel.send(f"Prefix reset to `{admin.getGuildPrefix(id)}`!")
+			# 		elif ok == "nop":
+			# 			await message.channel.send(f"This server is already using the default prefix (`{admin.getGuildPrefix(id)}`)!")
+			# 		elif ok == "error":
+			# 			await message.channel.send("Something went wrong.")
+			# 		return True
+			# 	ok = admin.updateGuildPrefix(id, c)
+			# 	if ok:
+			# 		if c == admin.getGuildPrefix(id):
+			# 			await message.channel.send(f"Server prefix is now `{c}`!")
+			# 			return True
+			# 	await message.channel.send(f"Something went wrong. Server prefix unchanged.")
+			# 	return True
 
 
 			# Miscellaneous Functions
@@ -772,6 +773,8 @@ async def on_message(message):
 	await bot.process_commands(message)
 	return True
 
+# Helper Functions
+
 def getMemberList(guildID):
 	targetGuild = bot.get_guild(guildID)
 	memberList = []
@@ -786,7 +789,102 @@ async def reportNotOwner(message):
 	await message.channel.send("Only the bot owner can do that!")
 
 
-# Commands
+# *Commands*
+
+
+# Owner Commands
+
+
+@bot.command()
+async def link(message, channelID):
+	if userIsBotOwner(message.author):
+		try:
+			channel = bot.get_channel(channelID)
+		except:
+			return False
+		print("Link successful.")
+		await sob.pipeline(channel)
+		print("Link ended.")
+		return True
+	else:
+		await reportNotOwner(message)
+		return False
+
+#TODO: name ekoroshia / ikoroshia
+@bot.command()
+async def endProcess(message):
+	if userIsBotOwner(message.author):
+		await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
+		def check(msg):
+			return msg.author == message.author
+		try:
+			confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
+			if confirmMessage.content.strip() == "CONFIRM":
+				await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
+				sys.exit("Kill command invoked by owner.")
+		except asyncio.TimeoutError:
+			await message.channel.send("Still running. :grin:")
+			return False
+		await message.channel.send("Still running. :grin:")
+		return False
+	else:
+		await reportNotOwner(message)
+		return False
+
+
+# Help Commands
+
+
+@bot.command()
+async def help(message):
+	await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+	return True
+
+#TODO: this is kind of an overload? might need to change the command name, or merge with previous command
+@bot.command()
+async def helpPage(message, topic):
+	embed = helpDir.getHelpDirectoryEmbed(message, topic)
+	await message.channel.send(embed=embed)
+	return True
+
+@bot.command()
+async def info(message, topic):
+	await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
+	return True
+
+@bot.command()
+async def about(message):
+	await message.channel.send("https://github.com/lucs100/sobbot")
+	return True
+
+
+# Admin Commands
+
+
+#TODO: use the check feature
+@bot.command()
+async def prefix(message, newPrefix):
+	if not (message.author.guild_permissions.manage_guild):
+		await message.channel.send("You don't have permission to do that.")
+		return False
+	id = message.guild.id
+	if newPrefix == "" or newPrefix == None:
+		ok = admin.resetGuildPrefix(id)
+		if ok == "ok":
+			await message.channel.send(f"Prefix reset to `{admin.getGuildPrefix(id)}`!")
+		elif ok == "nop":
+			await message.channel.send(f"This server is already using the default prefix (`{admin.getGuildPrefix(id)}`)!")
+		elif ok == "error":
+			await message.channel.send("Something went wrong.")
+		return True
+	ok = admin.updateGuildPrefix(id, newPrefix)
+	if ok:
+		if newPrefix == admin.getGuildPrefix(id):
+			await message.channel.send(f"Server prefix is now `{newPrefix}`!")
+			return True
+	await message.channel.send(f"Something went wrong. Server prefix unchanged.")
+	return True
+
 
 # Miscellaneous Commands
 
@@ -875,13 +973,13 @@ async def scramble(message, length=25):
 
 
 # LoL Commands
-
+#TODO: absolutely need to look into how implicit params work before porting.
 
 def dummy():
 	pass
 
 
-# Currency Functions
+# Currency Commands
 #TODO: these commands suck 
 #TODO: rewrite all currency commands to use user objects rather than ids
 #TODO: refactor no wallet message into function? 
