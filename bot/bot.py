@@ -83,7 +83,7 @@ async def on_message(message):
 			await message.channel.send("pong! ({0}ms)".format(int(bot.latency*1000)))
 			return True
 		
-		if match("<@!?835251884104482907>", c) is not None:
+		if match("<@!?835251884104482907>", c) is not None: #"@sobbot"
 			px = admin.getGuildPrefix(message.guild.id)
 			await message.channel.send(f"My current prefix in this server is `{px}`.\n" +
 			f"Use `{px}help` for a directory of valid commands!  :blue_heart:")
@@ -193,78 +193,76 @@ async def on_message(message):
 			# Miscellaneous Functions
 
 
-			if c == "flipcoin":
-				await message.channel.send(sob.flipCoin())
-				return True
-
-			if c.startswith('d'):
-				try:
-					n = (int(c[1:]))
-					await message.channel.send(sob.die(n))
-				except:
-					pass
-				return True
-
-			if c == "sobbleimage":
-				await message.channel.send(file = sob.sobbleImage())
-				return True
-
-			if c.startswith("math"):
-				content = sob.parseMath(c[4:].strip())
-				await message.channel.send(content)
-				return True
-			
-			if c.startswith("pkmn"):
-				data = c[4:].strip()      #query
-				try:
-					data = int(data)      #rehashes as int if possible
-				except ValueError:
-					pass
-				finally:
-					embed = sob.pkmnLookup(data)
-					if embed != None: 	  #result found
-						await message.channel.send(embed=sob.pkmnLookup(data))
-				return True
-			
-			# if c == "uptime":
-			# 	await message.channel.send(sob.timeRunning(startTime))
+			# if c == "flipcoin":
+			# 	await message.channel.send(sob.flipCoin())
 			# 	return True
 
-			if c == "starttime":
-				startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
-				await message.channel.send(f"Sobbot has been online since {startingTime}!")
-				return True
-				#TODO: maybe format this a little nicer?
+			# if c.startswith('d'):
+			# 	try:
+			# 		n = (int(c[1:]))
+			# 		await message.channel.send(sob.die(n))
+			# 	except:
+			# 		pass
+			# 	return True
+
+			# if c == "sobbleimage":
+			# 	await message.channel.send(file = sob.sobbleImage())
+			# 	return True
+
+			# if c.startswith("math"):
+			# 	content = sob.parseMath(c[4:].strip())
+			# 	await message.channel.send(content)
+			# 	return True
 			
-			if c == "randblue" or c == "randbluw":
-				embed, file = (sob.randomBlue())
-				await message.channel.send(embed=embed, file=file)
-				return True
+			# if c.startswith("pkmn"):
+			# 	data = c[4:].strip()      #query
+			# 	try:
+			# 		data = int(data)      #rehashes as int if possible
+			# 	except ValueError:
+			# 		pass
+			# 	finally:
+			# 		embed = sob.pkmnLookup(data)
+			# 		if embed != None: 	  #result found
+			# 			await message.channel.send(embed=sob.pkmnLookup(data))
+			# 	return True
+
+			# if c == "starttime":
+			# 	startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
+			# 	await message.channel.send(f"Sobbot has been online since {startingTime}!")
+			# 	return True
+			# 	#TODO: maybe format this a little nicer?
 			
-			if c == "randcolour" or c == "randcolor":
-				embed, file = (sob.randomColor())
-				await message.channel.send(embed=embed, file=file)
-				return True
+			# if c == "randblue" or c == "randbluw":
+			# 	embed, file = (sob.randomBlue())
+			# 	await message.channel.send(embed=embed, file=file)
+			# 	return True
 			
-			if c.startswith("viewcolour"):
-				c = c[10:].strip()
-				embed, file = sob.colorPreview(c)
-				await message.channel.send(embed=embed, file=file)
-			elif c.startswith("viewcolor"):
-				c = c[9:].strip()
-				embed, file = sob.colorPreview(c)
-				await message.channel.send(embed=embed, file=file)
+			# if c == "randcolour" or c == "randcolor":
+			# 	embed, file = (sob.randomColor())
+			# 	await message.channel.send(embed=embed, file=file)
+			# 	return True
 			
-			if c.startswith("scramble"):
-				count = c[8:].strip() # length if specified
-				print(count)
-				try:
-					count = int(count)
-					scramble = sob.cubeScramble(count)
-				except:
-					scramble = sob.cubeScramble()
-				await message.channel.send(scramble)
-				return True
+			# if c.startswith("viewcolour"):
+			# 	c = c[10:].strip()
+			# 	embed, file = sob.colorPreview(c)
+			# 	await message.channel.send(embed=embed, file=file)
+			# elif c.startswith("viewcolor"):
+			# 	c = c[9:].strip()
+			# 	embed, file = sob.colorPreview(c)
+			# 	await message.channel.send(embed=embed, file=file)
+			
+			# if c.startswith("scramble"):
+			# 	count = c[8:].strip() # length if specified
+			# 	print(count)
+			# 	try:
+			# 		count = int(count)
+			# 		scramble = sob.cubeScramble(count)
+			# 	except:
+			# 		scramble = sob.cubeScramble()
+			# 	await message.channel.send(scramble)
+			# 	return True
+			
+
 			
 
 			# LoL Functions
@@ -787,10 +785,93 @@ def userIsBotOwner(user):
 async def reportNotOwner(message):
 	await message.channel.send("Only the bot owner can do that!")
 
+
+# Commands
+
+# Miscellaneous Commands
+
+
 @bot.command()
-async def uptime(ctx):
-	print("ok")
-	await ctx.send(sob.timeRunning(startTime))
+async def uptime(message):
+	await message.send(sob.timeRunning(startTime))
 	return True
+
+@bot.command()
+async def flipcoin(message):
+	await message.channel.send(sob.flipCoin())
+	return True
+
+#TODO: name = "d", space optional
+@bot.command()
+async def die(message, n):
+	try:
+		await message.channel.send(sob.die(n))
+	except: #TODO: excaption type?
+		pass
+	return True
+
+@bot.command()
+async def sobbleimage(message):
+	await message.channel.send(file = sob.sobbleImage())
+	return True
+
+@bot.command()
+async def math(message, query):
+	#TODO: test if this should have a nonetype check (see automath)
+	await message.channel.send(sob.parseMath(query))
+	return True
+
+@bot.command()
+async def pkmn(message, query):
+	try:
+		query = int(query)
+	except ValueError:
+		pass
+	finally:
+		embed = sob.pkmnLookup(query)
+		if embed != None:
+			#TODO: does this need to relookup?
+			await message.channel.send(embed = sob.pkmnLookup(query))
+	return True
+
+@bot.command()
+async def starttime(message):
+	startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
+	await message.channel.send(f"Sobbot has been online since {startingTime}!")
+	return True
+	#TODO: maybe format this a little nicer?
+
+#TODO: can maybe reorganize col command names since we're on command system.
+#TODO: maybe make the colour embed, file a class? idk
+#TODO: alias all with colo(u)r
+#TODO: alias "randbluw"
+@bot.command()
+async def randblue(message):
+	embed, file = (sob.randomBlue())
+	await message.channel.send(embed=embed, file=file)
+	return True
+
+@bot.command()
+async def randcolour(message):
+	embed, file = (sob.randomColor())
+	await message.channel.send(embed=embed, file=file)
+	return True
+
+@bot.command()
+async def viewcolour(message, colourCode):
+	embed, file = sob.colorPreview(colourCode)
+	await message.channel.send(embed=embed, file=file)
+
+#TODO: is this the right way to pass a constant? can likely be rewritten if so
+@bot.command()
+async def scramble(message, length=25):
+	try:
+		count = int(length)
+		scramble = sob.cubeScramble(length)
+	except:
+		scramble = sob.cubeScramble()
+	await message.channel.send(scramble)
+	return True
+
 
 bot.run(DISCORDTOKEN)
