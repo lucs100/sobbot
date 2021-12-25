@@ -989,6 +989,60 @@ async def inventory(message):
 	return True
 
 
+# Finance Functions
+#TODO: alias pf/portfolio?
+
+
+@bot.command()
+async def ticker(message, symbol):
+	embed = finance.createStockEmbed(symbol)
+	if embed != None:
+		await message.channel.send(embed=embed)
+	else:
+		await message.channel.send(f"Symbol {symbol.upper()} doesn't seem to exist.")
+	return True
+
+@bot.command()
+async def pfstart(message):
+	ok = finance.createPortfolio(message.author.id)
+	if ok:
+		await message.channel.send("Portfolio created successfully!")
+	else:
+		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
+	return True
+
+@bot.command()
+async def pfshow(message):
+	data = await finance.getUserPortfolioEmbed(message)
+	codes = {
+		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
+		"empty": f"<@!{message.author.id}>, your portfolio is empty!"
+	}
+	if data in codes:
+		await message.channel.send(codes[data])
+	return True
+
+#TODO: alias to pfadd?
+#TODO: can commands be in any order since they're typed?
+@bot.command()
+async def pf(message, symbol, count):
+	id = message.author.id
+	count = int(count) #locked to int for now
+	if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
+		return True # type error
+	status = finance.updatePortfolio(symbol, id, count)
+	codes = {
+		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
+		"sym": f"{symbol.upper()} isn't a valid symbol!",
+		"neg": "You can't have negative shares!",
+		"delS": f"Symbol {symbol.upper()} removed successfully!",
+		"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
+		"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
+		"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
+	}
+	await message.channel.send(codes[status])
+	return True
+
 
 
 bot.run(DISCORDTOKEN)
