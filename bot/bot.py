@@ -591,182 +591,182 @@ async def on_message(message):
 			# Finance Functions
 
 
-			if c.startswith("ticker"):
-				c = c[6:].strip()
-				embed = finance.createStockEmbed(c)
-				if embed != None:
-					await message.channel.send(embed=embed)
-				else:
-					await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist.")
-				return True
+			# if c.startswith("ticker"):
+			# 	c = c[6:].strip()
+			# 	embed = finance.createStockEmbed(c)
+			# 	if embed != None:
+			# 		await message.channel.send(embed=embed)
+			# 	else:
+			# 		await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist.")
+			# 	return True
 
-			if c == "pfstart":
-				ok = finance.createPortfolio(message.author.id)
-				if ok:
-					await message.channel.send("Portfolio created successfully!")
-				else:
-					await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
-				return True
+			# if c == "pfstart":
+			# 	ok = finance.createPortfolio(message.author.id)
+			# 	if ok:
+			# 		await message.channel.send("Portfolio created successfully!")
+			# 	else:
+			# 		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
+			# 	return True
 			
-			if c == "pfshow":
-				data = await finance.getUserPortfolioEmbed(message)
-				codes = {
-					"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-					"empty": f"<@!{message.author.id}>, your portfolio is empty!"
-				}
-				if data in codes:
-					await message.channel.send(codes[data])
-				return True
+			# if c == "pfshow":
+			# 	data = await finance.getUserPortfolioEmbed(message)
+			# 	codes = {
+			# 		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
+			# 		"empty": f"<@!{message.author.id}>, your portfolio is empty!"
+			# 	}
+			# 	if data in codes:
+			# 		await message.channel.send(codes[data])
+			# 	return True
 
-			if c.startswith("pf"): # must after all portfolio functions!
-				#slow
-				id = message.author.id
-				symbol, count = c[2:].split()
-				count = int(count) # locked to int for now
-				if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
-					return True # type error
-				status = finance.updatePortfolio(symbol, id, count)
-				codes = {
-					"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-					"sym": f"{symbol.upper()} isn't a valid symbol!",
-					"neg": "You can't have negative shares!",
-					"delS": f"Symbol {symbol.upper()} removed successfully!",
-					"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
-					"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
-					"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
-				}
-				await message.channel.send(codes[status])
-				return True
+			# if c.startswith("pf"): # must after all portfolio functions!
+			# 	#slow
+			# 	id = message.author.id
+			# 	symbol, count = c[2:].split()
+			# 	count = int(count) # locked to int for now
+			# 	if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
+			# 		return True # type error
+			# 	status = finance.updatePortfolio(symbol, id, count)
+			# 	codes = {
+			# 		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
+			# 		"sym": f"{symbol.upper()} isn't a valid symbol!",
+			# 		"neg": "You can't have negative shares!",
+			# 		"delS": f"Symbol {symbol.upper()} removed successfully!",
+			# 		"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
+			# 		"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
+			# 		"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
+			# 	}
+			# 	await message.channel.send(codes[status])
+			# 	return True
 			
 
 			# Spotify Functions
 
 
-			if c == "spcreate":
-				await sp.createGuildPlaylistGuildSide(message)
-				return True
+			# if c == "spcreate":
+			# 	await sp.createGuildPlaylistGuildSide(message)
+			# 	return True
 			
-			if c.startswith("spadd"):
-				c = c[5:].strip()
-				await sp.addToGuildPlaylistGuildSide(message, c)
-				return True
+			# if c.startswith("spadd"):
+			# 	c = c[5:].strip()
+			# 	await sp.addToGuildPlaylistGuildSide(message, c)
+			# 	return True
 			
-			if c == "spoverview":
-				members = getMemberList(message.guild.id)
-				await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
-				return True
+			# if c == "spoverview":
+			# 	members = getMemberList(message.guild.id)
+			# 	await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
+			# 	return True
 			
-			if c == "splink":
-				link = sp.getGuildPlaylist(message.guild.id).link
-				await message.channel.send(link)
-				return True
+			# if c == "splink":
+			# 	link = sp.getGuildPlaylist(message.guild.id).link
+			# 	await message.channel.send(link)
+			# 	return True
 
-			if c.startswith("spsettitle"):
-				title = message.content[len(admin.getGuildPrefix(message.guild.id))+10:].strip()
-				perms = (message.author.guild_permissions.manage_guild)
-				response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
-				if response:
-					await message.add_reaction("👍")
-					return True
-				else:
-					await message.add_reaction("👎")
-					return False
+			# if c.startswith("spsettitle"):
+			# 	title = message.content[len(admin.getGuildPrefix(message.guild.id))+10:].strip()
+			# 	perms = (message.author.guild_permissions.manage_guild)
+			# 	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
+			# 	if response:
+			# 		await message.add_reaction("👍")
+			# 		return True
+			# 	else:
+			# 		await message.add_reaction("👎")
+			# 		return False
 
-			if c.startswith("spsetdesc"):
-				desc = message.content[len(admin.getGuildPrefix(message.guild.id))+9:].strip()
-				perms = (message.author.guild_permissions.manage_guild)
-				response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
-				if response:
-					await message.add_reaction("👍")
-					return True
-				else:
-					await message.add_reaction("👎")
-					return False
+			# if c.startswith("spsetdesc"):
+			# 	desc = message.content[len(admin.getGuildPrefix(message.guild.id))+9:].strip()
+			# 	perms = (message.author.guild_permissions.manage_guild)
+			# 	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
+			# 	if response:
+			# 		await message.add_reaction("👍")
+			# 		return True
+			# 	else:
+			# 		await message.add_reaction("👎")
+			# 		return False
 			
-			if c == "spclear":
-				perms = (message.author.guild_permissions.manage_guild)
-				if not perms:
-					await message.channel.send("You'll need Manage Server perms to do that.")
-					return False
-				target = sp.getGuildPlaylist(message.guild.id)
-				if target == None:
-					await sp.reportNoGP(message)
-					return False
-				else:
-					await message.channel.send("Are you sure? Type CONFIRM. (15s)")
-					def check(msg):
-						return msg.author == message.author
-					try:
-						confirmMessage = await bot.wait_for(event="message", timeout=15, check=check)
-						if confirmMessage.content.strip() == "CONFIRM":
-							target.delete(isConfirmed=True)
-							await message.channel.send("Deleted. :sob:")
-							return True
-					except asyncio.TimeoutError:
-						await message.channel.send("Not deleted. :grin:")
-						return False
-					await message.channel.send("Cancelled. :grin:")
-					return False
+			# if c == "spclear":
+			# 	perms = (message.author.guild_permissions.manage_guild)
+			# 	if not perms:
+			# 		await message.channel.send("You'll need Manage Server perms to do that.")
+			# 		return False
+			# 	target = sp.getGuildPlaylist(message.guild.id)
+			# 	if target == None:
+			# 		await sp.reportNoGP(message)
+			# 		return False
+			# 	else:
+			# 		await message.channel.send("Are you sure? Type CONFIRM. (15s)")
+			# 		def check(msg):
+			# 			return msg.author == message.author
+			# 		try:
+			# 			confirmMessage = await bot.wait_for(event="message", timeout=15, check=check)
+			# 			if confirmMessage.content.strip() == "CONFIRM":
+			# 				target.delete(isConfirmed=True)
+			# 				await message.channel.send("Deleted. :sob:")
+			# 				return True
+			# 		except asyncio.TimeoutError:
+			# 			await message.channel.send("Not deleted. :grin:")
+			# 			return False
+			# 		await message.channel.send("Cancelled. :grin:")
+			# 		return False
 			
-			if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
-				try:
-					newImg = message.attachments[0]
-				except IndexError:
-					await message.channel.send("Send an image with that command.")
-					return False
-				gph = sp.getGuildPlaylist(message.guild.id)
-				if gph != None:
-					response = await sp.encodeAndSetCoverImage(newImg, gph)
-					if response:
-						await message.add_reaction("👍")
-						return True
-					else:
-						await message.add_reaction("👎")
-						return False
-				else:
-					await sp.reportNoGP(message)
-					return False
+			# if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
+			# 	try:
+			# 		newImg = message.attachments[0]
+			# 	except IndexError:
+			# 		await message.channel.send("Send an image with that command.")
+			# 		return False
+			# 	gph = sp.getGuildPlaylist(message.guild.id)
+			# 	if gph != None:
+			# 		response = await sp.encodeAndSetCoverImage(newImg, gph)
+			# 		if response:
+			# 			await message.add_reaction("👍")
+			# 			return True
+			# 		else:
+			# 			await message.add_reaction("👎")
+			# 			return False
+			# 	else:
+			# 		await sp.reportNoGP(message)
+			# 		return False
 			
-			if c == "spdelnewest" or c == "spdeletenewest":
-				perms = (message.author.guild_permissions.manage_guild)
-				gph = sp.getGuildPlaylist(message.guild.id)
-				if gph != None:
-					response = await sp.undoAdditionGuildSide(message, gph, perms)
-					if response == True:
-						await message.add_reaction("👍")
-						return True
-					else:
-						await message.add_reaction("👎")
-						if response == "perm":
-							await message.channel.send("You don't have permission to do that.")
-						elif response == "empty":
-							await message.channel.send("The playlist is empty already.")
-						return False
-				else:
-					await sp.reportNoGP(message)
-					return False
+			# if c == "spdelnewest" or c == "spdeletenewest":
+			# 	perms = (message.author.guild_permissions.manage_guild)
+			# 	gph = sp.getGuildPlaylist(message.guild.id)
+			# 	if gph != None:
+			# 		response = await sp.undoAdditionGuildSide(message, gph, perms)
+			# 		if response == True:
+			# 			await message.add_reaction("👍")
+			# 			return True
+			# 		else:
+			# 			await message.add_reaction("👎")
+			# 			if response == "perm":
+			# 				await message.channel.send("You don't have permission to do that.")
+			# 			elif response == "empty":
+			# 				await message.channel.send("The playlist is empty already.")
+			# 			return False
+			# 	else:
+			# 		await sp.reportNoGP(message)
+			# 		return False
 
-			if c.startswith("spdelete") or c.startswith("spremove"):
-				perms = (message.author.guild_permissions.manage_guild)
-				c = c[8:].strip()
-				gph = sp.getGuildPlaylist(message.guild.id)
-				if gph != None:
-					response = await sp.deleteSongGuildSide(message, gph, c, perms)
-					if response == True:
-						await message.add_reaction("👍")
-						return True
-					else:
-						await message.add_reaction("👎")
-						if response == "perm":
-							await message.channel.send("You don't have permission to do that.")
-						if response == "notin":
-							await message.channel.send(
-								"That song doesn't seem to " +
-								"be in your server's playlist.")
-						return False
-				else:
-					await sp.reportNoGP(message)
-					return False
+			# if c.startswith("spdelete") or c.startswith("spremove"):
+			# 	perms = (message.author.guild_permissions.manage_guild)
+			# 	c = c[8:].strip()
+			# 	gph = sp.getGuildPlaylist(message.guild.id)
+			# 	if gph != None:
+			# 		response = await sp.deleteSongGuildSide(message, gph, c, perms)
+			# 		if response == True:
+			# 			await message.add_reaction("👍")
+			# 			return True
+			# 		else:
+			# 			await message.add_reaction("👎")
+			# 			if response == "perm":
+			# 				await message.channel.send("You don't have permission to do that.")
+			# 			if response == "notin":
+			# 				await message.channel.send(
+			# 					"That song doesn't seem to " +
+			# 					"be in your server's playlist.")
+			# 			return False
+			# 	else:
+			# 		await sp.reportNoGP(message)
+			# 		return False
 
 	#LEAVE THIS AT THE END
 	await bot.process_commands(message)
@@ -1043,6 +1043,147 @@ async def pf(message, symbol, count):
 	await message.channel.send(codes[status])
 	return True
 
+
+# Spotify Functions
+#TODO: maybe alias all sp/playlist?
+
+@bot.command()
+async def spcreate(message):
+	await sp.createGuildPlaylistGuildSide(message)
+	return True
+
+@bot.command()
+async def spadd(message, song):
+	await sp.addToGuildPlaylistGuildSide(message, song)
+	return True
+
+@bot.command()
+async def spoverview(message):
+	members = getMemberList(message.guild.id)
+	await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
+	return True
+
+@bot.command()
+async def splink(message):
+	link = sp.getGuildPlaylist(message.guild.id).link
+	await message.channel.send(link)
+	return True
+
+#TODO: rewrite to use the perm check feature
+#TODO: do these need quotes?
+@bot.command()
+async def spsettitle(message, title):
+	perms = (message.author.guild_permissions.manage_guild)
+	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
+	if response:
+		await message.add_reaction("👍")
+		return True
+	else:
+		await message.add_reaction("👎")
+		return False
+
+@bot.command()
+async def spsetdesc(message, desc):
+	perms = (message.author.guild_permissions.manage_guild)
+	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
+	if response:
+		await message.add_reaction("👍")
+		return True
+	else:
+		await message.add_reaction("👎")
+		return False
+
+#TODO: can multimessage handling be done better? :(
+@bot.command()
+async def spclear(message):
+	perms = (message.author.guild_permissions.manage_guild)			
+	if not perms:
+		await message.channel.send("You'll need Manage Server perms to do that.")
+		return False
+	target = sp.getGuildPlaylist(message.guild.id)
+	if target == None:
+		await sp.reportNoGP(message)
+		return False
+	else:
+		await message.channel.send("Are you sure? Type CONFIRM. (15s)")
+		def check(msg):
+			return msg.author == message.author
+		try:
+			confirmMessage = await bot.wait_for(event="message", timeout=15, check=check)
+			if confirmMessage.content.strip() == "CONFIRM":
+				target.delete(isConfirmed=True)
+				await message.channel.send("Deleted. :sob:")
+				return True
+		except asyncio.TimeoutError:
+			await message.channel.send("Not deleted. :grin:")
+			return False
+		await message.channel.send("Cancelled. :grin:")
+		return False
+
+#TODO: aliases spsetimage, spsetcover, spsetcoverimage
+@bot.command()
+async def spsetimage(message):
+	try:
+		newImg = message.attachments[0]
+	except IndexError:
+		await message.channel.send("Send an image with that command.")
+		return False
+	gph = sp.getGuildPlaylist(message.guild.id)
+	if gph != None:
+		response = await sp.encodeAndSetCoverImage(newImg, gph)
+		if response:
+			await message.add_reaction("👍")
+			return True
+		else:
+			await message.add_reaction("👎")
+			return False
+	else:
+		await sp.reportNoGP(message)
+		return False
+
+#TODO: alias spdelnewest, spdeletenewest
+@bot.command()
+async def spdelnewest(message):
+	perms = (message.author.guild_permissions.manage_guild)
+	gph = sp.getGuildPlaylist(message.guild.id)
+	if gph != None:
+		response = await sp.undoAdditionGuildSide(message, gph, perms)
+		if response == True:
+			await message.add_reaction("👍")
+			return True
+		else:
+			await message.add_reaction("👎")
+			if response == "perm":
+				await message.channel.send("You don't have permission to do that.")
+			elif response == "empty":
+				await message.channel.send("The playlist is empty already.")
+			return False
+	else:
+		await sp.reportNoGP(message)
+		return False
+
+#TODO: alias spdelete, spremove
+@bot.command()
+async def spdelete(message, song):
+	perms = (message.author.guild_permissions.manage_guild)
+	gph = sp.getGuildPlaylist(message.guild.id)
+	if gph != None:
+		response = await sp.deleteSongGuildSide(message, gph, song, perms)
+		if response == True:
+			await message.add_reaction("👍")
+			return True
+		else:
+			await message.add_reaction("👎")
+			if response == "perm":
+				await message.channel.send("You don't have permission to do that.")
+			if response == "notin":
+				await message.channel.send(
+					"That song doesn't seem to " +
+					"be in your server's playlist.")
+			return False
+	else:
+		await sp.reportNoGP(message)
+		return False
 
 
 bot.run(DISCORDTOKEN)
