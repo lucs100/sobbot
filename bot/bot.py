@@ -96,7 +96,7 @@ async def on_message(message):
 				await message.channel.send(content)
 				return True
 
-		#TODO: retire this.
+		#TODO: retire this when done command rewrite!
 		#prefixed messages
 		if c.startswith(admin.getGuildPrefix(message.guild.id)):
 			#remove prefix from search
@@ -843,17 +843,22 @@ async def endProcess(message):
 # Help Commands
 
 
+#TODO: test this pseudo-overload
 @bot.command()
-async def help(message):
-	await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+async def help(message, topic=None):
+	if topic == None:
+		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+	else: 
+		embed = helpDir.getHelpDirectoryEmbed(message, topic)
+		await message.channel.send(embed=embed)
 	return True
 
-#TODO: this is kind of an overload? might need to change the command name, or merge with previous command
-@bot.command()
-async def helpPage(message, topic):
-	embed = helpDir.getHelpDirectoryEmbed(message, topic)
-	await message.channel.send(embed=embed)
-	return True
+#TODO: delete merged command?
+# @bot.command()
+# async def helpPage(message, topic):
+# 	embed = helpDir.getHelpDirectoryEmbed(message, topic)
+# 	await message.channel.send(embed=embed)
+# 	return True
 
 @bot.command()
 async def info(message, topic):
@@ -923,7 +928,7 @@ async def sobbleimage(message):
 
 @bot.command()
 async def math(message, query):
-	#TODO: test if this should have a nonetype check (see automath)
+	#TODO: test if this should have an "on return Nonetype" check (see automath)
 	await message.channel.send(sob.parseMath(query))
 	return True
 
@@ -947,7 +952,7 @@ async def starttime(message):
 	return True
 	#TODO: maybe format this a little nicer?
 
-#TODO: can maybe reorganize col command names since we're on command system.
+#TODO: can maybe reorganize col command names since we're on command system? still need to learn
 #TODO: maybe make the colour embed, file a class? idk
 @bot.command(aliases=["randbluw", "randomblue", "randombluw"])
 async def randblue(message):
@@ -972,7 +977,7 @@ async def scramble(message, length=25):
 	try:
 		count = int(length)
 		scramble = sob.cubeScramble(length)
-	except:
+	except: #TODO: is this except correct? which exception type?
 		scramble = sob.cubeScramble()
 	await message.channel.send(scramble)
 	return True
@@ -980,6 +985,7 @@ async def scramble(message, length=25):
 
 # LoL Commands
 #TODO: absolutely need to look into how implicit params work before porting.
+# can i use Optional with a summoner type conversion?
 
 def dummy():
 	pass
@@ -1174,9 +1180,9 @@ async def splink(message):
 	return True
 
 #TODO: rewrite to use the perm check feature
-#TODO: do params need quotes? testing req'd
+#TODO: does * (keyword-only arg) allow spaces properly? testing req'd
 @bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
-async def spsettitle(message, title):
+async def spsettitle(message, *, title):
 	perms = (message.author.guild_permissions.manage_guild)
 	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
 	if response:
@@ -1187,7 +1193,7 @@ async def spsettitle(message, title):
 		return False
 
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
-async def spsetdesc(message, desc):
+async def spsetdesc(message, *, desc):
 	perms = (message.author.guild_permissions.manage_guild)
 	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
 	if response:
@@ -1224,7 +1230,6 @@ async def spclear(message):
 		await message.channel.send("Cancelled. :grin:")
 		return False
 
-#TODO: aliases spsetimage, spsetcover, spsetcoverimage
 @bot.command(aliases=["playlistsetimage", "playlistsetcover", "spsetcover"])
 async def spsetimage(message):
 	try:
@@ -1245,7 +1250,6 @@ async def spsetimage(message):
 		await sp.reportNoGP(message)
 		return False
 
-#TODO: alias spdelnewest, spdeletenewest
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
 async def spdelnewest(message):
 	perms = (message.author.guild_permissions.manage_guild)
@@ -1266,7 +1270,6 @@ async def spdelnewest(message):
 		await sp.reportNoGP(message)
 		return False
 
-#TODO: alias spdelete, spremove
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
 async def spdelete(message, song):
 	perms = (message.author.guild_permissions.manage_guild)
