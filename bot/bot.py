@@ -798,6 +798,8 @@ async def reportNotOwner(message):
 # Also, make sure the rewrite branch clearly breaks off the main branch. If it fails catastrophically,
 # a good backup is required, with the consequences being a huge rollback or rewrite.
 
+# The end goal of this expansion is to merge into main. Keep your code clean.
+
 
 # Owner Commands
 
