@@ -5,6 +5,8 @@ helpData = {}
 helpSingles = {}
 helpfulGreen = 0x22bb45
 
+#TODO: helpfile may be out of date due to command update. look into help command?
+
 with open('bot/resources/data/help.json') as f:
     data = json.loads(f.read()) # unpacking data
     helpData = data["subdirectories"]

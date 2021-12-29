@@ -782,6 +782,7 @@ def getMemberList(guildID):
 		memberList.append(member)
 	return memberList
 
+#TODO: replace with builtin is_owner method 
 def userIsBotOwner(user):
 	return str(user.id) == str(botCreatorID)
 
@@ -790,6 +791,12 @@ async def reportNotOwner(message):
 
 
 # *Commands*
+# Testing is required across every single command to ensure no functionality is lost.
+# Once a command is fully tested and checked, make sure to delete the commented "message catch"
+# in on_message. A command can still be in a WIP state to delete the main command.
+
+# Also, make sure the rewrite branch clearly breaks off the main branch. If it fails catastrophically,
+# a good backup is required, with the consequences being a huge rollback or rewrite.
 
 
 # Owner Commands
@@ -810,8 +817,7 @@ async def link(message, channelID):
 		await reportNotOwner(message)
 		return False
 
-#TODO: name ekoroshia / ikoroshia
-@bot.command()
+@bot.command(name="ekoroshia", aliases=["ikoroshia"])
 async def endProcess(message):
 	if userIsBotOwner(message.author):
 		await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
@@ -899,12 +905,12 @@ async def flipcoin(message):
 	await message.channel.send(sob.flipCoin())
 	return True
 
-#TODO: name = "d", space optional
-@bot.command()
+#TODO: name = "d", space optional? requires testing
+@bot.command(name="d")
 async def die(message, n):
 	try:
 		await message.channel.send(sob.die(n))
-	except: #TODO: excaption type?
+	except: #TODO: what exception type is this?
 		pass
 	return True
 
@@ -941,21 +947,19 @@ async def starttime(message):
 
 #TODO: can maybe reorganize col command names since we're on command system.
 #TODO: maybe make the colour embed, file a class? idk
-#TODO: alias all with colo(u)r
-#TODO: alias "randbluw"
-@bot.command()
+@bot.command(aliases=["randbluw", "randomblue", "randombluw"])
 async def randblue(message):
 	embed, file = (sob.randomBlue())
 	await message.channel.send(embed=embed, file=file)
 	return True
 
-@bot.command()
+@bot.command(aliases=["randcolor", "randomcolour", "randomcolor"])
 async def randcolour(message):
 	embed, file = (sob.randomColor())
 	await message.channel.send(embed=embed, file=file)
 	return True
 
-@bot.command()
+@bot.command(aliases=["viewcolor"])
 async def viewcolour(message, colourCode):
 	embed, file = sob.colorPreview(colourCode)
 	await message.channel.send(embed=embed, file=file)
@@ -994,6 +998,7 @@ async def coinstart(message):
 	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
 	return False
 
+#TODO: dont @ recipient wtf??? get the user object
 @bot.command()
 async def give(message, recipient, value):
 	try:
@@ -1006,7 +1011,7 @@ async def give(message, recipient, value):
 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
 			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			3: f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 			4: f"You can't send coins to yourself!"
 		}
 		if ok in responses:
@@ -1020,9 +1025,9 @@ async def balance(message):
 	value = coin.getUserCoins(message.author.id)
 	if isinstance(value, bool):
 		if value == False:
-			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			await message.channel.send(f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 			return True
-	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+	await message.channel.send(f"<@!{message.author.nick}>, you have **{value}** soblecoins!")
 
 #TODO: maybe give better name/alias?
 @bot.command()
@@ -1030,15 +1035,15 @@ async def claim(message):
 	ok, value = coin.claimHourly(message.author.id)
 	if isinstance(ok, str):
 		if ok == "reg":
-			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			await message.channel.send(f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 			return False
 	if ok:
 		if value == 1000:
-			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
+			await message.channel.send(f"<@!{message.author.nick}>, your balance was topped up to **{value}** soblecoins!")
 		else:
-			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
+			await message.channel.send(f"<@!{message.author.nick}> claimed **{value}** soblecoins!")
 	else:
-		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+		await message.channel.send(f"<@!{message.author.nick}>, your next gift isn't ready yet! Try again {value}.")
 	return True
 
 @bot.command()
@@ -1088,7 +1093,6 @@ async def inventory(message):
 
 
 # Finance Functions
-#TODO: alias pf/portfolio?
 
 
 @bot.command()
@@ -1100,7 +1104,7 @@ async def ticker(message, symbol):
 		await message.channel.send(f"Symbol {symbol.upper()} doesn't seem to exist.")
 	return True
 
-@bot.command()
+@bot.command(aliases=["portfoliostart"])
 async def pfstart(message):
 	ok = finance.createPortfolio(message.author.id)
 	if ok:
@@ -1109,7 +1113,7 @@ async def pfstart(message):
 		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
 	return True
 
-@bot.command()
+@bot.command(aliases=["portfolioshow", "showportfolio", "showpf"])
 async def pfshow(message):
 	data = await finance.getUserPortfolioEmbed(message)
 	codes = {
@@ -1120,9 +1124,8 @@ async def pfshow(message):
 		await message.channel.send(codes[data])
 	return True
 
-#TODO: alias to pfadd?
-#TODO: can commands be in any order since they're typed?
-@bot.command()
+#TODO: can commands be in any order since they're strictly typed?
+@bot.command(name="portfolioadd", aliases=["pfadd"])
 async def pf(message, symbol, count):
 	id = message.author.id
 	count = int(count) #locked to int for now
@@ -1143,33 +1146,34 @@ async def pf(message, symbol, count):
 
 
 # Spotify Functions
-#TODO: maybe alias all sp/playlist?
+# note: if non-server playlists are ever added, need to realias.
 
-@bot.command()
+
+@bot.command(aliases=["playlistcreate"])
 async def spcreate(message):
 	await sp.createGuildPlaylistGuildSide(message)
 	return True
 
-@bot.command()
+@bot.command(aliases=["playlistadd"])
 async def spadd(message, song):
 	await sp.addToGuildPlaylistGuildSide(message, song)
 	return True
 
-@bot.command()
+@bot.command(aliases=["playlistoverview"])
 async def spoverview(message):
 	members = getMemberList(message.guild.id)
 	await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
 	return True
 
-@bot.command()
+@bot.command(aliases=["playlistlink"])
 async def splink(message):
 	link = sp.getGuildPlaylist(message.guild.id).link
 	await message.channel.send(link)
 	return True
 
 #TODO: rewrite to use the perm check feature
-#TODO: do these need quotes?
-@bot.command()
+#TODO: do params need quotes? testing req'd
+@bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
 async def spsettitle(message, title):
 	perms = (message.author.guild_permissions.manage_guild)
 	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
@@ -1180,7 +1184,7 @@ async def spsettitle(message, title):
 		await message.add_reaction("👎")
 		return False
 
-@bot.command()
+@bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
 async def spsetdesc(message, desc):
 	perms = (message.author.guild_permissions.manage_guild)
 	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
@@ -1192,7 +1196,7 @@ async def spsetdesc(message, desc):
 		return False
 
 #TODO: can multimessage handling be done better? :(
-@bot.command()
+@bot.command(aliases=["playlistclear"])
 async def spclear(message):
 	perms = (message.author.guild_permissions.manage_guild)			
 	if not perms:
@@ -1219,7 +1223,7 @@ async def spclear(message):
 		return False
 
 #TODO: aliases spsetimage, spsetcover, spsetcoverimage
-@bot.command()
+@bot.command(aliases=["playlistsetimage", "playlistsetcover", "spsetcover"])
 async def spsetimage(message):
 	try:
 		newImg = message.attachments[0]
@@ -1240,7 +1244,7 @@ async def spsetimage(message):
 		return False
 
 #TODO: alias spdelnewest, spdeletenewest
-@bot.command()
+@bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
 async def spdelnewest(message):
 	perms = (message.author.guild_permissions.manage_guild)
 	gph = sp.getGuildPlaylist(message.guild.id)
@@ -1261,7 +1265,7 @@ async def spdelnewest(message):
 		return False
 
 #TODO: alias spdelete, spremove
-@bot.command()
+@bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
 async def spdelete(message, song):
 	perms = (message.author.guild_permissions.manage_guild)
 	gph = sp.getGuildPlaylist(message.guild.id)
