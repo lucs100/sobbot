@@ -20,6 +20,9 @@ intents.members = True
 
 bot = commands.Bot(command_prefix = "s!", intents=intents)
 
+#TODO: create a real helpcommand using discord-pretty-help
+bot.help_command = None
+
 @bot.event
 async def on_ready():
 	print(f"{bot.user} initialized.")
@@ -140,18 +143,6 @@ async def on_message(message):
 			# 		await reportNotOwner(message)
 			# 		return False
 
-
-			# Help Functions
-
-			# if c == "help":
-			# 	await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
-			# 	return True
-
-			# if c.startswith("help") and (c != "help"):
-			# 	topic = c[4:].strip()
-			# 	embed = helpDir.getHelpDirectoryEmbed(message, topic)
-			# 	await message.channel.send(embed=embed)
-			# 	return True
 			
 			# Admin Functions
 				# check perms before letting these functions proceed!!
@@ -512,25 +503,16 @@ async def endProcess(message):
 # Help Commands
 
 
-#TODO: NEEDS MAJOR FIX - command conflict with builtin help command
-# temporarily renamed command
-# DO NOT DELETE!
+#TODO: use discord-pretty-help to make a real HelpCommand
 
 @bot.command()
-async def helpT(message, topic=None):
+async def help(message, topic=None):
 	if topic == None:
 		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
 	else: 
 		embed = helpDir.getHelpDirectoryEmbed(message, topic)
 		await message.channel.send(embed=embed)
 	return True
-
-#TODO: delete merged command?
-# @bot.command()
-# async def helpPage(message, topic):
-# 	embed = helpDir.getHelpDirectoryEmbed(message, topic)
-# 	await message.channel.send(embed=embed)
-# 	return True
 
 @bot.command()
 async def info(message, topic=None):

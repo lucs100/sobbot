@@ -28,7 +28,7 @@ def getHelpDirectory(topic):
 def getHelpDirectoryEmbed(message, topic):
     data = getHelpDirectory(topic)
     if data == None:
-        return "none" # maybe change this to Nonetype?
+        return None
     title = f"Sobbot - {data['title']} Command Directory"
     description = ""
     px = admin.getGuildPrefix(message.guild.id)
