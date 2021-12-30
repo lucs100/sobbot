@@ -153,16 +153,6 @@ async def on_message(message):
 			# 	await message.channel.send(embed=embed)
 			# 	return True
 			
-			# if c.startswith("info"):
-			# 	topic = c[4:].strip()
-			# 	await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
-			# 	return True
-			
-			# if c == "about":
-			# 	await message.channel.send("https://github.com/lucs100/sobbot")
-			# 	return True
-
-			
 			# Admin Functions
 				# check perms before letting these functions proceed!!
 
@@ -194,76 +184,13 @@ async def on_message(message):
 			# Miscellaneous Functions
 
 
-			# if c == "flipcoin":
-			# 	await message.channel.send(sob.flipCoin())
-			# 	return True
-
 			# if c.startswith('d'):
 			# 	try:
 			# 		n = (int(c[1:]))
 			# 		await message.channel.send(sob.die(n))
 			# 	except:
 			# 		pass
-			# 	return True
-
-			# if c == "sobbleimage":
-			# 	await message.channel.send(file = sob.sobbleImage())
-			# 	return True
-
-			# if c.startswith("math"):
-			# 	content = sob.parseMath(c[4:].strip())
-			# 	await message.channel.send(content)
-			# 	return True
-			
-			# if c.startswith("pkmn"):
-			# 	data = c[4:].strip()      #query
-			# 	try:
-			# 		data = int(data)      #rehashes as int if possible
-			# 	except ValueError:
-			# 		pass
-			# 	finally:
-			# 		embed = sob.pkmnLookup(data)
-			# 		if embed != None: 	  #result found
-			# 			await message.channel.send(embed=sob.pkmnLookup(data))
-			# 	return True
-
-			# if c == "starttime":
-			# 	startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
-			# 	await message.channel.send(f"Sobbot has been online since {startingTime}!")
-			# 	return True
-			# 	#TODO: maybe format this a little nicer?
-			
-			# if c == "randblue" or c == "randbluw":
-			# 	embed, file = (sob.randomBlue())
-			# 	await message.channel.send(embed=embed, file=file)
-			# 	return True
-			
-			# if c == "randcolour" or c == "randcolor":
-			# 	embed, file = (sob.randomColor())
-			# 	await message.channel.send(embed=embed, file=file)
-			# 	return True
-			
-			# if c.startswith("viewcolour"):
-			# 	c = c[10:].strip()
-			# 	embed, file = sob.colorPreview(c)
-			# 	await message.channel.send(embed=embed, file=file)
-			# elif c.startswith("viewcolor"):
-			# 	c = c[9:].strip()
-			# 	embed, file = sob.colorPreview(c)
-			# 	await message.channel.send(embed=embed, file=file)
-			
-			# if c.startswith("scramble"):
-			# 	count = c[8:].strip() # length if specified
-			# 	print(count)
-			# 	try:
-			# 		count = int(count)
-			# 		scramble = sob.cubeScramble(count)
-			# 	except:
-			# 		scramble = sob.cubeScramble()
-			# 	await message.channel.send(scramble)
-			# 	return True
-			
-
+			# 	return True	
 			
 
 			# LoL Functions
@@ -522,28 +449,6 @@ async def on_message(message):
 			# 	except:
 			# 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
 			# 	return True
-			
-			# if c == "balance":
-			# 	value = coin.getUserCoins(message.author.id)
-			# 	if isinstance(value, bool):
-			# 		if value == False:
-			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-			# 			return True
-			# 	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
-			
-			# if c == "claim":
-			# 	ok, value = coin.claimHourly(message.author.id)
-			# 	if isinstance(ok, str):
-			# 		if ok == "reg":
-			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-			# 	if ok:
-			# 		if value == 1000:
-			# 			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
-			# 		else:
-			# 			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
-			# 	else:
-			# 		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
-			# 	return True
 
 			# if c.startswith("roll"):
 			# 	value = c[4:].strip()
@@ -564,125 +469,12 @@ async def on_message(message):
 			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
 			# 	return True
 			
-			# if c == "shop":
-			# 	await message.channel.send(embed = coin.getShop(message))
-			# 	return True
-			
-			# if c.startswith("buy"):
-			# 	c = c[3:].strip()
-			# 	code, num = coin.buyFromShop(c, message.author.id)
-			# 	messages = {
-			# 		"exist": f"<@!{message.author.id}>, no item with the ID {c} exists!",
-			# 		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-			# 		"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
-			# 		"limit": f"<@!{message.author.id}>, you already own that limited item.",
-			# 		"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
-			# 	}
-			# 	if code in messages:
-			# 		await message.channel.send(messages[code])
-			# 	else:
-			# 		await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
-			# 	return True
-
-			# if c == "inventory":
-			# 	await message.channel.send(coin.getInventoryEmbed(message.author.id))
-			# 	return True
-			
 
 			# Finance Functions
 
 
-			# if c.startswith("ticker"):
-			# 	c = c[6:].strip()
-			# 	embed = finance.createStockEmbed(c)
-			# 	if embed != None:
-			# 		await message.channel.send(embed=embed)
-			# 	else:
-			# 		await message.channel.send(f"Symbol {c.upper()} doesn't seem to exist.")
-			# 	return True
-
-			# if c == "pfstart":
-			# 	ok = finance.createPortfolio(message.author.id)
-			# 	if ok:
-			# 		await message.channel.send("Portfolio created successfully!")
-			# 	else:
-			# 		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
-			# 	return True
-			
-			# if c == "pfshow":
-			# 	data = await finance.getUserPortfolioEmbed(message)
-			# 	codes = {
-			# 		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-			# 		"empty": f"<@!{message.author.id}>, your portfolio is empty!"
-			# 	}
-			# 	if data in codes:
-			# 		await message.channel.send(codes[data])
-			# 	return True
-
-			# if c.startswith("pf"): # must after all portfolio functions!
-			# 	#slow
-			# 	id = message.author.id
-			# 	symbol, count = c[2:].split()
-			# 	count = int(count) # locked to int for now
-			# 	if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
-			# 		return True # type error
-			# 	status = finance.updatePortfolio(symbol, id, count)
-			# 	codes = {
-			# 		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-			# 		"sym": f"{symbol.upper()} isn't a valid symbol!",
-			# 		"neg": "You can't have negative shares!",
-			# 		"delS": f"Symbol {symbol.upper()} removed successfully!",
-			# 		"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
-			# 		"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
-			# 		"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
-			# 	}
-			# 	await message.channel.send(codes[status])
-			# 	return True
-			
-
 			# Spotify Functions
 
-
-			# if c == "spcreate":
-			# 	await sp.createGuildPlaylistGuildSide(message)
-			# 	return True
-			
-			# if c.startswith("spadd"):
-			# 	c = c[5:].strip()
-			# 	await sp.addToGuildPlaylistGuildSide(message, c)
-			# 	return True
-			
-			# if c == "spoverview":
-			# 	members = getMemberList(message.guild.id)
-			# 	await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
-			# 	return True
-			
-			# if c == "splink":
-			# 	link = sp.getGuildPlaylist(message.guild.id).link
-			# 	await message.channel.send(link)
-			# 	return True
-
-			# if c.startswith("spsettitle"):
-			# 	title = message.content[len(admin.getGuildPrefix(message.guild.id))+10:].strip()
-			# 	perms = (message.author.guild_permissions.manage_guild)
-			# 	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
-			# 	if response:
-			# 		await message.add_reaction("👍")
-			# 		return True
-			# 	else:
-			# 		await message.add_reaction("👎")
-			# 		return False
-
-			# if c.startswith("spsetdesc"):
-			# 	desc = message.content[len(admin.getGuildPrefix(message.guild.id))+9:].strip()
-			# 	perms = (message.author.guild_permissions.manage_guild)
-			# 	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
-			# 	if response:
-			# 		await message.add_reaction("👍")
-			# 		return True
-			# 	else:
-			# 		await message.add_reaction("👎")
-			# 		return False
 			
 			# if c == "spclear":
 			# 	perms = (message.author.guild_permissions.manage_guild)
@@ -708,66 +500,7 @@ async def on_message(message):
 			# 			return False
 			# 		await message.channel.send("Cancelled. :grin:")
 			# 		return False
-			
-			# if c == "spsetimage" or c == "spsetcover" or c == "spsetcoverimage":
-			# 	try:
-			# 		newImg = message.attachments[0]
-			# 	except IndexError:
-			# 		await message.channel.send("Send an image with that command.")
-			# 		return False
-			# 	gph = sp.getGuildPlaylist(message.guild.id)
-			# 	if gph != None:
-			# 		response = await sp.encodeAndSetCoverImage(newImg, gph)
-			# 		if response:
-			# 			await message.add_reaction("👍")
-			# 			return True
-			# 		else:
-			# 			await message.add_reaction("👎")
-			# 			return False
-			# 	else:
-			# 		await sp.reportNoGP(message)
-			# 		return False
-			
-			# if c == "spdelnewest" or c == "spdeletenewest":
-			# 	perms = (message.author.guild_permissions.manage_guild)
-			# 	gph = sp.getGuildPlaylist(message.guild.id)
-			# 	if gph != None:
-			# 		response = await sp.undoAdditionGuildSide(message, gph, perms)
-			# 		if response == True:
-			# 			await message.add_reaction("👍")
-			# 			return True
-			# 		else:
-			# 			await message.add_reaction("👎")
-			# 			if response == "perm":
-			# 				await message.channel.send("You don't have permission to do that.")
-			# 			elif response == "empty":
-			# 				await message.channel.send("The playlist is empty already.")
-			# 			return False
-			# 	else:
-			# 		await sp.reportNoGP(message)
-			# 		return False
 
-			# if c.startswith("spdelete") or c.startswith("spremove"):
-			# 	perms = (message.author.guild_permissions.manage_guild)
-			# 	c = c[8:].strip()
-			# 	gph = sp.getGuildPlaylist(message.guild.id)
-			# 	if gph != None:
-			# 		response = await sp.deleteSongGuildSide(message, gph, c, perms)
-			# 		if response == True:
-			# 			await message.add_reaction("👍")
-			# 			return True
-			# 		else:
-			# 			await message.add_reaction("👎")
-			# 			if response == "perm":
-			# 				await message.channel.send("You don't have permission to do that.")
-			# 			if response == "notin":
-			# 				await message.channel.send(
-			# 					"That song doesn't seem to " +
-			# 					"be in your server's playlist.")
-			# 			return False
-			# 	else:
-			# 		await sp.reportNoGP(message)
-			# 		return False
 
 	#LEAVE THIS AT THE END
 	await bot.process_commands(message)
@@ -803,7 +536,7 @@ async def reportNotOwner(message):
 
 # Owner Commands
 
-
+#TODO: bot.get_channel returns None?
 @bot.command()
 async def link(message, channelID):
 	if userIsBotOwner(message.author):
@@ -844,14 +577,17 @@ async def endProcess(message):
 
 
 #TODO: test this pseudo-overload
-@bot.command()
-async def help(message, topic=None):
-	if topic == None:
-		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
-	else: 
-		embed = helpDir.getHelpDirectoryEmbed(message, topic)
-		await message.channel.send(embed=embed)
-	return True
+#TODO: NEEDS MAJOR FIX - command conflict with builtin help command
+# DO NOT DELETE!
+
+# @bot.command()
+# async def help(message, topic=None):
+# 	if topic == None:
+# 		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+# 	else: 
+# 		embed = helpDir.getHelpDirectoryEmbed(message, topic)
+# 		await message.channel.send(embed=embed)
+# 	return True
 
 #TODO: delete merged command?
 # @bot.command()
@@ -861,8 +597,11 @@ async def help(message, topic=None):
 # 	return True
 
 @bot.command()
-async def info(message, topic):
-	await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
+async def info(message, topic=None):
+	if topic == None:
+		await message.channel.send(embed=helpDir.getSingleList(message))
+	else:
+		await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
 	return True
 
 @bot.command()
@@ -874,6 +613,8 @@ async def about(message):
 # Admin Commands
 
 
+#TODO: this is broken? command protocol makes prefixes messy
+# could disable this command for now
 #TODO: use the check feature
 @bot.command()
 async def prefix(message, newPrefix):
@@ -913,6 +654,7 @@ async def flipcoin(message):
 	return True
 
 #TODO: name = "d", space optional? requires testing
+#TODO: no output?
 @bot.command(name="d")
 async def die(message, n):
 	try:
@@ -921,19 +663,21 @@ async def die(message, n):
 		pass
 	return True
 
+#TODO: no image files, test at home
 @bot.command()
 async def sobbleimage(message):
 	await message.channel.send(file = sob.sobbleImage())
 	return True
 
 @bot.command()
-async def math(message, query):
-	#TODO: test if this should have an "on return Nonetype" check (see automath)
-	await message.channel.send(sob.parseMath(query))
+async def math(message, *, query):
+	result = sob.parseMath(query)
+	if result != None:
+		await message.channel.send(result)
 	return True
 
 @bot.command()
-async def pkmn(message, query):
+async def pkmn(message, *, query):
 	try:
 		query = int(query)
 	except ValueError:
@@ -1019,7 +763,7 @@ async def give(message, recipient, value):
 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
 			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			3: f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 			4: f"You can't send coins to yourself!"
 		}
 		if ok in responses:
@@ -1033,9 +777,9 @@ async def balance(message):
 	value = coin.getUserCoins(message.author.id)
 	if isinstance(value, bool):
 		if value == False:
-			await message.channel.send(f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 			return True
-	await message.channel.send(f"<@!{message.author.nick}>, you have **{value}** soblecoins!")
+	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
 
 #TODO: maybe give better name/alias?
 @bot.command()
@@ -1043,15 +787,15 @@ async def claim(message):
 	ok, value = coin.claimHourly(message.author.id)
 	if isinstance(ok, str):
 		if ok == "reg":
-			await message.channel.send(f"<@!{message.author.nick}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 			return False
 	if ok:
 		if value == 1000:
-			await message.channel.send(f"<@!{message.author.nick}>, your balance was topped up to **{value}** soblecoins!")
+			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
 		else:
-			await message.channel.send(f"<@!{message.author.nick}> claimed **{value}** soblecoins!")
+			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
 	else:
-		await message.channel.send(f"<@!{message.author.nick}>, your next gift isn't ready yet! Try again {value}.")
+		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
 	return True
 
 @bot.command()
@@ -1101,7 +845,7 @@ async def inventory(message):
 
 
 # Finance Functions
-
+# TODO: these as a whole are so sluggish
 
 @bot.command()
 async def ticker(message, symbol):
@@ -1133,8 +877,8 @@ async def pfshow(message):
 	return True
 
 #TODO: can commands be in any order since they're strictly typed?
-@bot.command(name="portfolioadd", aliases=["pfadd"])
-async def pf(message, symbol, count):
+@bot.command(aliases=["portfolioadd"])
+async def pfadd(message, symbol, count):
 	id = message.author.id
 	count = int(count) #locked to int for now
 	if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
@@ -1163,7 +907,7 @@ async def spcreate(message):
 	return True
 
 @bot.command(aliases=["playlistadd"])
-async def spadd(message, song):
+async def spadd(message, *, song):
 	await sp.addToGuildPlaylistGuildSide(message, song)
 	return True
 
@@ -1180,27 +924,26 @@ async def splink(message):
 	return True
 
 #TODO: rewrite to use the perm check feature
-#TODO: does * (keyword-only arg) allow spaces properly? testing req'd
 @bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
-async def spsettitle(message, *, title):
-	perms = (message.author.guild_permissions.manage_guild)
-	response = await sp.setGuildPlaylistTitleGuildSide(message, title, perms)
+async def spsettitle(context, *, title):
+	perms = (context.author.guild_permissions.manage_guild)
+	response = await sp.setGuildPlaylistTitleGuildSide(context, title, perms)
 	if response:
-		await message.add_reaction("👍")
+		await context.message.add_reaction("👍")
 		return True
 	else:
-		await message.add_reaction("👎")
+		await context.message.add_reaction("👎")
 		return False
 
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
-async def spsetdesc(message, *, desc):
-	perms = (message.author.guild_permissions.manage_guild)
-	response = await sp.setGuildPlaylistDescGuildSide(message, desc, perms)
+async def spsetdesc(context, *, desc):
+	perms = (context.author.guild_permissions.manage_guild)
+	response = await sp.setGuildPlaylistDescGuildSide(context, desc, perms)
 	if response:
-		await message.add_reaction("👍")
+		await context.message.add_reaction("👍")
 		return True
 	else:
-		await message.add_reaction("👎")
+		await context.message.add_reaction("👎")
 		return False
 
 #TODO: can multimessage handling be done better? :(
@@ -1231,65 +974,65 @@ async def spclear(message):
 		return False
 
 @bot.command(aliases=["playlistsetimage", "playlistsetcover", "spsetcover"])
-async def spsetimage(message):
+async def spsetimage(context):
 	try:
-		newImg = message.attachments[0]
+		newImg = context.message.attachments[0]
 	except IndexError:
-		await message.channel.send("Send an image with that command.")
+		await context.channel.send("Send an image with that command.")
 		return False
-	gph = sp.getGuildPlaylist(message.guild.id)
+	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.encodeAndSetCoverImage(newImg, gph)
 		if response:
-			await message.add_reaction("👍")
+			await context.message.add_reaction("👍")
 			return True
 		else:
-			await message.add_reaction("👎")
+			await context.message.add_reaction("👎")
 			return False
 	else:
-		await sp.reportNoGP(message)
+		await sp.reportNoGP(context)
 		return False
 
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
-async def spdelnewest(message):
-	perms = (message.author.guild_permissions.manage_guild)
-	gph = sp.getGuildPlaylist(message.guild.id)
+async def spdelnewest(context):
+	perms = (context.author.guild_permissions.manage_guild)
+	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
-		response = await sp.undoAdditionGuildSide(message, gph, perms)
+		response = await sp.undoAdditionGuildSide(context, gph, perms)
 		if response == True:
-			await message.add_reaction("👍")
+			await context.message.add_reaction("👍")
 			return True
 		else:
-			await message.add_reaction("👎")
+			await context.message.add_reaction("👎")
 			if response == "perm":
-				await message.channel.send("You don't have permission to do that.")
+				await context.channel.send("You don't have permission to do that.")
 			elif response == "empty":
-				await message.channel.send("The playlist is empty already.")
+				await context.channel.send("The playlist is empty already.")
 			return False
 	else:
-		await sp.reportNoGP(message)
+		await sp.reportNoGP(context)
 		return False
 
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
-async def spdelete(message, song):
-	perms = (message.author.guild_permissions.manage_guild)
-	gph = sp.getGuildPlaylist(message.guild.id)
+async def spdelete(context, *, song):
+	perms = (context.author.guild_permissions.manage_guild)
+	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
-		response = await sp.deleteSongGuildSide(message, gph, song, perms)
+		response = await sp.deleteSongGuildSide(context, gph, song, perms)
 		if response == True:
-			await message.add_reaction("👍")
+			await context.message.add_reaction("👍")
 			return True
 		else:
-			await message.add_reaction("👎")
+			await context.message.add_reaction("👎")
 			if response == "perm":
-				await message.channel.send("You don't have permission to do that.")
+				await context.channel.send("You don't have permission to do that.")
 			if response == "notin":
-				await message.channel.send(
+				await context.channel.send(
 					"That song doesn't seem to " +
 					"be in your server's playlist.")
 			return False
 	else:
-		await sp.reportNoGP(message)
+		await sp.reportNoGP(context)
 		return False
 
 
