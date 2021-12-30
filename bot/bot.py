@@ -180,19 +180,6 @@ async def on_message(message):
 			# 	await message.channel.send(f"Something went wrong. Server prefix unchanged.")
 			# 	return True
 
-
-			# Miscellaneous Functions
-
-
-			# if c.startswith('d'):
-			# 	try:
-			# 		n = (int(c[1:]))
-			# 		await message.channel.send(sob.die(n))
-			# 	except:
-			# 		pass
-			# 	return True	
-			
-
 			# LoL Functions
 			
 
@@ -450,57 +437,6 @@ async def on_message(message):
 			# 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
 			# 	return True
 
-			# if c.startswith("roll"):
-			# 	value = c[4:].strip()
-			# 	status, change, multi = coin.luckyRoll(message.author.id, value)
-			# 	codes = {
-			# 		"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
-			# 		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-			# 		"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
-			# 	}
-			# 	if status in codes:
-			# 		await message.channel.send(codes[status])
-			# 	else:
-			# 		if multi > 1:
-			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
-			# 		if multi == 1:
-			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
-			# 		if multi < 1:
-			# 			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
-			# 	return True
-			
-
-			# Finance Functions
-
-
-			# Spotify Functions
-
-			
-			# if c == "spclear":
-			# 	perms = (message.author.guild_permissions.manage_guild)
-			# 	if not perms:
-			# 		await message.channel.send("You'll need Manage Server perms to do that.")
-			# 		return False
-			# 	target = sp.getGuildPlaylist(message.guild.id)
-			# 	if target == None:
-			# 		await sp.reportNoGP(message)
-			# 		return False
-			# 	else:
-			# 		await message.channel.send("Are you sure? Type CONFIRM. (15s)")
-			# 		def check(msg):
-			# 			return msg.author == message.author
-			# 		try:
-			# 			confirmMessage = await bot.wait_for(event="message", timeout=15, check=check)
-			# 			if confirmMessage.content.strip() == "CONFIRM":
-			# 				target.delete(isConfirmed=True)
-			# 				await message.channel.send("Deleted. :sob:")
-			# 				return True
-			# 		except asyncio.TimeoutError:
-			# 			await message.channel.send("Not deleted. :grin:")
-			# 			return False
-			# 		await message.channel.send("Cancelled. :grin:")
-			# 		return False
-
 
 	#LEAVE THIS AT THE END
 	await bot.process_commands(message)
@@ -576,18 +512,18 @@ async def endProcess(message):
 # Help Commands
 
 
-#TODO: test this pseudo-overload
 #TODO: NEEDS MAJOR FIX - command conflict with builtin help command
+# temporarily renamed command
 # DO NOT DELETE!
 
-# @bot.command()
-# async def help(message, topic=None):
-# 	if topic == None:
-# 		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
-# 	else: 
-# 		embed = helpDir.getHelpDirectoryEmbed(message, topic)
-# 		await message.channel.send(embed=embed)
-# 	return True
+@bot.command()
+async def helpT(message, topic=None):
+	if topic == None:
+		await message.channel.send(embed=helpDir.getMainHelpDirectory(message))
+	else: 
+		embed = helpDir.getHelpDirectoryEmbed(message, topic)
+		await message.channel.send(embed=embed)
+	return True
 
 #TODO: delete merged command?
 # @bot.command()
@@ -919,8 +855,11 @@ async def spoverview(message):
 
 @bot.command(aliases=["playlistlink"])
 async def splink(message):
-	link = sp.getGuildPlaylist(message.guild.id).link
-	await message.channel.send(link)
+	try:
+		link = sp.getGuildPlaylist(message.guild.id).link
+		await message.channel.send(link)
+	except AttributeError:
+		await sp.reportNoGP(message)
 	return True
 
 #TODO: rewrite to use the perm check feature
