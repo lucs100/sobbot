@@ -251,7 +251,7 @@
             "text": "Soblecoins are a fun way to be rewarded for using Sobbot! By *registering* your account with soblecoins, you can claim coins every few hours, send them to your friends, or wager them on minigames! You can't send soblecoins to a user unless you're both registered. As well, registered users have a small chance to passively earn soblecoins each time they send a message in a server with Sobbot. There are also items to buy in the shop, which enhance your Sobbot experience in different ways.\nSoblecoins, of course, have no inherent value, they're just a fun currency to interact with Sobbot and your friends :)"
         },
         "ratelimit": {
-            "title": "Speed Kills",
+            "title": "Not So Fast",
             "text": "The Riot API is a server allowing registered apps such as Sobbot to retrieve data from Riot's databases. Personal projects such as Sobbot have very strict rate limits:\n**10 requests every second**\n**100 requests every 2 minutes**\nApps which egreiously hit their rate limits can have their key banned from the API. Sobbot's functions are designed to have a kill switch in the case of hitting a rate limit and will never hit a rate limit in a single use. However, multiple uses of functions will often hit the rate cap. For example, `livematch` makes ~32 requests to the API. This isn't a problem, however, please avoid hitting the rate cap too much as it risks Sobbot reveiving a ban from Riot's API. Loss of this key would all but kill the project."
         },
         "register": {
