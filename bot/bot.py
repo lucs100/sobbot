@@ -1,4 +1,7 @@
+from logging import disable
 import os, discord, time, asyncio, sys
+
+from discord.ext.commands.errors import CheckAnyFailure
 
 import functions as sob
 import currency as coin
@@ -14,14 +17,28 @@ load_dotenv()
 DISCORDTOKEN = os.getenv('DISCORDTOKEN')
 botCreatorID = os.getenv('CREATORID')
 
-
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix = "s!", intents=intents)
+bot = commands.Bot(
+	command_prefix = "s!",
+	intents=intents,
+	owner_id = int(botCreatorID),
+	help_command=None)
+
+#TODO: edit @bot.command() decorator to record successful function uses?
 
 #TODO: create a real helpcommand using discord-pretty-help
-bot.help_command = None
+
+
+# Classes
+
+
+#Dummy Class
+
+
+# Procedures
+
 
 @bot.event
 async def on_ready():
@@ -68,7 +85,7 @@ async def on_guild_join(guild):
 @bot.event
 async def on_message(message):
 	if message.author.id != 835251884104482907: #not from sobbot
-		c = (message.content).lower() #change to cl? idk this might suck later
+		c = (message.content).lower()
 		coin.messageBonus(message.author.id) #check droprate for passive coin earning
 		
 		#special interaction/command messages, do not require prefix
@@ -81,12 +98,8 @@ async def on_message(message):
 		if c == "hello sobbot":
 			await message.channel.send("hi :pleading_face:")
 			return True
-			
-		if c == "ping":
-			await message.channel.send("pong! ({0}ms)".format(int(bot.latency*1000)))
-			return True
 		
-		if match("<@!?835251884104482907>", c) is not None: #"@sobbot"
+		if match("<@!?835251884104482907>", c) is not None: #matches "@sobbot" exactly
 			px = admin.getGuildPrefix(message.guild.id)
 			await message.channel.send(f"My current prefix in this server is `{px}`.\n" +
 			f"Use `{px}help` for a directory of valid commands!  :blue_heart:")
@@ -123,25 +136,6 @@ async def on_message(message):
 			# 	else:
 			# 		await reportNotOwner(message)
 			# 		return False
-			
-			# if c == "ekoroshia" or c == "ikoroshia":
-			# 	if userIsBotOwner(message.author):
-			# 		await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
-			# 		def check(msg):
-			# 			return msg.author == message.author
-			# 		try:
-			# 			confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
-			# 			if confirmMessage.content.strip() == "CONFIRM":
-			# 				await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
-			# 				sys.exit("Kill command invoked by owner.")
-			# 		except asyncio.TimeoutError:
-			# 			await message.channel.send("Still running. :grin:")
-			# 			return False
-			# 		await message.channel.send("Still running. :grin:")
-			# 		return False
-			# 	else:
-			# 		await reportNotOwner(message)
-			# 		return False
 
 			
 			# Admin Functions
@@ -170,6 +164,7 @@ async def on_message(message):
 			# 			return True
 			# 	await message.channel.send(f"Something went wrong. Server prefix unchanged.")
 			# 	return True
+
 
 			# LoL Functions
 			
@@ -442,14 +437,6 @@ def getMemberList(guildID):
 		memberList.append(member)
 	return memberList
 
-#TODO: replace with builtin is_owner method 
-def userIsBotOwner(user):
-	return str(user.id) == str(botCreatorID)
-
-async def reportNotOwner(message):
-	await message.channel.send("Only the bot owner can do that!")
-
-
 # *Commands*
 # Testing is required across every single command to ensure no functionality is lost.
 # Once a command is fully tested and checked, make sure to delete the commented "message catch"
@@ -464,40 +451,35 @@ async def reportNotOwner(message):
 # Owner Commands
 
 #TODO: bot.get_channel returns None?
-@bot.command()
+#disabled for now
+@bot.command(disabled=True)
+@commands.is_owner()
 async def link(message, channelID):
-	if userIsBotOwner(message.author):
-		try:
-			channel = bot.get_channel(channelID)
-		except:
-			return False
-		print("Link successful.")
-		await sob.pipeline(channel)
-		print("Link ended.")
-		return True
-	else:
-		await reportNotOwner(message)
+	try:
+		channel = bot.get_channel(channelID)
+	except:
 		return False
+	print("Link successful.")
+	await sob.pipeline(channel)
+	print("Link ended.")
+	return True
 
 @bot.command(name="ekoroshia", aliases=["ikoroshia"])
+@commands.is_owner()
 async def endProcess(message):
-	if userIsBotOwner(message.author):
-		await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
-		def check(msg):
-			return msg.author == message.author
-		try:
-			confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
-			if confirmMessage.content.strip() == "CONFIRM":
-				await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
-				sys.exit("Kill command invoked by owner.")
-		except asyncio.TimeoutError:
-			await message.channel.send("Still running. :grin:")
-			return False
+	await message.channel.send("To turn off Sobbot, type CONFIRM. (10s)")
+	def check(msg):
+		return msg.author == message.author
+	try:
+		confirmMessage = await bot.wait_for(event="message", timeout=10, check=check)
+		if confirmMessage.content.strip() == "CONFIRM":
+			await message.channel.send("Goodbye for now! :pleading_face::blue_heart:")
+			sys.exit("Kill command invoked by owner.")
+	except asyncio.TimeoutError:
 		await message.channel.send("Still running. :grin:")
 		return False
-	else:
-		await reportNotOwner(message)
-		return False
+	await message.channel.send("Still running. :grin:")
+	return False
 
 
 # Help Commands
@@ -532,13 +514,11 @@ async def about(message):
 
 
 #TODO: this is broken? command protocol makes prefixes messy
-# could disable this command for now
+# disabled for now
 #TODO: use the check feature
-@bot.command()
+@bot.command(disable=True)
+@commands.check_any(commands.is_owner(), commands.has_permissions(manage_guild = True))
 async def prefix(message, newPrefix):
-	if not (message.author.guild_permissions.manage_guild):
-		await message.channel.send("You don't have permission to do that.")
-		return False
 	id = message.guild.id
 	if newPrefix == "" or newPrefix == None:
 		ok = admin.resetGuildPrefix(id)
@@ -560,6 +540,10 @@ async def prefix(message, newPrefix):
 
 # Miscellaneous Commands
 
+@bot.command()
+async def ping(message):
+	await message.channel.send("pong! ({0}ms)".format(int(bot.latency*1000)))
+	return True
 
 @bot.command()
 async def uptime(message):
@@ -844,11 +828,10 @@ async def splink(message):
 		await sp.reportNoGP(message)
 	return True
 
-#TODO: rewrite to use the perm check feature
 @bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
+@commands.check(commands.has_permissions(manage_guild = True))
 async def spsettitle(context, *, title):
-	perms = (context.author.guild_permissions.manage_guild)
-	response = await sp.setGuildPlaylistTitleGuildSide(context, title, perms)
+	response = await sp.setGuildPlaylistTitleGuildSide(context, title)
 	if response:
 		await context.message.add_reaction("👍")
 		return True
@@ -857,9 +840,9 @@ async def spsettitle(context, *, title):
 		return False
 
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
+@commands.check(commands.has_permissions(manage_guild = True))
 async def spsetdesc(context, *, desc):
-	perms = (context.author.guild_permissions.manage_guild)
-	response = await sp.setGuildPlaylistDescGuildSide(context, desc, perms)
+	response = await sp.setGuildPlaylistDescGuildSide(context, desc)
 	if response:
 		await context.message.add_reaction("👍")
 		return True
@@ -869,11 +852,8 @@ async def spsetdesc(context, *, desc):
 
 #TODO: can multimessage handling be done better? :(
 @bot.command(aliases=["playlistclear"])
+@commands.check(commands.has_permissions(manage_guild = True))
 async def spclear(message):
-	perms = (message.author.guild_permissions.manage_guild)			
-	if not perms:
-		await message.channel.send("You'll need Manage Server perms to do that.")
-		return False
 	target = sp.getGuildPlaylist(message.guild.id)
 	if target == None:
 		await sp.reportNoGP(message)
@@ -916,37 +896,32 @@ async def spsetimage(context):
 
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
 async def spdelnewest(context):
-	perms = (context.author.guild_permissions.manage_guild)
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
-		response = await sp.undoAdditionGuildSide(context, gph, perms)
+		response = await sp.undoAdditionGuildSide(context, gph)
 		if response == True:
 			await context.message.add_reaction("👍")
 			return True
 		else:
 			await context.message.add_reaction("👎")
-			if response == "perm":
-				await context.channel.send("You don't have permission to do that.")
-			elif response == "empty":
-				await context.channel.send("The playlist is empty already.")
+			if response == "empty":
+				await context.channel.send("The playlist is already empty.")
 			return False
 	else:
 		await sp.reportNoGP(context)
 		return False
 
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
+@commands.check(commands.has_permissions(manage_guild = True))
 async def spdelete(context, *, song):
-	perms = (context.author.guild_permissions.manage_guild)
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
-		response = await sp.deleteSongGuildSide(context, gph, song, perms)
+		response = await sp.deleteSongGuildSide(context, gph, song)
 		if response == True:
 			await context.message.add_reaction("👍")
 			return True
 		else:
 			await context.message.add_reaction("👎")
-			if response == "perm":
-				await context.channel.send("You don't have permission to do that.")
 			if response == "notin":
 				await context.channel.send(
 					"That song doesn't seem to " +
@@ -955,6 +930,18 @@ async def spdelete(context, *, song):
 	else:
 		await sp.reportNoGP(context)
 		return False
+
+
+# Error Handling
+
+
+@bot.event
+async def on_command_error(ctx, error):
+	if isinstance(error, commands.NotOwner):
+		await ctx.send("Only the bot owner can do that!")
+	if isinstance(error, commands.CheckAnyFailure): # vague avoid if possible
+		await ctx.send("You don't have permission to do that.")
+	return True
 
 
 bot.run(DISCORDTOKEN)

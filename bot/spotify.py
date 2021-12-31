@@ -171,7 +171,7 @@ class GuildPlaylistHeader:
         if (str(userRequesting) == targetSong.addedBy) or bypassAuth:
             return self.deleteSong(targetSong, userRequesting)
         else:
-            return "perm"
+            return "perm" #?
 
 with open('bot/resources/data/private/guildPlaylists.pkl', "rb") as f:
     try:
@@ -327,10 +327,7 @@ async def fetchGuildPlaylistOverviewGuildSide(message, members):
     await message.channel.send(embed=overviewEmbed)
     return True
 
-async def setGuildPlaylistTitleGuildSide(message, c, hasAdminPerms):
-    if not hasAdminPerms:
-        await message.channel.send("You'll need Manage Server perms to do that.")
-        return False
+async def setGuildPlaylistTitleGuildSide(message, c):
     target = getGuildPlaylist(message.guild.id)
     if target == None:
         reportNoGP(message)
@@ -339,10 +336,7 @@ async def setGuildPlaylistTitleGuildSide(message, c, hasAdminPerms):
         ok = target.setTitle(c)
         return ok
 
-async def setGuildPlaylistDescGuildSide(message, c, hasAdminPerms):
-    if not hasAdminPerms:
-        await message.channel.send("You'll need Manage Server perms to do that.")
-        return False
+async def setGuildPlaylistDescGuildSide(message, c):
     target = getGuildPlaylist(message.guild.id)
     if target == None:
         reportNoGP(message)
@@ -389,11 +383,11 @@ async def encodeAndSetCoverImage(image, gph, isAsset=False):
     except:
         return False
 
-async def undoAdditionGuildSide(message, gph, hasPerms):
-    response = gph.undoLastAdd(message.author.id, hasPerms)
+async def undoAdditionGuildSide(message, gph):
+    response = gph.undoLastAdd(message.author.id)
     return response
 
-async def deleteSongGuildSide(message, gph, song, hasPerms):
+async def deleteSongGuildSide(message, gph, song):
     song = getFirstSongResult(song)
-    response = gph.deleteSong(song, message.author.id, hasPerms)
+    response = gph.deleteSong(song, message.author.id)
     return response
