@@ -1,7 +1,14 @@
 import json, time, random, discord, admin
 from datetime import datetime
+from discord.ext import commands
 
 startingCoins = 1000
+
+class CoinNotRegisteredError(commands.CommandError):
+	pass
+
+class CoinRecipientNotRegisteredError(CoinNotRegisteredError):
+	pass
 
 users = {}
 
@@ -29,7 +36,7 @@ def isUserRegistered(id):
     id = str(id)
     if id in users:
         if "coins" in users[id]:
-            return users[id]["coins"]  # if lol name in user data
+            return users[id]["coins"]  # if name in user data
     return False
 
 def getUserCoins(id):
@@ -57,9 +64,9 @@ def give(sender, recipient, value):
         return 4 # sender = reciever
 
     if not isUserRegistered(sender):
-        return 3 # sender error
+        raise CoinNotRegisteredError # sender error
     elif not isUserRegistered(recipient):
-        return 1 # recipient error
+        raise CoinRecipientNotRegisteredError # recipient error
 
     if users[sender]["coins"] < value or value <= 0:
         return 2 # insufficient soblecoins
@@ -81,7 +88,7 @@ def claimHourly(id):
     value = 0
     id = str(id)
     if not isUserRegistered(id):
-        return "reg" # recipient error
+        raise CoinNotRegisteredError # recipient error
     if "coinsLastClaimed" not in users[id]:
         users[id]["coinsLastClaimed"] = float(0) # create field
     last = users[id]["coinsLastClaimed"]
@@ -117,7 +124,7 @@ def messageBonus(id):
     y = 10 #denominator
     coinsOnMessage = 1
     if not isUserRegistered(id):
-        return False
+        return False # no exception required, just quietly error out
     if isinstance(getUserCoins(id), int):
         luck = getUserLuck(id)
         if random.randint(x+luck, y) == x+luck:
@@ -138,7 +145,7 @@ def luckyRoll(id, value):
     id = str(id)
     balance = getUserCoins(id)
     if not isUserRegistered(id):
-        return "reg", 0, 0
+        raise CoinNotRegisteredError
     if balance < value:
         return "insuff", balance, 0
     luck = getUserLuck(id)
@@ -244,7 +251,7 @@ def buyFromShop(itemID, userID):
     if itemID not in shop:
         return "exist", 0 #id doesnt exist error
     if not isUserRegistered(userID):
-        return "reg", 0 #user not registered error
+        raise CoinNotRegisteredError #user not registered error
     setupUserInventory(userID)
     price = shop[itemID]["price"]
     if price > getUserCoins(userID):

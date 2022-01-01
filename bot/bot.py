@@ -34,10 +34,7 @@ bot = commands.Bot(
 # Classes
 
 
-#Dummy Class
-
-
-# Procedures
+# Event Procedures
 
 
 @bot.event
@@ -665,7 +662,7 @@ async def give(message, recipient, value):
 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
 			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
+			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.THIS SHOULDNT HAPPEN",
 			4: f"You can't send coins to yourself!"
 		}
 		if ok in responses:
@@ -677,20 +674,19 @@ async def give(message, recipient, value):
 @bot.command()
 async def balance(message):
 	value = coin.getUserCoins(message.author.id)
-	if isinstance(value, bool):
-		if value == False:
-			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-			return True
-	await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+	if isinstance(value, int):
+		await message.channel.send(f"<@!{message.author.id}>, you have **{value}** soblecoins!")
+	else:
+		raise coin.CoinNotRegisteredError
 
 #TODO: maybe give better name/alias?
+#TODO: no "reg" warning
 @bot.command()
 async def claim(message):
 	ok, value = coin.claimHourly(message.author.id)
 	if isinstance(ok, str):
 		if ok == "reg":
-			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-			return False
+			raise coin.CoinNotRegisteredError
 	if ok:
 		if value == 1000:
 			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
@@ -705,7 +701,6 @@ async def roll(message, value):
 	status, change, multi = coin.luckyRoll(message.author.id, value)
 	codes = {
 		"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
-		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 		"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
 	}
 	if status in codes:
@@ -729,7 +724,6 @@ async def buy(message, selectionID):
 	code, num = coin.buyFromShop(selectionID, message.author.id)
 	messages = {
 		"exist": f"<@!{message.author.id}>, no item with the ID {selectionID} exists!",
-		"reg": f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
 		"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
 		"limit": f"<@!{message.author.id}>, you already own that limited item.",
 		"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
@@ -825,7 +819,7 @@ async def splink(message):
 		link = sp.getGuildPlaylist(message.guild.id).link
 		await message.channel.send(link)
 	except AttributeError:
-		await sp.reportNoGP(message)
+		raise sp.NoGuildPlaylistError
 	return True
 
 @bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
@@ -856,8 +850,7 @@ async def spsetdesc(context, *, desc):
 async def spclear(message):
 	target = sp.getGuildPlaylist(message.guild.id)
 	if target == None:
-		await sp.reportNoGP(message)
-		return False
+		raise sp.NoGuildPlaylistError
 	else:
 		await message.channel.send("Are you sure? Type CONFIRM. (15s)")
 		def check(msg):
@@ -891,8 +884,7 @@ async def spsetimage(context):
 			await context.message.add_reaction("👎")
 			return False
 	else:
-		await sp.reportNoGP(context)
-		return False
+		raise sp.NoGuildPlaylistError
 
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
 async def spdelnewest(context):
@@ -908,8 +900,7 @@ async def spdelnewest(context):
 				await context.channel.send("The playlist is already empty.")
 			return False
 	else:
-		await sp.reportNoGP(context)
-		return False
+		raise sp.NoGuildPlaylistError
 
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
 @commands.check(commands.has_permissions(manage_guild = True))
@@ -928,8 +919,7 @@ async def spdelete(context, *, song):
 					"be in your server's playlist.")
 			return False
 	else:
-		await sp.reportNoGP(context)
-		return False
+		raise sp.NoGuildPlaylistError
 
 
 # Error Handling
@@ -941,6 +931,14 @@ async def on_command_error(ctx, error):
 		await ctx.send("Only the bot owner can do that!")
 	if isinstance(error, commands.CheckAnyFailure): # vague avoid if possible
 		await ctx.send("You don't have permission to do that.")
+	if isinstance(error, coin.CoinNotRegisteredError):
+		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+	if isinstance(error, coin.CoinRecipientNotRegisteredError):
+		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
+	if isinstance(error, sp.NoGuildPlaylistError):
+		await ctx.send("This server doesn't have a server playlist yet!\n" + 
+            f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
+
 	return True
 
 

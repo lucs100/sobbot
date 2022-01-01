@@ -1,4 +1,5 @@
 from discord import user
+from discord.ext import commands
 import spotipy, os, discord, dill, admin, io, requests, base64
 from PIL import Image
 from spotipy.oauth2 import SpotifyOAuth
@@ -18,6 +19,9 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
 guildPlaylists = {}
 
 url = "https://api.spotify.com"
+
+class NoGuildPlaylistError(commands.CommandError):
+	pass
 
 class Artist:
     def __init__(self, data):
@@ -220,11 +224,6 @@ def saveGuildPlaylist(gph):
     updateGuildData()
     return True
 
-async def reportNoGP(message):
-    await message.channel.send("This server doesn't have a server playlist yet!\n" + 
-            f"Use `{admin.getGuildPrefix(message.guild.id)}spcreate` to make one.")
-    return True
-
 def getFirstSongResult(query, addedBy=None):
     try:
         data = sp.search(query, type="track")["tracks"]["items"][0]
@@ -271,7 +270,7 @@ async def addToGuildPlaylistGuildSide(message, c):
         else:
             await message.channel.send("That song doesn't seem to exist.")
     else:
-        reportNoGP(message)
+        raise NoGuildPlaylistError
 
 async def createGuildPlaylistOverview(guildID, members):
 
@@ -330,8 +329,7 @@ async def fetchGuildPlaylistOverviewGuildSide(message, members):
 async def setGuildPlaylistTitleGuildSide(message, c):
     target = getGuildPlaylist(message.guild.id)
     if target == None:
-        reportNoGP(message)
-        return False
+        raise NoGuildPlaylistError
     else:
         ok = target.setTitle(c)
         return ok
@@ -339,8 +337,7 @@ async def setGuildPlaylistTitleGuildSide(message, c):
 async def setGuildPlaylistDescGuildSide(message, c):
     target = getGuildPlaylist(message.guild.id)
     if target == None:
-        reportNoGP(message)
-        return False
+        raise NoGuildPlaylistError
     else:
         ok = target.setDescription(c)
         return ok
