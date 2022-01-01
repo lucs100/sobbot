@@ -667,7 +667,7 @@ async def give(message, recipient, value):
 		}
 		if ok in responses:
 			await message.channel.send(responses[ok])
-	except:
+	except ValueError:
 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
 	return True
 

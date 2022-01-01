@@ -7,7 +7,7 @@ startingCoins = 1000
 class CoinNotRegisteredError(commands.CommandError):
 	pass
 
-class CoinRecipientNotRegisteredError(CoinNotRegisteredError):
+class CoinRecipientNotRegisteredError(commands.CommandError):
 	pass
 
 users = {}
