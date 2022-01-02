@@ -1,5 +1,5 @@
 # Sobbot - Riot Games API Library
-# Written by Lucas Di Pietro 2021
+#Lucas Di Pietro 2021
 
 
 ###############################
@@ -12,12 +12,29 @@ import requests, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
 from datetime import datetime
 from admin import getGuildPrefix
+from discord.ext import commands
 
 load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
 headers = {"X-Riot-Token": RIOTTOKEN}
 url = "https://na1.api.riotgames.com"
 
+
+# Error Classes
+
+
+class KeyExpiredError(commands.CommandError):
+	pass
+
+class SummonerNotRegisteredError(commands.CommandError):
+    pass
+
+class SummonerNotFoundError(commands.CommandError):
+    def __init__(self, name0="That summoner"):
+        if name0 == None:
+            self.name = "That summoner"
+        else:
+            self.name = name0
 
 # Constants and Constant Data
 

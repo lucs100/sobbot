@@ -166,56 +166,41 @@ async def on_message(message):
 			# LoL Functions
 			
 
-			if c.startswith("lollevel"):
-				try:
-					name = c[8:].strip()
-					if name.strip() == "":
-						name = riotapi.isUserRegistered(message.author.id) #bool or sname
-						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-							return True
-					data = riotapi.getSummonerData(name)
-					if data == False:
-						await message.channel.send("Key expired.")
-						return True
-					await message.channel.send(f"Summoner **{data.name}** is level **{data.level}**.")
-				except:
-					await message.channel.send(f"Summoner **{data.name}** doesn't exist.")
-					return True
-
-			if c.startswith("lolmastery"):
-				try:
-					name = c[10:].strip()
-					if name.strip() == "":
-						name = riotapi.isUserRegistered(message.author.id) #bool or summoner name
-						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-							return True
-					embed = riotapi.embedTopMasteries(name)
-					if embed == False:
-						await message.channel.send("Key expired.")
-						return True
-					await message.channel.send(embed=embed)
-				except: # bad!!!!
-					await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
-				return True
 			
-			if c.startswith("lolregister"):
-				# name = message.content[13:].strip()
-				name = c[11:].strip()
-				id = message.author.id
-				if name == "":
-					await message.channel.send("Enter your summoner name to register it to your account!")
-					return True
-				if not riotapi.isUserRegistered(id):
-					ok = riotapi.addRegistration(id, name)
-				else:
-					ok = riotapi.editRegistration(id, name)
-				if ok != False:
-					await message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!")
-				else:
-					await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
-				return True
+
+			# if c.startswith("lolmastery"):
+			# 	try:
+			# 		name = c[10:].strip()
+			# 		if name.strip() == "":
+			# 			name = riotapi.isUserRegistered(message.author.id) #bool or summoner name
+			# 			if name == False:
+			# 				await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 				return True
+			# 		embed = riotapi.embedTopMasteries(name)
+			# 		if embed == False:
+			# 			await message.channel.send("Key expired.")
+			# 			return True
+			# 		await message.channel.send(embed=embed)
+			# 	except: # bad!!!!
+			# 		await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
+			# 	return True
+			
+			# if c.startswith("lolregister"):
+			# 	# name = message.content[13:].strip()
+			# 	name = c[11:].strip()
+			# 	id = message.author.id
+			# 	if name == "":
+			# 		await message.channel.send("Enter your summoner name to register it to your account!")
+			# 		return True
+			# 	if not riotapi.isUserRegistered(id):
+			# 		ok = riotapi.addRegistration(id, name)
+			# 	else:
+			# 		ok = riotapi.editRegistration(id, name)
+			# 	if ok != False:
+			# 		await message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!")
+			# 	else:
+			# 		await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
+			# 	return True
 
 			if c.startswith("lolrank"):
 				try:
@@ -598,14 +583,57 @@ async def scramble(message, length=25):
 #TODO: absolutely need to look into how implicit params work before porting.
 # can i use Optional with a summoner type conversion?
 
-def dummy():
-	pass
+def handleRegisteredSummoner(message, query):
+	if query == None:
+		query = riotapi.isUserRegistered(message.author.id) #bool or sname
+		if query == False:
+			raise riotapi.SummonerNotRegisteredError
+	return query
+
+@bot.command()
+async def lollevel(message, query=None):
+	name = handleRegisteredSummoner(message, query)
+	data = riotapi.getSummonerData(name)
+	if data == False:
+		raise riotapi.KeyExpiredError
+	elif data == None:
+		raise riotapi.SummonerNotFoundError(query)
+	else:
+		await message.channel.send(f"Summoner **{data.name}** is level **{data.level}**.")
+		return True
+
+@bot.command()
+async def lolmastery(message, query=None):
+	try:
+		name = handleRegisteredSummoner(message, query)
+		embed = riotapi.embedTopMasteries(name)
+		if embed == False:
+			raise riotapi.KeyExpiredError
+		await message.channel.send(embed=embed)
+		return True
+	except TypeError:
+		raise riotapi.SummonerNotFoundError
+
+@bot.command()
+async def lolregister(message, *, name=None):
+	id = message.author.id
+	if name == None:
+		await message.channel.send("Enter your summoner name to register it to your account!")
+		return True
+	if not riotapi.isUserRegistered(id):
+		ok = riotapi.addRegistration(id, name)
+	else:
+		ok = riotapi.editRegistration(id, name)
+	if ok != False:
+		await message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!")
+		return True
+	else:
+		raise riotapi.SummonerNotFoundError
 
 
 # Currency Commands
 #TODO: these commands suck 
 #TODO: rewrite all currency commands to use user objects rather than ids
-#TODO: refactor no wallet message into function? 
 #TODO: these really shouldnt @ that often
 
 @bot.command()
@@ -900,10 +928,17 @@ async def on_command_error(ctx, error):
 	if isinstance(error, coin.CoinNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 	if isinstance(error, coin.CoinRecipientNotRegisteredError):
-		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
+		await ctx.send(f"That user doesn't have soblecoins enabled, or doesn't exist.")
 	if isinstance(error, sp.NoGuildPlaylistError):
 		await ctx.send("This server doesn't have a server playlist yet!\n" + 
             f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
+	if isinstance(error, riotapi.SummonerNotRegisteredError):
+		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `lolregister` to add your summoner name.\n"+
+						"You can also specify a summoner name after this command to use it while unregistered.")
+	if isinstance(error, riotapi.SummonerNotFoundError):
+		await ctx.send(f"{error.name} could not be found.")
+
+		
 
 	return True
 
