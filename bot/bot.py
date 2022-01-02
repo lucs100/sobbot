@@ -388,38 +388,6 @@ async def on_message(message):
 				return True
 
 
-			# Currency Functions
-
-
-			# if c == "coinstart":
-			# 	ok = coin.addRegistration(message.author.id)
-			# 	if ok:
-			# 		await message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins.")
-			# 		return True
-			# 	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
-			# 	return False
-			
-			# if c.startswith("give"):
-			# 	try:
-			# 		sender = message.author.id
-			# 		recipient, value = c[4:].split()
-			# 		recipient = recipient[3:-1]
-			# 		value = int(value)
-			# 		ok = coin.give(sender, recipient, value)
-			# 		messages = {
-			# 			#indexed by error code
-			# 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
-			# 			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
-			# 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			# 			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.",
-			# 			4: f"You can't send coins to yourself!"
-			# 		}
-			# 		if ok in messages:
-			# 			await message.channel.send(messages[ok])
-			# 	except:
-			# 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
-			# 	return True
-
 
 	#LEAVE THIS AT THE END
 	await bot.process_commands(message)
@@ -660,9 +628,7 @@ async def give(message, recipient, value):
 		responses = {
 			#indexed by error code
 			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
-			1: f"<@!{recipient}> doesn't have soblecoins enabled, or doesn't exist.",
 			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			3: f"<@!{message.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.THIS SHOULDNT HAPPEN",
 			4: f"You can't send coins to yourself!"
 		}
 		if ok in responses:
