@@ -604,29 +604,22 @@ async def lastmatchranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolr"])
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lolrole(message, *, summoner=None):
-	#raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = riotapi.getRolePlayDataEmbed(summoner, ranked=False)
+	response = await riotapi.getRolePlayDataEmbed(message, summoner, ranked=False)
 	codes = {
 		"key": "Key expired.",
 		"sum": f"Summoner {summoner} doesn't exist."
 	}
 	if isinstance(response, str):
 		await message.channel.send(codes[response])
-	else:
-		await message.channel.send(embed=response)
 	return True
 
 @bot.command(aliases = ["lolrr", "lolroler"])
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lolroleranked(message, *, summoner=None):
 	#raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
+	response = await riotapi.getRolePlayDataEmbed(message, summoner, ranked=True)
 	codes = {
 		"key": "Key expired.",
 		"sum": f"Summoner {summoner} doesn't exist."

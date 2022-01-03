@@ -56,7 +56,7 @@ summonerList = []
 
 CurrentPatch = "11.24.1" #TODO - get from ddrag
 
-MATCH_LIMIT = 20
+MATCH_LIMIT = 25
 ADJ_WINRATE_DECAY_CONSTANT = 0.925
 
 
@@ -94,7 +94,7 @@ class ChampionMastery:
             self.level = 0
             self.points = 0
 
-# V4 Iteration is now deprecated
+# V4 iteration is now deprecated
 # class MatchKey:
 #     def __init__(self, matchData):
 #         self.gameID = matchData["gameId"]
@@ -115,14 +115,20 @@ class MatchKey:
         self.server, self.numericKey = matchCode.split("_")
         self.key = matchCode
 
+#TODO: split into Match and PlayerInMatch (for Match with PUUID)?
 class Match:
     def __init__(self, matchData, summonerPUUID=None):
         if isinstance(matchData, MatchKey):
             matchData = getMatchInfo(matchData)
         self.gameEndTimestamp = int(matchData["info"]["gameEndTimestamp"])
-        if summonerPUUID != None:
-            self.role = matchData[""]
-        #TODO
+        modeData = getModeFromQueueID(matchData["info"]["queueId"])
+        self.map = modeData["map"]
+        self.modeDescription = modeData["description"] #this sucks
+        if self.map == "Summoner's Rift":
+            self.position = getRoleFromMatch(matchData, summonerPUUID) #this is horrible, this entire class needs better structure
+        else:
+            self.position = "Unknown"
+        #TODO: adding members as neccesary.
 
 class LiveMatchParticipant():
     def __init__(self, data):
@@ -306,7 +312,7 @@ def getCorrectChampName(q):
     cID = getChampIdByName(q)
     return getChampNameById(cID)
 
-def getRole(role, lane):
+def getRole(role, lane): #delete? see getPosition
     if lane == "MID":
         return "Middle"
     elif lane == "TOP":
@@ -318,6 +324,27 @@ def getRole(role, lane):
     elif role == "DUO_SUPPORT":
         return "Support"
     return "Unknown"
+
+def getRoleFromMatch(matchData, summonerPUUID):
+    for player in matchData["info"]["participants"]:
+        if summonerPUUID == player["puuid"]:
+            return (getTeamPosition(player["teamPosition"]))
+    return "Unknown"
+
+def getTeamPosition(positionStr):
+    # MATCH-V5 includes teamPosition, an automatically calculated
+    # position which is much easier to use than LANE and ROLE
+    posDict = {
+        "MIDDLE": "Middle",
+        "TOP": "Top",
+        "JUNGLE": "Jungle",
+        "BOTTOM": "Bottom",
+        "UTILITY": "Support",
+    }
+    if positionStr in posDict:
+        return posDict[positionStr]
+    else:
+        return "Unknown"
 
 def checkKeyInvalid():
     response = requests.get(
@@ -713,15 +740,15 @@ def editRegistration(id, name):
     updateUserData()
     return (summoner.name) # confirms with properly capitalized name
 
-def getMatchHistory(name, ranked=False):
+def getMatchHistory(name, ranked=False, matchCount=MATCH_LIMIT):
     summoner = getSummonerData(name)
     if checkKeyInvalid():
         return "key"
     rankedParam = ""
     if ranked:
-        rankedParam = "?queue=420"
+        rankedParam = "queue=420&"
     data = requests.get(
-            (v5url + f"/lol/match/v5/matches/by-puuid/{summoner.puuid}/ids{rankedParam}"),
+            (v5url + f"/lol/match/v5/matches/by-puuid/{summoner.puuid}/ids?{rankedParam}count={matchCount}"),
             headers = headers
         )
     if data.status_code == 400:
@@ -964,16 +991,18 @@ def timeSinceLastMatch(name, ranked=False):
         return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
     return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
 
+#TODO: unknown should not count in a non-SR mode
 def getRoleHistory(name, ranked=False, weightedMode=False):
     try:
-        name = getSummonerData(name).name
+        summoner = getSummonerData(name)
+        name = summoner.name
     except KeyError:
         return "sum"
     matchList = getMatchHistory(name, ranked) # all games
     matchHistory = list() # only SR games
     for match in matchList:
-        match = Match(match)
-        if match.role != None:
+        match = Match(match, summoner.puuid)
+        if match.position != None:
             matchHistory.append(match)
     gp = len(matchHistory)
     totalWeight = 0
@@ -985,16 +1014,18 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
         "Support": 0,
         "Unknown": 0,
     }
+    value = 1
     for i in range(len(matchHistory)):
         match = matchHistory[i]
-        # if match.role == "Unknown":
-        #     print(match.debugData)
+        if match.position == "Unknown" and match.map != "Summoner's Rift":
+            gp -= 1
+            continue #don't count non-SR games
         if weightedMode:
-            value = (1 - ((i/gp)**2))
-            roleDict[match.role] += value
+            roleDict[match.position] += value
             totalWeight += value
+            value *= ADJ_WINRATE_DECAY_CONSTANT
         else:
-            roleDict[match.role] += 1
+            roleDict[match.position] += 1
     if weightedMode:
         for role in roleDict:
             roleDict[role] = 100*roleDict[role]/totalWeight
@@ -1009,7 +1040,12 @@ def getTopRoles(data):
     secondary = max(temp, key=temp.get)
     return primary, secondary
 
-def getRolePlayDataEmbed(name, ranked=False):
+#TODO: this should show a "loading" embed like the winrate embed
+async def getRolePlayDataEmbed(message, name, ranked=False):
+    title = "Retrieving data..."
+    text = "This may take a while if this summoner's match history hasn't recently been pulled."
+    embed = discord.Embed(title=title, description=text)
+    sentEmbed = await message.channel.send(embed=embed)
     try:
         name = getSummonerData(name).name
     except KeyError:
@@ -1029,15 +1065,18 @@ def getRolePlayDataEmbed(name, ranked=False):
             format = "*"
         else:
             format = ""
-        description += f"{format}{freq:.2f}% {role}{format}\n"
+        if not (role == "Unknown" and freq == 0): #don't show unknown if 0%
+            description += f"{format}{freq:.2f}% {role}{format}\n"
     title = f"{name} likely queues for **{primary}**/*{secondary}*."
     rt = ""
     if ranked:
         rt = "ranked "
     footertext = f"{gp} {rt}SR games analyzed."
-    embed = discord.Embed(title=title, description=description, color=discord.Color.random())
+    embed.title=title
+    embed.description=description
+    embed.color=discord.Color.random()
     embed.set_footer(text=footertext)
-    return embed
+    await sentEmbed.edit(embed=embed)
 
 def getBanData(matchList):
     if isinstance(matchList, Match):
