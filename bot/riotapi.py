@@ -1072,7 +1072,7 @@ async def getRolePlayDataEmbed(message, name, ranked=False):
     if ranked:
         rt = "ranked "
     footertext = f"{gp} {rt}SR games analyzed."
-    embed.title=title
+    embed.title=title,
     embed.description=description
     embed.color=discord.Color.random()
     embed.set_footer(text=footertext)
