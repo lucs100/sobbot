@@ -331,7 +331,7 @@ def getMemberList(guildID):
 
 #TODO: bot.get_channel returns None?
 #disabled for now
-@bot.command(disabled=True)
+@bot.command(enabled=False)
 @commands.is_owner()
 async def link(message, channelID):
 	try:
@@ -394,8 +394,7 @@ async def about(message):
 
 #TODO: this is broken? command protocol makes prefixes messy
 # disabled for now
-#TODO: use the check feature
-@bot.command(disable=True)
+@bot.command(enabled=False)
 @commands.check_any(commands.is_owner(), commands.has_permissions(manage_guild = True))
 async def prefix(message, newPrefix):
 	id = message.guild.id
@@ -512,6 +511,7 @@ async def scramble(message, length=25):
 #TODO: raise errors on riotapi side (lots more)
 #TODO: move to matchhistory api v5
 #TODO: add cooldowns to API call heavy commands
+#TODO: change handleRegisteredSummoner to a Converter
 
 def handleRegisteredSummoner(message, query):
 	if query == None:
@@ -607,7 +607,7 @@ async def lastmatchranked(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolrole(message, *, summoner=None):
-	raise riotapi.MatchHistoryDataWarning
+	#raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.getRolePlayDataEmbed(summoner, ranked=False)
 	codes = {
@@ -624,7 +624,7 @@ async def lolrole(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolroleranked(message, *, summoner=None):
-	raise riotapi.MatchHistoryDataWarning
+	#raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
 	codes = {
@@ -638,8 +638,6 @@ async def lolroleranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolwr"])
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lolwinrate(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.parseWinLossTrend(summoner, message, ranked=False)
@@ -651,8 +649,6 @@ async def lolwinrate(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolwrr"])
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lolwinrateranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
@@ -1003,7 +999,8 @@ async def on_command_error(ctx, error):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
 	if isinstance(error, riotapi.MatchHistoryDataWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
-
+	if isinstance(error, commands.DisabledCommand):
+		await ctx.send(f"Command is currently disabled.")
 		
 
 	return True
