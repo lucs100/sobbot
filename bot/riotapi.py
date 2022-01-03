@@ -1362,5 +1362,3 @@ def lobbyRankedReport(message):
     embed.title = "Lobby Overview"
         
     return embed
-
-print(getWinLossTrend("cand3l"))
