@@ -62,7 +62,6 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):
-	# this doesnt work i dont think
 	print("NEW GUILD JOINED!")
 	dataString = (
 		f"{guild.name} ({guild.id}), " +
@@ -83,21 +82,20 @@ async def on_guild_join(guild):
 @bot.event
 async def on_message(message):
 	if message.author.id != 835251884104482907: #not from sobbot
-		c = (message.content).lower()
 		coin.messageBonus(message.author.id) #check droprate for passive coin earning
 		
-		#special interaction/command messages, do not require prefix
-		if message.content == "Jenna": # force caps
+		#special interactions
+		if message.content == "Jenna": # force sentence case
 			# jenna easter egg hi jenna
 			with open("bot/resources/images/misc/jenna.jpeg", "rb") as f:
 				picture = discord.File(f)
 			await message.channel.send("Jenna", file=picture)
 
-		if c == "hello sobbot":
+		if message.content == "hello sobbot":
 			await message.channel.send("hi :pleading_face:")
 			return True
 		
-		if match("<@!?835251884104482907>", c) is not None: #matches "@sobbot" exactly
+		if match("<@!?835251884104482907>", message.content) is not None: #matches "@sobbot" exactly
 			px = admin.getGuildPrefix(message.guild.id)
 			await message.channel.send(f"My current prefix in this server is `{px}`.\n" +
 			f"Use `{px}help` for a directory of valid commands!  :blue_heart:")
@@ -105,7 +103,7 @@ async def on_message(message):
 
 		#special channels
 		if message.channel.id == 835388133959794699:
-			content = sob.parseMath(c)
+			content = sob.parseMath(message.content)
 			if content != None:
 				await message.channel.send(content)
 				return True
@@ -286,7 +284,8 @@ async def starttime(message):
 
 
 #TODO: can maybe reorganize col command names since we're on command system? still need to learn
-#TODO: maybe make the colour embed, file a class? idk
+#TODO: maybe make the colour (embed, file) a class? idk
+# or just have them feed to an "output colour" function? idk
 @bot.command(aliases=["randbluw", "randomblue", "randombluw"])
 async def randblue(message):
 	embed, file = (sob.randomBlue())
@@ -320,7 +319,7 @@ async def scramble(message, length: Optional[int] = sob.DEFAULT_SCRAMBLE_LENGTH)
 
 def handleRegisteredSummoner(message, query):
 	if query == None:
-		query = riotapi.isUserRegistered(message.author.id) #bool or sname
+		query = riotapi.isUserRegistered(message.author.id) #False, or summoner name
 		if query == False:
 			raise riotapi.SummonerNotRegisteredError
 	return query
