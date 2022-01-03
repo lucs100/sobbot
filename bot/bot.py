@@ -641,7 +641,6 @@ async def lolroleranked(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolwinrate(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.parseWinLossTrend(summoner, message, ranked=False)
 	codes = {
@@ -655,7 +654,6 @@ async def lolwinrate(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolwinrateranked(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
 	codes = {

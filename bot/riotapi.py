@@ -775,14 +775,11 @@ def analyzePlayerPerformance(matchId, summoner):
     #TODO
 
 def didPlayerWin(summonerId, matchData):
-    playerIndex = 0
     try:
-        for player in matchData["participantIdentities"]:
-            if summonerId == player["player"]["summonerId"]:
-                playerIndex = player["participantId"]
-                if playerIndex < 6:
-                    return (matchData["teams"][0]["win"] == "Win")
-                return (matchData["teams"][1]["win"] == "Win")
+        for player in matchData["info"]["participants"]:
+            if summonerId == player["summonerId"]:
+                team = player["teamId"]
+                return (matchData["info"]["teams"][int(team/100)-1]["win"])
     except KeyError:
         print(matchData)
         print("RATE LIMIT EXCEEDED!")
@@ -791,12 +788,12 @@ def didPlayerWin(summonerId, matchData):
 def bulkPullMatchData(matchList, max=MatchLimit):
     pullList = [] #stupid pass by sharing !!!
     for match in matchList:
-        if str(match.gameID) not in pulledMatches:
+        if str(match.key) not in pulledMatches:
             pullList.append(match)
     if len(pullList) > max:
         pullList = pullList[0:max]
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        res = [executor.submit(getMatchInfo, game.gameID, autosave=False) for game in pullList]
+        res = [executor.submit(getMatchInfo, game.key, autosave=False) for game in pullList]
         concurrent.futures.wait(res)
     updateMatchBase()
     return len(pullList)
@@ -895,7 +892,7 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     codes = ["rate", "sum"]
     if data in codes:
         if data == "rate":
-            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!**" 
+            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!** " 
             text += "Consider lowering max workers if this happens a lot."
             await sentMessage.edit(content=text)
         elif data == "sum":
@@ -918,11 +915,11 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     if deltawr > 0:
         color = 0x6ad337
         title = f"{name} - Winrate Analysis (+{deltawr:.2f})"
-        text += f"Recency-Relative Rating: **+{deltawr:.2f}** points\n"
+        text += f"Recent-weighted Rating: **+{deltawr:.2f}** points\n"
     else:
         color = 0xd33737
         title = f"{name} - Winrate Analysis ({deltawr:.2f})"
-        text += f"Recency-Relative Rating: **{deltawr:.2f}** points\n"
+        text += f"Recent-weighted Rating: **{deltawr:.2f}** points\n"
     tags = getWinLossPerformanceTag(awr, stdwr, deltawr)
     tag2 = tags["tag2"]
     tag3 = tags["tag3"]
