@@ -164,64 +164,7 @@ async def on_message(message):
 
 
 			# LoL Functions
-			
 
-			
-
-			# if c.startswith("lolmastery"):
-			# 	try:
-			# 		name = c[10:].strip()
-			# 		if name.strip() == "":
-			# 			name = riotapi.isUserRegistered(message.author.id) #bool or summoner name
-			# 			if name == False:
-			# 				await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-			# 				return True
-			# 		embed = riotapi.embedTopMasteries(name)
-			# 		if embed == False:
-			# 			await message.channel.send("Key expired.")
-			# 			return True
-			# 		await message.channel.send(embed=embed)
-			# 	except: # bad!!!!
-			# 		await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
-			# 	return True
-			
-			# if c.startswith("lolregister"):
-			# 	# name = message.content[13:].strip()
-			# 	name = c[11:].strip()
-			# 	id = message.author.id
-			# 	if name == "":
-			# 		await message.channel.send("Enter your summoner name to register it to your account!")
-			# 		return True
-			# 	if not riotapi.isUserRegistered(id):
-			# 		ok = riotapi.addRegistration(id, name)
-			# 	else:
-			# 		ok = riotapi.editRegistration(id, name)
-			# 	if ok != False:
-			# 		await message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!")
-			# 	else:
-			# 		await message.channel.send(f"Summoner **{name}** doesn't exist, or your key expired. Try again!")
-			# 	return True
-
-			if c.startswith("lolrank"):
-				try:
-					name = c[7:].strip()
-					if name.strip() == "":
-						name = riotapi.isUserRegistered(message.author.id) #bool or sname
-						if name == False:
-							await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-							return True
-					embed = riotapi.embedRankedData(name)
-					if isinstance(embed, int):
-						if embed == 1:
-							await message.channel.send("Key expired.")
-							return True
-						elif embed == 2:
-							await message.channel.send(f"Summoner **{name}** doesn't exist.")
-							return True
-					await message.channel.send(embed=embed)
-				except:
-					pass
-				return True
 
 			# if c == "lolapireload":
 			# 	if message.author.id == 312012475761688578:
@@ -232,145 +175,131 @@ async def on_message(message):
 			# 	else:
 			# 		await message.channel.send("You don't have the permissions to do this.")
 			
-			if c.startswith("lastmatchr"):
-				summoner = c[10:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = riotapi.timeSinceLastMatch(summoner, True)
-				codes = {
-					"key": "Key expired.",
-					"sum": f"Summoner {summoner} doesn't exist.",
-					"none": f"Summoner {summoner} hasn't played a ranked match in a while!"
-				}
-				if isinstance(response, str):
-					await message.channel.send(codes[response])
-				else:
-					await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
-				return True
+			# if c.startswith("lastmatchr"):
+			# 	summoner = c[10:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = riotapi.timeSinceLastMatch(summoner, True)
+			# 	codes = {
+			# 		"key": "Key expired.",
+			# 		"sum": f"Summoner {summoner} doesn't exist.",
+			# 		"none": f"Summoner {summoner} hasn't played a ranked match in a while!"
+			# 	}
+			# 	if isinstance(response, str):
+			# 		await message.channel.send(codes[response])
+			# 	else:
+			# 		await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
+			# 	return True
 
-			if c.startswith("lastmatch"):
-				summoner = c[9:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = riotapi.timeSinceLastMatch(summoner)
-				codes = {
-					"key": "Key expired.",
-					"sum": f"Summoner {summoner} doesn't exist.",
-					"none": f"Summoner {summoner} hasn't played a match in a while!"
-				}
-				if isinstance(response, str):
-					await message.channel.send(codes[response])
-				else:
-					await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
-				return True
+			# if c.startswith("lastmatch"):
+			# 	summoner = c[9:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = riotapi.timeSinceLastMatch(summoner)
+			# 	codes = {
+			# 		"key": "Key expired.",
+			# 		"sum": f"Summoner {summoner} doesn't exist.",
+			# 		"none": f"Summoner {summoner} hasn't played a match in a while!"
+			# 	}
+			# 	if isinstance(response, str):
+			# 		await message.channel.send(codes[response])
+			# 	else:
+			# 		await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
+			# 	return True
 			
-			if c.startswith("lolroler"):
-				summoner = c[8:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
-				codes = {
-					"key": "Key expired.",
-					"sum": f"Summoner {summoner} doesn't exist."
-				}
-				if isinstance(response, str):
-					await message.channel.send(codes[response])
-				else:
-					await message.channel.send(embed=response)
-				return True
+			# if c.startswith("lolroler"):
+			# 	summoner = c[8:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
+			# 	codes = {
+			# 		"key": "Key expired.",
+			# 		"sum": f"Summoner {summoner} doesn't exist."
+			# 	}
+			# 	if isinstance(response, str):
+			# 		await message.channel.send(codes[response])
+			# 	else:
+			# 		await message.channel.send(embed=response)
+			# 	return True
 			
-			if c.startswith("lolrole"):
-				summoner = c[7:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = riotapi.getRolePlayDataEmbed(summoner)
-				codes = {
-					"key": "Key expired.",
-					"sum": f"Summoner {summoner} doesn't exist."
-				}
-				if isinstance(response, str):
-					await message.channel.send(codes[response])
-				else:
-					await message.channel.send(embed=response)
-				return True
+			# if c.startswith("lolrole"):
+			# 	summoner = c[7:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = riotapi.getRolePlayDataEmbed(summoner)
+			# 	codes = {
+			# 		"key": "Key expired.",
+			# 		"sum": f"Summoner {summoner} doesn't exist."
+			# 	}
+			# 	if isinstance(response, str):
+			# 		await message.channel.send(codes[response])
+			# 	else:
+			# 		await message.channel.send(embed=response)
+			# 	return True
 			
-			if c.startswith("lolwrr"):
-				summoner = c[6:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
-				codes = {
-					"sum": f"Summoner {summoner} doesn't exist."
-				}
-				# if isinstance(response, str):
-				if response in codes:
-					await message.channel.send(codes[response])
-				return True
+			# if c.startswith("lolwrr"):
+			# 	summoner = c[6:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
+			# 	codes = {
+			# 		"sum": f"Summoner {summoner} doesn't exist."
+			# 	}
+			# 	# if isinstance(response, str):
+			# 	if response in codes:
+			# 		await message.channel.send(codes[response])
+			# 	return True
 
-			if c.startswith("lolwr"):
-				summoner = c[5:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = await riotapi.parseWinLossTrend(summoner, message)
-				codes = {
-					"sum": f"Summoner {summoner} doesn't exist."
-				}
-				# if isinstance(response, str):
-				if response in codes:
-					await message.channel.send(codes[response])
-				return True
+			# if c.startswith("lolwr"):
+			# 	summoner = c[5:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = await riotapi.parseWinLossTrend(summoner, message)
+			# 	codes = {
+			# 		"sum": f"Summoner {summoner} doesn't exist."
+			# 	}
+			# 	# if isinstance(response, str):
+			# 	if response in codes:
+			# 		await message.channel.send(codes[response])
+			# 	return True
 
-			if c.startswith("lmr"):
-				summoner = c[3:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
-				return True	
+			# if c.startswith("lmr"):
+			# 	summoner = c[3:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
+			# 	return True	
 			
-			if c.startswith("lm"):
-				summoner = c[2:].strip()
-				if summoner == "":
-					summoner = riotapi.isUserRegistered(message.author.id)
-					if summoner == False:
-						await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
-						return True
-				response = await riotapi.getLiveMatchEmbed(summoner, message)
-				return True
-
-			if c.startswith("lwk"):
-				c = c[3:].strip()
-				link = (riotapi.getWikiLink(c))
-				if link != None:
-					await message.channel.send(link)
-				return True
-			
-			if c.startswith("lollobby"):
-				c = c[8:].strip()
-				embed = riotapi.lobbyRankedReport(c) #make embed later
-				if embed != None:
-					await message.channel.send(embed=embed)
-				return True
+			# if c.startswith("lm"):
+			# 	summoner = c[2:].strip()
+			# 	if summoner == "":
+			# 		summoner = riotapi.isUserRegistered(message.author.id)
+			# 		if summoner == False:
+			# 			await message.channel.send(f"<@!{message.author.id}>, you aren't registered! Use `lolregister` to add your summoner name. You can also specify a summoner name after this command to use it while unregistered.")
+			# 			return True
+			# 	response = await riotapi.getLiveMatchEmbed(summoner, message)
+			# 	return True
 
 
 
@@ -591,7 +520,7 @@ def handleRegisteredSummoner(message, query):
 	return query
 
 @bot.command()
-async def lollevel(message, query=None):
+async def lollevel(message, *, query=None):
 	name = handleRegisteredSummoner(message, query)
 	data = riotapi.getSummonerData(name)
 	if data == False:
@@ -603,7 +532,7 @@ async def lollevel(message, query=None):
 		return True
 
 @bot.command()
-async def lolmastery(message, query=None):
+async def lolmastery(message, *, query=None):
 	try:
 		name = handleRegisteredSummoner(message, query)
 		embed = riotapi.embedTopMasteries(name)
@@ -629,6 +558,145 @@ async def lolregister(message, *, name=None):
 		return True
 	else:
 		raise riotapi.SummonerNotFoundError
+
+@bot.command()
+#TODO: test ur
+async def lolrank(message, *, name=None):
+	name = handleRegisteredSummoner(message, name)
+	embed = riotapi.embedRankedData(name)
+	if isinstance(embed, int):
+		if embed == 1:
+			raise riotapi.KeyExpiredError
+		elif embed == 2:
+			raise riotapi.SummonerNotFoundError(name)
+	else:
+		await message.channel.send(embed=embed)
+		return True
+
+@bot.command()
+#TODO: test ur
+#TODO: MATCH HISTORY V4 :(
+async def lastmatch(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = riotapi.timeSinceLastMatch(summoner, False)
+	codes = {
+		"key": "Key expired.",
+		"sum": f"Summoner {summoner} doesn't exist.",
+		"none": f"Summoner {summoner} hasn't played a match in a while!"
+	}
+	if isinstance(response, str):
+		await message.channel.send(codes[response])
+	else:
+		await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
+	return True
+
+@bot.command(aliases = ["lastmatchr"])
+#TODO: test ur
+#TODO: MATCH HISTORY V4 :(
+async def lastmatchranked(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = riotapi.timeSinceLastMatch(summoner, True)
+	codes = {
+		"key": "Key expired.",
+		"sum": f"Summoner {summoner} doesn't exist.",
+		"none": f"Summoner {summoner} hasn't played a ranked match in a while!"
+	}
+	if isinstance(response, str):
+		await message.channel.send(codes[response])
+	else:
+		await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
+	return True
+
+@bot.command(aliases = ["lolr"])
+#TODO: MATCH HISTORY V4 :(
+async def lolrole(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = riotapi.getRolePlayDataEmbed(summoner, ranked=False)
+	codes = {
+		"key": "Key expired.",
+		"sum": f"Summoner {summoner} doesn't exist."
+	}
+	if isinstance(response, str):
+		await message.channel.send(codes[response])
+	else:
+		await message.channel.send(embed=response)
+	return True
+
+@bot.command(aliases = ["lolrr", "lolroler"])
+#TODO: MATCH HISTORY V4 :(
+async def lolroleranked(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
+	codes = {
+		"key": "Key expired.",
+		"sum": f"Summoner {summoner} doesn't exist."
+	}
+	if isinstance(response, str):
+		await message.channel.send(codes[response])
+	else:
+		await message.channel.send(embed=response)
+	return True
+
+@bot.command(aliases = ["lolwr"])
+#TODO: MATCH HISTORY V4 :(
+async def lolwinrate(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = await riotapi.parseWinLossTrend(summoner, message, ranked=False)
+	codes = {
+		"sum": f"Summoner {summoner} doesn't exist."
+	}
+	if response in codes:
+		await message.channel.send(codes[response])
+	return True
+
+@bot.command(aliases = ["lolwrr"])
+#TODO: MATCH HISTORY V4 :(
+async def lolwinrateranked(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
+	codes = {
+		"sum": f"Summoner {summoner} doesn't exist."
+	}
+	if response in codes:
+		await message.channel.send(codes[response])
+	return True
+
+@bot.command(aliases = ["lm"])
+#TODO: MATCH HISTORY V4 :(
+async def livematch(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
+	return True
+
+@bot.command(aliases = ["lmr"])
+#TODO: MATCH HISTORY V4 :(
+async def livematchranked(message, *, summoner=None):
+	raise riotapi.MatchHistoryOutdatedWarning
+	summoner = handleRegisteredSummoner(message, summoner)
+	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
+	return True
+
+@bot.command(aliases = ["lwk"])
+async def lolwiki(message, *, query):
+	link = (riotapi.getWikiLink(query))
+	if link != None:
+		await message.channel.send(link)
+	return True
+
+@bot.command()
+#TODO: make embed
+async def lollobby(message, *, chat):
+	embed = riotapi.lobbyRankedReport(chat)
+	if embed != None:
+		await message.channel.send(embed=embed)
+	return True
 
 
 # Currency Commands
@@ -937,6 +1005,8 @@ async def on_command_error(ctx, error):
 						"You can also specify a summoner name after this command to use it while unregistered.")
 	if isinstance(error, riotapi.SummonerNotFoundError):
 		await ctx.send(f"{error.name} could not be found.")
+	if isinstance(error, riotapi.MatchHistoryOutdatedWarning):
+		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
 
 		
 

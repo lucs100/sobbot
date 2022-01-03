@@ -71,6 +71,7 @@ def die(n):
 def sobbleImage():
     return (discord.File(fp=("bot/resources/images/sobble/" + (random.choice(os.listdir("bot/resources/images/sobble")))), filename="sobble.png"))
 
+#TODO: use custom errortypes
 def parseMath(exp):
     try:
         add = exp.find('+')

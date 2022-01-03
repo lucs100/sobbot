@@ -261,6 +261,10 @@
         "sp": {
             "title": "Server Playlist Specifics",
             "text": "Sobbot's Spotify commands all involve the use of *Server Playlists*. These are Spotify playlists that any user in a server can contribute to and listen to! They're a fun way to collaborate with your friends on a playlist with all of your music tastes.\nWhile only users with Manage Server permissions can use more destructive commands, you're allowed to delete any song that you have added to the playlist.\nThis can be done through either the `spdelete` or the `spundo` commands, provided that you were the user who added the song those commands are targeted at.\nKeep in mind that while you can have multiple instances of a song in a playlist, deleting a song using one of those commands deletes ALL occurences of it from the playlist!"
+        },
+        "mh": {
+            "title": "Match History Endpoint",
+            "text": "Riot has recently updated their LoL Match History API (the way Sobbot gets data from Riot) to v4. Since Sobbot's commands that get data from the Match History API were written for v3, they are currently disabled. This is a high priority issue and will be fixed soon."
         }
     }
 }

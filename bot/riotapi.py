@@ -36,6 +36,9 @@ class SummonerNotFoundError(commands.CommandError):
         else:
             self.name = name0
 
+class MatchHistoryOutdatedWarning(commands.CommandError):
+    pass
+
 # Constants and Constant Data
 
 
