@@ -265,6 +265,10 @@
         "mh": {
             "title": "Match History Endpoint",
             "text": "Riot has recently updated their LoL Match History API (the way Sobbot gets data from Riot) to v4. Since Sobbot's commands that get data from the Match History API were written for v3, they are currently disabled. This is a high priority issue and will be fixed soon."
+        },
+        "md": {
+            "title": "Match Data Endpoint",
+            "text": "Match Data from the Match History Endpoint (see `s!info mh`) has been moved to a new endpoint and is now much harder to retrieve. This is not a high priority issue, but will be fixed in a coming update."
         }
     }
 }

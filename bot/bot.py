@@ -511,6 +511,7 @@ async def scramble(message, length=25):
 # LoL Commands
 #TODO: raise errors on riotapi side (lots more)
 #TODO: move to matchhistory api v5
+#TODO: add cooldowns to API call heavy commands
 
 def handleRegisteredSummoner(message, query):
 	if query == None:
@@ -560,7 +561,6 @@ async def lolregister(message, *, name=None):
 		raise riotapi.SummonerNotFoundError
 
 @bot.command()
-#TODO: test ur
 async def lolrank(message, *, name=None):
 	name = handleRegisteredSummoner(message, name)
 	embed = riotapi.embedRankedData(name)
@@ -574,10 +574,7 @@ async def lolrank(message, *, name=None):
 		return True
 
 @bot.command()
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lastmatch(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.timeSinceLastMatch(summoner, False)
 	codes = {
@@ -592,10 +589,7 @@ async def lastmatch(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lastmatchr"])
-#TODO: test ur
-#TODO: MATCH HISTORY V4 :(
 async def lastmatchranked(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.timeSinceLastMatch(summoner, True)
 	codes = {
@@ -613,7 +607,7 @@ async def lastmatchranked(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolrole(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
+	raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.getRolePlayDataEmbed(summoner, ranked=False)
 	codes = {
@@ -630,7 +624,7 @@ async def lolrole(message, *, summoner=None):
 #TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolroleranked(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
+	raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.getRolePlayDataEmbed(summoner, ranked=True)
 	codes = {
@@ -672,18 +666,14 @@ async def lolwinrateranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lm"])
-#TODO: test ur
-#TODO: why Summoner Not Found?
+#TODO: why Summoner Not Found? might be fixed.
 async def livematch(message, *, summoner=None):
-	#raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
 	return True
 
 @bot.command(aliases = ["lmr"])
-#TODO: test ur
 async def livematchranked(message, *, summoner=None):
-	#raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
 	return True
@@ -697,6 +687,7 @@ async def lolwiki(message, *, query):
 
 @bot.command()
 #TODO: make embed
+#TODO: dies?
 async def lollobby(message, *, chat):
 	embed = riotapi.lobbyRankedReport(chat)
 	if embed != None:
@@ -1012,6 +1003,8 @@ async def on_command_error(ctx, error):
 		await ctx.send(f"{error.name} could not be found.")
 	if isinstance(error, riotapi.MatchHistoryOutdatedWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
+	if isinstance(error, riotapi.MatchHistoryDataWarning):
+		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
 
 		
 
