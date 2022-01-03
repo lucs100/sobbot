@@ -18,6 +18,7 @@ load_dotenv()
 RIOTTOKEN = os.getenv('RIOTTOKEN')
 headers = {"X-Riot-Token": RIOTTOKEN}
 url = "https://na1.api.riotgames.com"
+v5url = "https://americas.api.riotgames.com" #MATCH-V5 / TFT-MATCH-V1
 
 
 # Error Classes
@@ -37,6 +38,9 @@ class SummonerNotFoundError(commands.CommandError):
             self.name = name0
 
 class MatchHistoryOutdatedWarning(commands.CommandError):
+    pass
+
+class MatchHistoryDataWarning(commands.CommandError):
     pass
 
 # Constants and Constant Data
@@ -88,23 +92,34 @@ class ChampionMastery:
             self.level = 0
             self.points = 0
 
+# V4 Iteration is now deprecated
+# class MatchKey:
+#     def __init__(self, matchData):
+#         self.gameID = matchData["gameId"]
+#         self.champID = int(matchData["champion"])
+#         self.champ = getChampNameById(self.champID)
+#         self.queue = int(matchData["queue"])
+#         self.map = getModeFromQueueID(self.queue)["map"]
+#         self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
+#         if self.map == "Summoner's Rift":
+#             self.role = getRole(matchData["role"], matchData["lane"])
+#         else:
+#             self.role = None
+#         self.debugData = (matchData["role"], matchData["lane"])
+
+
 class MatchKey:
-    def __init__(self, matchData):
-        self.gameID = matchData["gameId"]
-        self.champID = int(matchData["champion"])
-        self.champ = getChampNameById(self.champID)
-        self.queue = int(matchData["queue"])
-        self.map = getModeFromQueueID(self.queue)["map"]
-        self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
-        if self.map == "Summoner's Rift":
-            self.role = getRole(matchData["role"], matchData["lane"])
-        else:
-            self.role = None
-        self.debugData = (matchData["role"], matchData["lane"])
+    def __init__(self, matchCode):
+        self.server, self.numericKey = matchCode.split("_")
+        self.key = matchCode
 
 class Match:
-    def __init__(self, matchData):
-        pass
+    def __init__(self, matchData, summonerPUUID=None):
+        if isinstance(matchData, MatchKey):
+            matchData = getMatchInfo(matchData)
+        self.gameEndTimestamp = int(matchData["info"]["gameEndTimestamp"])
+        if summonerPUUID != None:
+            self.role = matchData[""]
         #TODO
 
 class LiveMatchParticipant():
@@ -346,8 +361,11 @@ def cleanMatchBase():
     deleteList = []
     for entry in pulledMatches:
         if "gameId" not in pulledMatches[entry]:
-            print(f"Dead match found: {entry}")
-            deleteList.append(entry)
+            #TODO: update this to match-v5 gameId format (in [metadata][id], but needs confirmation)
+            #commented out for now
+            pass
+            # print(f"Dead match found: {entry}")
+            # deleteList.append(entry)
     for entry in deleteList:
         pulledMatches.pop(entry)
     updateMatchBase(force=True, clean=False)
@@ -701,15 +719,15 @@ def getMatchHistory(name, ranked=False):
     if ranked:
         rankedParam = "?queue=420"
     data = requests.get(
-            (url + f"/lol/match/v4/matchlists/by-account/{summoner.eaid}{rankedParam}"),
+            (v5url + f"/lol/match/v5/matches/by-puuid/{summoner.puuid}/ids{rankedParam}"),
             headers = headers
         )
     if data.status_code == 400:
         return "sum"
     matchList = []
     try:
-        for matches in data.json()["matches"]:
-            matchList.append(MatchKey(matches))
+        for match in list(data.json()):
+            matchList.append(MatchKey(match))
     except KeyError:
         pass
     return matchList
@@ -723,12 +741,14 @@ def getLastMatch(name, ranked=False):
 def getMatchInfo(match, autosave=True):
     if isinstance(match, int):
         gameID = match
+    if isinstance(match, MatchKey):
+        gameID = match.key
     else:
         gameID = match.gameID
     if str(gameID) in pulledMatches:
         return pulledMatches[str(gameID)]
     data = requests.get(
-            (url + f"/lol/match/v4/matches/{gameID}"),
+            (v5url + f"/lol/match/v5/matches/{gameID}"),
             headers = headers
         )
     if data.status_code == 400:
@@ -914,6 +934,7 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     await sentMessage.edit(embed=embed)
     return True
 
+#TODO: slow command, overcalls?
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
         return "key"
@@ -926,10 +947,9 @@ def timeSinceLastMatch(name, ranked=False):
     lastMatch = getLastMatch(name, ranked)
     if lastMatch in codes:
         return lastMatch
-    lastMatchTime = lastMatch.time
-    totalSeconds = int((now-lastMatchTime).total_seconds())
-    # while totalSeconds < 0:
-    #     totalSeconds += 24*60*60 #timedeltas become negative sometimes
+    lastMatch = Match(lastMatch)
+    lastMatchEnd = datetime.fromtimestamp(int(lastMatch.gameEndTimestamp)/1000)
+    totalSeconds = int((now-lastMatchEnd).total_seconds())
     days, remainder = divmod(totalSeconds, 24*60*60)
     hours, remainder = divmod(remainder, 60*60)
     minutes, seconds = divmod(remainder, 60)
@@ -953,6 +973,7 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
     matchList = getMatchHistory(name, ranked) # all games
     matchHistory = list() # only SR games
     for match in matchList:
+        match = Match(match)
         if match.role != None:
             matchHistory.append(match)
     gp = len(matchHistory)
