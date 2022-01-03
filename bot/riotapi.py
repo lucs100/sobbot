@@ -54,8 +54,10 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-MatchLimit = 70
-CurrentPatch = "11.15.1" #TODO - get from ddrag
+CurrentPatch = "11.24.1" #TODO - get from ddrag
+
+MATCH_LIMIT = 20
+ADJ_WINRATE_DECAY_CONSTANT = 0.925
 
 
 # Class Declarations
@@ -778,14 +780,13 @@ def didPlayerWin(summonerId, matchData):
     try:
         for player in matchData["info"]["participants"]:
             if summonerId == player["summonerId"]:
-                team = player["teamId"]
-                return (matchData["info"]["teams"][int(team/100)-1]["win"])
+                return (player["win"])
     except KeyError:
         print(matchData)
         print("RATE LIMIT EXCEEDED!")
         return "rate"
 
-def bulkPullMatchData(matchList, max=MatchLimit):
+def bulkPullMatchData(matchList, max=MATCH_LIMIT):
     pullList = [] #stupid pass by sharing !!!
     for match in matchList:
         if str(match.key) not in pulledMatches:
@@ -854,7 +855,7 @@ def getWinLossPerformanceTag(awr, stdwr, deltawr):
         "tag3":tag3
         }
 
-def getWinLossTrend(summonerName, maxMatches=MatchLimit, ranked=False, turboMode=True):
+def getWinLossTrend(summonerName, maxMatches=MATCH_LIMIT, ranked=False, turboMode=True):
     data = getSummonerData(summonerName)
     if data == None:
         return "sum"
@@ -863,26 +864,27 @@ def getWinLossTrend(summonerName, maxMatches=MatchLimit, ranked=False, turboMode
     matchList = getMatchHistory(data, ranked)[0:maxMatches]
     if turboMode:
         bulkPullMatchData(matchList)
-    w = 0
-    l = 0
+    wins = 0
+    losses = 0
     awr = 0 #adjusted winrate
-    m = 0 #maximum
+    maximum = 0
+    value = 1 #TODO: this needs tuning my 3r dropped after winning several games
     for i in range(len(matchList)):
-        value = (1 - (i/maxMatches)**3) #TODO - this might need a bit of tuning! my 3r dropped after winning several games
         win = didPlayerWin(sID, getMatchInfo(matchList[i]))
         if isinstance(win, str):
             return win #error code
         elif win:
-            w += 1
+            wins += 1
             awr += value
         else:
-            l += 1
-        m += value
-    awr = (awr/m)
-    g = w + l
-    return {"record":(w, l, g), "awr":awr, "name": summonerName}
+            losses += 1
+        maximum += value
+        value *= ADJ_WINRATE_DECAY_CONSTANT
+    awr = (awr/maximum)
+    g = wins + losses
+    return {"record":(wins, losses, g), "awr":awr, "name": summonerName} #TODO: make class
 
-async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=False):
+async def parseWinLossTrend(summoner, message, maxMatches=MATCH_LIMIT, ranked=False):
     #make embed later #slow
     title = "Retrieving data..."
     text = "This may take a while if this summoner's match history hasn't recently been pulled."
@@ -901,7 +903,7 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     w = data["record"][0]
     l = data["record"][1]
     gp = data["record"][2]
-    awr = data["awr"]*100
+    awr = data["awr"]*100 #adjusted winrate
     name = data["name"]
     stdwr = (w/gp)*100
     deltawr = (awr-stdwr)
@@ -915,7 +917,7 @@ async def parseWinLossTrend(summoner, message, maxMatches=MatchLimit, ranked=Fal
     if deltawr > 0:
         color = 0x6ad337
         title = f"{name} - Winrate Analysis (+{deltawr:.2f})"
-        text += f"Recent-weighted Rating: **+{deltawr:.2f}** points\n"
+        text += f"Recent-weighted Rating: **+{deltawr:.2f+}** points\n"
     else:
         color = 0xd33737
         title = f"{name} - Winrate Analysis ({deltawr:.2f})"
@@ -1360,3 +1362,5 @@ def lobbyRankedReport(message):
     embed.title = "Lobby Overview"
         
     return embed
+
+print(getWinLossTrend("cand3l"))
