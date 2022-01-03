@@ -2,13 +2,24 @@ import json, time, random, discord, admin
 from datetime import datetime
 from discord.ext import commands
 
-startingCoins = 1000
+INITIAL_COINS = 1000
+
+# Classes
 
 class CoinNotRegisteredError(commands.CommandError):
 	pass
 
 class CoinRecipientNotRegisteredError(commands.CommandError):
 	pass
+
+class SelfSendCoinsError(commands.CommandError):
+    pass
+
+class InsufficientCoinsError(commands.CommandError):
+    pass
+
+class LessThanZeroError(commands.CommandError):
+    pass
 
 users = {}
 
@@ -54,27 +65,28 @@ def addRegistration(id):
     if "coins" in users[str(id)]:
         return False # already created
     users[id]["coins"] = 0
-    users[id]["coins"] = startingCoins
-    updateUserData(f"{id} - created soblecoin wallet with {startingCoins}")
+    users[id]["coins"] = INITIAL_COINS
+    updateUserData(f"{id} - created soblecoin wallet with {INITIAL_COINS}")
     return True
 
-def give(sender, recipient, value):
+def give(message, sender, recipient, value):
     sender, recipient = str(sender), str(recipient)
     if sender == recipient:
-        return 4 # sender = reciever
-
+        raise SelfSendCoinsError
     if not isUserRegistered(sender):
-        raise CoinNotRegisteredError # sender error
+        raise CoinNotRegisteredError
     elif not isUserRegistered(recipient):
-        raise CoinRecipientNotRegisteredError # recipient error
-
-    if users[sender]["coins"] < value or value <= 0:
-        return 2 # insufficient soblecoins
+        raise CoinRecipientNotRegisteredError
+    if users[sender]["coins"] < value:
+        raise InsufficientCoinsError
+    if value <= 0:
+        raise LessThanZeroError
 
     users[sender]["coins"] -= value
     users[recipient]["coins"] += value
     updateUserData(f"{sender} sent {value} coins to {recipient}")
-    return 0
+
+    message.channel.send(f"Sent **{value}** soblecoins to <@!{recipient}>!")
 
 def getUserLuck(id):
     id = str(id)

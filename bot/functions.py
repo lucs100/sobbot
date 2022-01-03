@@ -2,6 +2,11 @@ import random, discord, os, decimal, json, time, io
 from datetime import datetime
 from PIL import Image
 
+
+# Constants
+DEFAULT_SCRAMBLE_LENGTH = 25
+
+
 # Classes
 
 class RGBSet:
@@ -276,7 +281,7 @@ async def pipeline(channel):
         except:
             pass
 
-def cubeScramble(count = 25):
+def cubeScramble(count = DEFAULT_SCRAMBLE_LENGTH):
     # helper function, generates and returns a single move
     def generateRotation(lastRotCode):
         # inits 

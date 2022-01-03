@@ -1,5 +1,6 @@
 from logging import disable
 import os, discord, time, asyncio, sys
+from typing import Optional
 
 from discord.ext.commands.errors import CheckAnyFailure
 
@@ -115,29 +116,6 @@ async def on_message(message):
 			#remove prefix from search
 			c = c[len(admin.getGuildPrefix(message.guild.id)):]
 
-			
-			# Owner Commands - can only be used by the bot creator.
-			
-
-			# if c.startswith("link"):
-			# 	if userIsBotOwner(message.author):
-			# 		try:
-			# 			channelid = int(c[4:].strip())
-			# 			channel = bot.get_channel(channelid)
-			# 		except:
-			# 			return False
-			# 		print("Link successful.")
-			# 		await sob.pipeline(channel)
-			# 		print("Link ended.")
-			# 		return True
-			# 	else:
-			# 		await reportNotOwner(message)
-			# 		return False
-
-			
-			# Admin Functions
-				# check perms before letting these functions proceed!!
-
 
 			# if c.startswith("prefix"):
 			# 	if not (message.author.guild_permissions.manage_guild):
@@ -203,6 +181,7 @@ async def link(message, channelID: int):
 	print("Link ended.")
 	return True
 
+
 @bot.command(name="ekoroshia", aliases=["ikoroshia"])
 @commands.is_owner()
 async def endProcess(message):
@@ -235,6 +214,7 @@ async def help(message, topic=None):
 		await message.channel.send(embed=embed)
 	return True
 
+
 @bot.command()
 async def info(message, topic=None):
 	if topic == None:
@@ -242,6 +222,7 @@ async def info(message, topic=None):
 	else:
 		await message.channel.send(embed=helpDir.getHelpSingle(message, topic))
 	return True
+
 
 @bot.command()
 async def about(message):
@@ -278,36 +259,36 @@ async def prefix(message, newPrefix):
 
 # Miscellaneous Commands
 
+
 @bot.command()
 async def ping(message):
 	await message.channel.send("pong! ({0}ms)".format(int(bot.latency*1000)))
 	return True
+
 
 @bot.command()
 async def uptime(message):
 	await message.send(sob.timeRunning(startTime))
 	return True
 
+
 @bot.command()
 async def flipcoin(message):
 	await message.channel.send(sob.flipCoin())
 	return True
 
-#TODO: name = "d", space optional? requires testing
-#TODO: no output?
+
 @bot.command(name="d")
-async def die(message, n):
-	try:
-		await message.channel.send(sob.die(n))
-	except: #TODO: what exception type is this?
-		pass
+async def rollDie(message, n: int):
+	await message.channel.send(sob.die(n))
 	return True
 
-#TODO: no image files, test at home
+
 @bot.command()
 async def sobbleimage(message):
 	await message.channel.send(file = sob.sobbleImage())
 	return True
+
 
 @bot.command()
 async def math(message, *, query):
@@ -315,6 +296,7 @@ async def math(message, *, query):
 	if result != None:
 		await message.channel.send(result)
 	return True
+
 
 @bot.command()
 async def pkmn(message, *, query):
@@ -325,16 +307,16 @@ async def pkmn(message, *, query):
 	finally:
 		embed = sob.pkmnLookup(query)
 		if embed != None:
-			#TODO: does this need to relookup?
-			await message.channel.send(embed = sob.pkmnLookup(query))
+			await message.channel.send(embed = embed)
 	return True
+
 
 @bot.command()
 async def starttime(message):
 	startingTime = datetime.fromtimestamp(startTime).strftime("%B %d at %I:%M %p")
 	await message.channel.send(f"Sobbot has been online since {startingTime}!")
 	return True
-	#TODO: maybe format this a little nicer?
+
 
 #TODO: can maybe reorganize col command names since we're on command system? still need to learn
 #TODO: maybe make the colour embed, file a class? idk
@@ -344,32 +326,28 @@ async def randblue(message):
 	await message.channel.send(embed=embed, file=file)
 	return True
 
+
 @bot.command(aliases=["randcolor", "randomcolour", "randomcolor"])
 async def randcolour(message):
 	embed, file = (sob.randomColor())
 	await message.channel.send(embed=embed, file=file)
 	return True
 
+
 @bot.command(aliases=["viewcolor"])
 async def viewcolour(message, colourCode):
 	embed, file = sob.colorPreview(colourCode)
 	await message.channel.send(embed=embed, file=file)
 
-#TODO: is this the right way to pass a constant? can likely be rewritten if so
+
 @bot.command()
-async def scramble(message, length=25):
-	try:
-		count = int(length)
-		scramble = sob.cubeScramble(length)
-	except: #TODO: is this except correct? which exception type?
-		scramble = sob.cubeScramble()
-	await message.channel.send(scramble)
+async def scramble(message, length: Optional[int] = sob.DEFAULT_SCRAMBLE_LENGTH):
+	await message.channel.send(sob.cubeScramble(length))
 	return True
 
 
 # LoL Commands
 #TODO: raise errors on riotapi side (lots more)
-#TODO: move to matchhistory api v5
 #TODO: add cooldowns to API call heavy commands
 #TODO: change handleRegisteredSummoner to a Converter
 
@@ -379,6 +357,7 @@ def handleRegisteredSummoner(message, query):
 		if query == False:
 			raise riotapi.SummonerNotRegisteredError
 	return query
+
 
 @bot.command()
 async def lollevel(message, *, query=None):
@@ -392,6 +371,7 @@ async def lollevel(message, *, query=None):
 		await message.channel.send(f"Summoner **{data.name}** is level **{data.level}**.")
 		return True
 
+
 @bot.command()
 async def lolmastery(message, *, query=None):
 	try:
@@ -403,6 +383,7 @@ async def lolmastery(message, *, query=None):
 		return True
 	except TypeError:
 		raise riotapi.SummonerNotFoundError
+
 
 @bot.command()
 async def lolregister(message, *, name=None):
@@ -420,6 +401,7 @@ async def lolregister(message, *, name=None):
 	else:
 		raise riotapi.SummonerNotFoundError
 
+
 @bot.command()
 async def lolrank(message, *, name=None):
 	name = handleRegisteredSummoner(message, name)
@@ -432,6 +414,7 @@ async def lolrank(message, *, name=None):
 	else:
 		await message.channel.send(embed=embed)
 		return True
+
 
 @bot.command()
 async def lastmatch(message, *, summoner=None):
@@ -448,6 +431,7 @@ async def lastmatch(message, *, summoner=None):
 		await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
 	return True
 
+
 @bot.command(aliases = ["lastmatchr"])
 async def lastmatchranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
@@ -463,6 +447,7 @@ async def lastmatchranked(message, *, summoner=None):
 		await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
 	return True
 
+
 @bot.command(aliases = ["lolr"])
 async def lolrole(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
@@ -475,9 +460,9 @@ async def lolrole(message, *, summoner=None):
 		await message.channel.send(codes[response])
 	return True
 
+
 @bot.command(aliases = ["lolrr", "lolroler"])
 async def lolroleranked(message, *, summoner=None):
-	#raise riotapi.MatchHistoryDataWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getRolePlayDataEmbed(message, summoner, ranked=True)
 	codes = {
@@ -490,6 +475,7 @@ async def lolroleranked(message, *, summoner=None):
 		await message.channel.send(embed=response)
 	return True
 
+
 @bot.command(aliases = ["lolwr"])
 async def lolwinrate(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
@@ -500,6 +486,7 @@ async def lolwinrate(message, *, summoner=None):
 	if response in codes:
 		await message.channel.send(codes[response])
 	return True
+
 
 @bot.command(aliases = ["lolwrr"])
 async def lolwinrateranked(message, *, summoner=None):
@@ -512,6 +499,7 @@ async def lolwinrateranked(message, *, summoner=None):
 		await message.channel.send(codes[response])
 	return True
 
+
 @bot.command(aliases = ["lm"])
 #TODO: why Summoner Not Found? might be fixed.
 async def livematch(message, *, summoner=None):
@@ -519,11 +507,13 @@ async def livematch(message, *, summoner=None):
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
 	return True
 
+
 @bot.command(aliases = ["lmr"])
 async def livematchranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
 	return True
+
 
 @bot.command(aliases = ["lwk"])
 async def lolwiki(message, *, query):
@@ -532,9 +522,9 @@ async def lolwiki(message, *, query):
 		await message.channel.send(link)
 	return True
 
+
 @bot.command()
 #TODO: make embed
-#TODO: dies?
 async def lollobby(message, *, chat):
 	embed = riotapi.lobbyRankedReport(chat)
 	if embed != None:
@@ -553,28 +543,26 @@ async def coinstart(message):
 	if ok:
 		await message.channel.send(f"<@!{message.author.id}> added to soblecoin! You have {coin.getUserCoins(message.author.id)} coins.")
 		return True
-	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.startingCoins} coins.")
+	await message.channel.send(f"<@!{message.author.id}> , you already have soblecoins! You have {coin.getUserCoins(message.author.id)} coins.")
 	return False
+
 
 #TODO: dont @ recipient wtf??? get the user object
 @bot.command()
-async def give(message, recipient, value):
+async def give(message, recipient, value: int):
 	try:
 		sender = message.author.id
 		recipient = recipient[3:-1]
-		value = int(value)
-		ok = coin.give(sender, recipient, value)
-		responses = {
-			#indexed by error code
-			0: f"Sent **{value}** soblecoins to <@!{recipient}>!",
-			2: f"Soblecoins not sent! You don't have enough soblecoins.",
-			4: f"You can't send coins to yourself!"
-		}
-		if ok in responses:
-			await message.channel.send(responses[ok])
-	except ValueError:
+		coin.give(message, sender, recipient, value)
+	except commands.BadArgument:
 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
 	return True
+
+@give.error
+async def give_error(message, error):
+	if isinstance(error, commands.BadArgument):
+		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
+		
 
 @bot.command()
 async def balance(message):
@@ -834,15 +822,26 @@ async def spdelete(context, *, song):
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.NotOwner):
 		await ctx.send("Only the bot owner can do that!")
-	if isinstance(error, commands.CheckAnyFailure): # vague avoid if possible
+	if isinstance(error, commands.CheckAnyFailure): # vague, specify if possible
 		await ctx.send("You don't have permission to do that.")
+	if isinstance(error, commands.DisabledCommand):
+		await ctx.send("Command is currently disabled.")
+
 	if isinstance(error, coin.CoinNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
 	if isinstance(error, coin.CoinRecipientNotRegisteredError):
-		await ctx.send(f"That user doesn't have soblecoins enabled, or doesn't exist.")
+		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
+	if isinstance(error, coin.SelfSendCoinsError):
+		await ctx.send("You can't send coins to yourself!")
+	if isinstance(error, coin.InsufficientCoinsError):
+		await ctx.send("You don't have enough soblecoins!")
+	if isinstance(error, coin.LessThanZeroError):
+		await ctx.send("You can't send negative coins!")
+
 	if isinstance(error, sp.NoGuildPlaylistError):
 		await ctx.send("This server doesn't have a server playlist yet!\n" + 
             f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
+
 	if isinstance(error, riotapi.SummonerNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `lolregister` to add your summoner name.\n"+
 						"You can also specify a summoner name after this command to use it while unregistered.")
@@ -852,8 +851,7 @@ async def on_command_error(ctx, error):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
 	if isinstance(error, riotapi.MatchHistoryDataWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
-	if isinstance(error, commands.DisabledCommand):
-		await ctx.send(f"Command is currently disabled.")
+	
 		
 
 	return True
