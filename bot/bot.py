@@ -509,8 +509,8 @@ async def scramble(message, length=25):
 
 
 # LoL Commands
-#TODO: absolutely need to look into how implicit params work before porting.
-# can i use Optional with a summoner type conversion?
+#TODO: raise errors on riotapi side (lots more)
+#TODO: move to matchhistory api v5
 
 def handleRegisteredSummoner(message, query):
 	if query == None:
@@ -610,6 +610,7 @@ async def lastmatchranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolr"])
+#TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolrole(message, *, summoner=None):
 	raise riotapi.MatchHistoryOutdatedWarning
@@ -626,6 +627,7 @@ async def lolrole(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolrr", "lolroler"])
+#TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolroleranked(message, *, summoner=None):
 	raise riotapi.MatchHistoryOutdatedWarning
@@ -642,6 +644,7 @@ async def lolroleranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolwr"])
+#TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolwinrate(message, *, summoner=None):
 	raise riotapi.MatchHistoryOutdatedWarning
@@ -655,6 +658,7 @@ async def lolwinrate(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lolwrr"])
+#TODO: test ur
 #TODO: MATCH HISTORY V4 :(
 async def lolwinrateranked(message, *, summoner=None):
 	raise riotapi.MatchHistoryOutdatedWarning
@@ -668,17 +672,18 @@ async def lolwinrateranked(message, *, summoner=None):
 	return True
 
 @bot.command(aliases = ["lm"])
-#TODO: MATCH HISTORY V4 :(
+#TODO: test ur
+#TODO: why Summoner Not Found?
 async def livematch(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
+	#raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
 	return True
 
 @bot.command(aliases = ["lmr"])
-#TODO: MATCH HISTORY V4 :(
+#TODO: test ur
 async def livematchranked(message, *, summoner=None):
-	raise riotapi.MatchHistoryOutdatedWarning
+	#raise riotapi.MatchHistoryOutdatedWarning
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
 	return True

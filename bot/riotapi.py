@@ -65,6 +65,9 @@ class SummSpell():
 
 class Rank:
     def __init__(self, data, name):
+        if "TFT" in data["queueType"]:
+            self = None
+            return None
         self.queue = data["queueType"]
         self.tier = data["tier"]
         self.division = data["rank"]
@@ -471,7 +474,12 @@ def getRankedData(s):
             name = datajson[i]["summonerName"]
         except:
             name = summoner.name
-        data.append(Rank(datajson[i], name))
+        rankData = Rank(datajson[i], name)
+        try:
+            test = rankData.tier
+            data.append(Rank(datajson[i], name))
+        except AttributeError:
+            pass
     if len(data) > 0:
         return data # list of Rank objects
     else: return summoner
@@ -569,7 +577,7 @@ def embedRankedData(s):
     if checkKeyInvalid():   
         return 1 # key invalid error
     if data == False:
-        return 2 # summoner does not exist'
+        return 2 # summoner does not exist
     try:
         s = data[0].name
     except:
