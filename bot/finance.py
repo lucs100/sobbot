@@ -3,6 +3,26 @@ from forex_python.converter import CurrencyRates as fx
 import discord, json
 import asyncio
 import yfinance as yf
+from discord.ext import commands
+
+
+# Classes
+
+
+class NegativeSharesError(commands.CommandError):
+    pass
+
+class NoPortfolioError(commands.CommandError):
+    def __init__(self, userID0):
+        self.userID = userID0
+    pass
+
+class EmptyPortfolioError(commands.CommandError):
+    pass
+
+class InvalidSymbolError(commands.CommandError):
+    def __init__(self, symbol0):
+        self.symbol = symbol0.upper()
 
 class Stock:
     def __init__(self, symbol):
@@ -163,29 +183,33 @@ def createPortfolio(id):
 def existsInPortfolio(name, id):
     return (userPortfolioExists(str(id)) and (name in users[str(id)]["portfolio"]))
 
-def updatePortfolio(stock, id, count):
+async def updatePortfolio(message, stock, id, count):
     stock = stock.upper()
     id = str(id)
     if count < 0:
-        return "neg"
+        return NegativeSharesError
     if not userPortfolioExists(id):
-        return "reg"
+        raise NoPortfolioError(id)
     if stock == None:
-        return "sym"
+        raise InvalidSymbolError(stock)
     elif count == 0:
         if existsInPortfolio(stock, id):
             users[id]["portfolio"].pop(stock)
             updateUserData()
-            return "delS"
+            await message.channel.send(f"Symbol {stock} removed successfully!")
+            return True
         else:
-            return "delF"
+            await message.channel.send(f"You didn't have any shares of {stock}, " +
+                                        "so nothing was changed.")
+            return False
     else:
         stock = safelyCreateStock(stock)
         users[id]["portfolio"][stock.symbol] = count
         updateUserData()
         if count == 1:
-            return "ok"
-        return "ok2"
+            await message.channel.send(f"Your portfolio now has **{count}** share of {stock.symbol}!")
+        await message.channel.send(f"Your portfolio now has **{count}** shares of {stock.symbol}!")
+        return True
 
 def parseChangeValue(change, annotation="", hasBrackets=True, roundTo=2, prefix=""):
     if hasBrackets:
@@ -213,10 +237,10 @@ async def getUserPortfolioEmbed(message):
     if name == None:
         name = user.name
     if not userPortfolioExists(id):
-        return "reg"
+        raise NoPortfolioError(id)
     data = users[id]["portfolio"]
     if data == {}:
-        return "empty"
+        raise EmptyPortfolioError
 
     title = "Fetching data..."
     description = ""

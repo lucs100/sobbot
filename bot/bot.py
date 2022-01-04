@@ -3,6 +3,7 @@ import os, discord, time, asyncio, sys
 from typing import Optional
 
 from discord.ext.commands.errors import CheckAnyFailure
+from numpy.lib.arraysetops import isin
 
 import functions as sob
 import currency as coin
@@ -556,7 +557,7 @@ async def ticker(message, symbol):
 	if embed != None:
 		await message.channel.send(embed=embed)
 	else:
-		await message.channel.send(f"Symbol {symbol.upper()} doesn't seem to exist.")
+		raise finance.InvalidSymbolError(symbol)
 	return True
 
 
@@ -566,48 +567,38 @@ async def pfstart(message):
 	if ok:
 		await message.channel.send("Portfolio created successfully!")
 	else:
-		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
+		await message.channel.send("Portfolio already exists! Use `s!resetportfolio` (coming soon) to reset your portfolio.")
 	return True
 
 
 @bot.command(aliases=["portfolioshow", "showportfolio", "showpf"])
 async def pfshow(message):
-	data = await finance.getUserPortfolioEmbed(message)
-	codes = {
-		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-		"empty": f"<@!{message.author.id}>, your portfolio is empty!"
-	}
-	if data in codes:
-		await message.channel.send(codes[data])
-	return True
+	return await finance.getUserPortfolioEmbed(message)
+
+@pfshow.error
+async def pfshow_error(message, error):
+	if isinstance(error, finance.EmptyPortfolioError):
+		await message.send("Your portfolio is empty!")
 
 
 #TODO: can args be in any order since they're strictly typed?
 @bot.command(aliases=["portfolioadd"])
-async def pfadd(message, symbol, count):
-	id = message.author.id
-	count = int(count) #locked to int for now
-	if not (isinstance(symbol, str) and ((isinstance(count, int) or isinstance(count, float)))):
-		return True # type error
-	status = finance.updatePortfolio(symbol, id, count)
-	codes = {
-		"reg": f"<@!{message.author.id}>, you don't have a portfolio! Use `pfstart` to open one.",
-		"sym": f"{symbol.upper()} isn't a valid symbol!",
-		"neg": "You can't have negative shares!",
-		"delS": f"Symbol {symbol.upper()} removed successfully!",
-		"delF": f"You didn't have any shares of {symbol.upper()}, so nothing was changed.",
-		"ok": f"Your portfolio now has **{count}** share of {symbol.upper()}!",
-		"ok2": f"Your portfolio now has **{count}** shares of {symbol.upper()}!"
-	}
-	await message.channel.send(codes[status])
-	return True
+async def pfadd(message, symbol: str, count: int):
+	return await finance.updatePortfolio(message, symbol, message.author.id, count)
+
+@pfadd.error
+async def pfadd_error(message, error):
+	if isinstance(error, finance.NegativeSharesError):
+		message.send("You can't have negative shares!")
+	if isinstance(error, commands.BadArgument):
+		message.send("Use `s!pfadd (symbol) (count)` to add shares to your portfolio!")
 
 
 # Spotify Functions
 # note: if non-server playlists are ever added, need to realias commands.
 #TODO: change the gph check to a check within entire class, not urgent
 
-async def sendSuccessReaction(context, response):
+async def HandleSuccessReaction(context, response):
 	if response:
 		await context.message.add_reaction("👍")
 		return True
@@ -649,14 +640,14 @@ async def splink(message):
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spsettitle(context, *, title):
 	response = await sp.setGuildPlaylistTitleGuildSide(context, title)
-	return await sendSuccessReaction(context, response)
+	return await HandleSuccessReaction(context, response)
 
 
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spsetdesc(context, *, desc):
 	response = await sp.setGuildPlaylistDescGuildSide(context, desc)
-	return await sendSuccessReaction(context, response)
+	return await HandleSuccessReaction(context, response)
 
 
 #TODO: can multimessage handling be done better? :(
@@ -692,7 +683,7 @@ async def spsetimage(context):
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.encodeAndSetCoverImage(newImg, gph)
-		return await sendSuccessReaction(context, response)
+		return await HandleSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
 
@@ -708,7 +699,7 @@ async def spdelnewest(context):
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.undoAdditionGuildSide(context, gph)
-		return await sendSuccessReaction(context, response)
+		return await HandleSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
 
@@ -724,7 +715,7 @@ async def spdelete(context, *, song):
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.deleteSongGuildSide(context, gph, song)
-		return await sendSuccessReaction(context, response)
+		return await HandleSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
 
@@ -768,7 +759,13 @@ async def on_command_error(ctx, error):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
 	elif isinstance(error, riotapi.MatchHistoryDataWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
-		
+	
+	elif isinstance(error, finance.NoPortfolioError):
+		ctx.send(f"<@!{error.userID}>, you don't don't have a portfolio!\n" + 
+			"Use `s!pfstart` to create one.")
+	elif isinstance(error, finance.InvalidSymbolError):
+		ctx.send(f"{error.symbol} isn't a valid symbol!")
+
 	else: print(error.__dict__) #TODO: log as well as print?
 
 	return True
