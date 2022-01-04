@@ -29,14 +29,10 @@ bot = commands.Bot(
 	help_command=None)
 
 #TODO: edit @bot.command() decorator to record successful function uses?
-
 #TODO: create a real helpcommand using discord-pretty-help
 
 
-# Classes
-
-
-# Event Procedures
+# Event Handlers
 
 
 @bot.event
@@ -112,7 +108,9 @@ async def on_message(message):
 	await bot.process_commands(message)
 	return True
 
+
 # Helper Functions
+
 
 def getMemberList(guildID):
 	targetGuild = bot.get_guild(guildID)
@@ -121,15 +119,8 @@ def getMemberList(guildID):
 		memberList.append(member)
 	return memberList
 
-# *Commands*
-# Testing is required across every single command to ensure no functionality is lost.
-# Once a command is fully tested and checked, make sure to delete the commented "message catch"
-# in on_message. A command can still be in a WIP state to delete the main command.
 
-# Also, make sure the rewrite branch clearly breaks off the main branch. If it fails catastrophically,
-# a good backup is required, with the consequences being a huge rollback or rewrite.
-
-# The end goal of this expansion is to merge into main. Keep your code clean.
+# Commands
 
 
 # Owner Commands
@@ -450,7 +441,6 @@ async def lolwiki(message, *, query):
 
 
 @bot.command()
-#TODO: make embed
 async def lollobby(message, *, chat):
 	embed = riotapi.lobbyRankedReport(chat)
 	if embed != None:
@@ -461,7 +451,6 @@ async def lollobby(message, *, chat):
 # Currency Commands
 #TODO: these commands suck 
 #TODO: rewrite all currency commands to use user objects rather than ids
-#TODO: these really shouldnt @ that often
 
 
 @bot.command()
