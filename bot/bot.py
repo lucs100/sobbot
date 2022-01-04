@@ -605,6 +605,15 @@ async def pfadd(message, symbol, count):
 
 # Spotify Functions
 # note: if non-server playlists are ever added, need to realias commands.
+#TODO: change the gph check to a check within entire class, not urgent
+
+async def sendSuccessReaction(context, response):
+	if response:
+		await context.message.add_reaction("👍")
+		return True
+	else:
+		await context.message.add_reaction("👎")
+		return False
 
 
 @bot.command(aliases=["playlistcreate"])
@@ -640,24 +649,14 @@ async def splink(message):
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spsettitle(context, *, title):
 	response = await sp.setGuildPlaylistTitleGuildSide(context, title)
-	if response:
-		await context.message.add_reaction("👍")
-		return True
-	else:
-		await context.message.add_reaction("👎")
-		return False
+	return await sendSuccessReaction(context, response)
 
 
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spsetdesc(context, *, desc):
 	response = await sp.setGuildPlaylistDescGuildSide(context, desc)
-	if response:
-		await context.message.add_reaction("👍")
-		return True
-	else:
-		await context.message.add_reaction("👎")
-		return False
+	return await sendSuccessReaction(context, response)
 
 
 #TODO: can multimessage handling be done better? :(
@@ -689,19 +688,19 @@ async def spsetimage(context):
 	try:
 		newImg = context.message.attachments[0]
 	except IndexError:
-		await context.channel.send("Send an image with that command.")
-		return False
+		raise sp.NoImageSentError
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.encodeAndSetCoverImage(newImg, gph)
-		if response:
-			await context.message.add_reaction("👍")
-			return True
-		else:
-			await context.message.add_reaction("👎")
-			return False
+		return await sendSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
+
+@spsetimage.error
+async def spsetimage_error(message, error):
+	if isinstance(error, sp.NoImageSentError):
+		await message.send("Send an image with that command.")
+		return False
 
 
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
@@ -709,16 +708,14 @@ async def spdelnewest(context):
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.undoAdditionGuildSide(context, gph)
-		if response == True:
-			await context.message.add_reaction("👍")
-			return True
-		else:
-			await context.message.add_reaction("👎")
-			if response == "empty":
-				await context.channel.send("The playlist is already empty.")
-			return False
+		return await sendSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
+
+@spdelnewest.error
+async def spdelnewest_error(message, error):
+	if isinstance(error, sp.PlaylistAlreadyEmptyError):
+		await message.send("The playlist is already empty.")
 
 
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
@@ -727,19 +724,15 @@ async def spdelete(context, *, song):
 	gph = sp.getGuildPlaylist(context.guild.id)
 	if gph != None:
 		response = await sp.deleteSongGuildSide(context, gph, song)
-		if response == True:
-			await context.message.add_reaction("👍")
-			return True
-		else:
-			await context.message.add_reaction("👎")
-			if response == "notin":
-				await context.channel.send(
-					"That song doesn't seem to " +
-					"be in your server's playlist.")
-			return False
+		return await sendSuccessReaction(context, response)
 	else:
 		raise sp.NoGuildPlaylistError
 
+@spdelnewest.error
+async def spdelnewest_error(message, error):
+	if isinstance(error, sp.SongNotInPlaylistError):
+		await message.send("That song doesn't seem to " +
+							"be in your server's playlist.")
 
 # Global Error Handling
 

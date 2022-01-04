@@ -10,7 +10,7 @@ load_dotenv()
 # auth seems to be taken care of?
 # cid = os.getenv("SPOTIFYCID")
 # csecret = os.getenv("SPOTIFYSECRET")
-# crduri = os.getenv("SPOTIFYRDURI")
+crduri = os.getenv("SPOTIFYRDURI")
 sobbotID = os.getenv("SPOTIFYBOTID")
 
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth( #spotipy instance
@@ -20,8 +20,21 @@ guildPlaylists = {}
 
 url = "https://api.spotify.com"
 
+
+# Classes
+
+
 class NoGuildPlaylistError(commands.CommandError):
 	pass
+
+class NoImageSentError(commands.CommandError):
+    pass
+
+class PlaylistAlreadyEmptyError(commands.CommandError):
+    pass
+
+class SongNotInPlaylistError(commands.CommandError):
+    pass
 
 class Artist:
     def __init__(self, data):
@@ -154,7 +167,7 @@ class GuildPlaylistHeader:
         if isinstance(song, str):
             song = getFirstSongResult(song)
         if not self.songInPlaylist(song):
-            return "notin"
+            return SongNotInPlaylistError
         if (str(userRequesting) == song.addedBy) or bypassAuth:
             removalList = []
             for s in range(len(self.songs)):
@@ -171,7 +184,7 @@ class GuildPlaylistHeader:
         try:
             targetSong = self.songs[len(self.songs)-1]
         except IndexError:
-            return "empty"
+            raise PlaylistAlreadyEmptyError
         if (str(userRequesting) == targetSong.addedBy) or bypassAuth:
             return self.deleteSong(targetSong, userRequesting)
         else:
