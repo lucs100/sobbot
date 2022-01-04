@@ -34,7 +34,7 @@ def getHelpDirectoryEmbed(message, topic):
     px = admin.getGuildPrefix(message.guild.id)
     if "header" in data:
         if data["header"] != "": # needs to be a successive check
-            description += f"*{data['header']}*\n"
+            description += f"*{data['header']}*\n\n"
     for command in data["commands"]:
         description += f"• {px}{command['usage']} - {command['description']}\n"
     return discord.Embed(title=title, description=description, color=helpfulGreen)
