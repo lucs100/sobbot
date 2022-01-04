@@ -8,6 +8,7 @@
 # Library Imports and Other Formalities
 
 
+from discord.ext.commands.errors import CommandError
 import requests, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
 from datetime import datetime
@@ -37,11 +38,25 @@ class SummonerNotFoundError(commands.CommandError):
         else:
             self.name = name0
 
+class NoRecentMatchesError(commands.CommandError):
+    def __init__(self, name0="That summoner"):
+        if name0 == None:
+            self.name = "That summoner"
+        else:
+            self.name = name0
+
 class MatchHistoryOutdatedWarning(commands.CommandError):
     pass
 
 class MatchHistoryDataWarning(commands.CommandError):
     pass
+
+class RateLimitError(commands.CommandError):
+    pass
+
+class SummonerNotInMatchError(commands.CommandError):
+    pass
+
 
 # Constants and Constant Data
 
@@ -120,7 +135,10 @@ class Match:
     def __init__(self, matchData, summonerPUUID=None):
         if isinstance(matchData, MatchKey):
             matchData = getMatchInfo(matchData)
-        self.gameEndTimestamp = int(matchData["info"]["gameEndTimestamp"])
+        try:
+            self.gameEndTimestamp = int(matchData["info"]["gameEndTimestamp"])
+        except KeyError:
+            self.gameEndTimestamp = int(matchData["info"]["gameStartTimestamp"]) #MATCH-V4?
         modeData = getModeFromQueueID(matchData["info"]["queueId"])
         self.map = modeData["map"]
         self.modeDescription = modeData["description"] #this sucks
@@ -422,12 +440,11 @@ def getSummonerData(s):
     code = response.status_code
     if code != 200:
         if code == 429:
-            print("Rate limit exceeded in getSummonerData()")
-            return "rate"
-        if code == 404:
+            raise RateLimitError
+        if code == 404: #TODO: raise error here, not a level down
             return None
         print(f"Error {code} in getSummonerData wasn't explicitly handled. Returning Nonetype.")
-        return None
+        return None #this is horrible
     else: return Summoner(summonerData)
 
 def getRankedString(s, hasLP=False, hasWR=False, deco=False, hasGP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
@@ -457,10 +474,8 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, hasGP=False, queue=
 
     try:
         data = getRankedData(s)
-    except:
-        return "Summoner not found"
-    if data == "rate":
-        return "rate"
+    except: #TODO: what type?
+        raise RateLimitError
     wr, g = 0, 0 #init to cover case when no ranked data
     found = False
     if isinstance(data, list):
@@ -513,7 +528,7 @@ def getRankedData(s):
     except:
         return False
     if response.status_code == 429:
-        return "rate"
+        raise RateLimitError
     datajson = response.json()
     data = []
     for i in range(len(datajson)):
@@ -622,13 +637,13 @@ def parseQueue(queue):
 def embedRankedData(s):
     data = getRankedData(s) # either False, for error 2, or data
     if checkKeyInvalid():   
-        return 1 # key invalid error
+        raise KeyExpiredError
     if data == False:
-        return 2 # summoner does not exist
+        raise SummonerNotFoundError
     try:
         s = data[0].name
     except:
-        s = data
+        s = data.name
         data = []
     title=f"{s}  -  Ranked Status"
     description, rankDict = "", []
@@ -661,8 +676,6 @@ def embedRankedData(s):
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
         summoner = getSummonerData(summoner)
-    if summoner == "rate":
-        return "rate"
     if not isinstance(champ, int):
         try: champ = int(champ)
         except ValueError:
@@ -678,7 +691,7 @@ def anonGetSingleMastery(summoner, champ):
     if response.status_code == 404:
         return "no"
     elif response.status_code == 429:
-        return "rate" #rate limit
+        raise RateLimitError
     return ChampionMastery(response.json())
     
 def getTopMasteries(s):
@@ -727,15 +740,6 @@ def addRegistration(id, name):
     summoner = getSummonerData(name)
     if summoner == None:
         return False  # summoner does not exist
-    users[str(id)] = {"lol": "placeholder"}
-    users[str(id)]["lol"] = str(summoner.name)
-    updateUserData()
-    return (summoner.name) # confirms with properly capitalized name
-
-def editRegistration(id, name):
-    summoner = getSummonerData(name)
-    if summoner == None:
-        return False  # summoner does not exist
     users[str(id)]["lol"] = str(summoner.name)
     updateUserData()
     return (summoner.name) # confirms with properly capitalized name
@@ -743,7 +747,7 @@ def editRegistration(id, name):
 def getMatchHistory(name, ranked=False, matchCount=MATCH_LIMIT):
     summoner = getSummonerData(name)
     if checkKeyInvalid():
-        return "key"
+        raise KeyExpiredError
     rankedParam = ""
     if ranked:
         rankedParam = "queue=420&"
@@ -762,9 +766,9 @@ def getMatchHistory(name, ranked=False, matchCount=MATCH_LIMIT):
     return matchList
 
 def getLastMatch(name, ranked=False):
-    data = getMatchHistory(name, ranked)
+    data = getMatchHistory(name, ranked, matchCount=1)
     if data == []:
-        return "none" #for errordict use, ik Nonetype exists
+        return None
     return data[0]
 
 def getMatchInfo(match, autosave=True):
@@ -783,7 +787,7 @@ def getMatchInfo(match, autosave=True):
     if data.status_code == 400:
         return "sum"
     elif data.status_code == 429:
-        return "rate"
+        raise RateLimitError
     else:
         addToMatchBase(data.json(), gameID, autosave)
         return data.json()
@@ -811,7 +815,7 @@ def didPlayerWin(summonerId, matchData):
     except KeyError:
         print(matchData)
         print("RATE LIMIT EXCEEDED!")
-        return "rate"
+        raise RateLimitError
 
 def bulkPullMatchData(matchList, max=MATCH_LIMIT):
     pullList = [] #stupid pass by sharing !!!
@@ -885,7 +889,7 @@ def getWinLossPerformanceTag(awr, stdwr, deltawr):
 def getWinLossTrend(summonerName, maxMatches=MATCH_LIMIT, ranked=False, turboMode=True):
     data = getSummonerData(summonerName)
     if data == None:
-        return "sum"
+        raise RateLimitError
     summonerName = data.name
     sID = data.esid
     matchList = getMatchHistory(data, ranked)[0:maxMatches]
@@ -898,9 +902,7 @@ def getWinLossTrend(summonerName, maxMatches=MATCH_LIMIT, ranked=False, turboMod
     value = 1 #TODO: this needs tuning my 3r dropped after winning several games
     for i in range(len(matchList)):
         win = didPlayerWin(sID, getMatchInfo(matchList[i]))
-        if isinstance(win, str):
-            return win #error code
-        elif win:
+        if win:
             wins += 1
             awr += value
         else:
@@ -917,16 +919,13 @@ async def parseWinLossTrend(summoner, message, maxMatches=MATCH_LIMIT, ranked=Fa
     text = "This may take a while if this summoner's match history hasn't recently been pulled."
     embed = discord.Embed(title=title, description=text)
     sentMessage = await message.channel.send(embed=embed)
-    data = getWinLossTrend(summoner, maxMatches, ranked)
-    codes = ["rate", "sum"]
-    if data in codes:
-        if data == "rate":
-            text = "<@!312012475761688578> **RATE LIMIT EXCEEDED!** " 
-            text += "Consider lowering max workers if this happens a lot."
-            await sentMessage.edit(content=text)
-        elif data == "sum":
-            text = f"Summoner {summoner} doesn't exist."
-            await sentMessage.edit(content=text)
+
+    try:
+        data = getWinLossTrend(summoner, maxMatches, ranked)
+    except (RateLimitError, SummonerNotFoundError) as error:
+        await sentMessage.delete()
+        raise error
+
     w = data["record"][0]
     l = data["record"][1]
     gp = data["record"][2]
@@ -944,7 +943,7 @@ async def parseWinLossTrend(summoner, message, maxMatches=MATCH_LIMIT, ranked=Fa
     if deltawr > 0:
         color = 0x6ad337
         title = f"{name} - Winrate Analysis (+{deltawr:.2f})"
-        text += f"Recent-weighted Rating: **+{deltawr:.2f+}** points\n"
+        text += f"Recent-weighted Rating: **+{deltawr:.2f}** points\n"
     else:
         color = 0xd33737
         title = f"{name} - Winrate Analysis ({deltawr:.2f})"
@@ -963,16 +962,16 @@ async def parseWinLossTrend(summoner, message, maxMatches=MATCH_LIMIT, ranked=Fa
 #TODO: slow command, overcalls?
 def timeSinceLastMatch(name, ranked=False):
     if checkKeyInvalid():
-        return "key"
+        raise KeyExpiredError
     try:
         name = getSummonerData(name).name
     except AttributeError:
-        return "sum"
-    codes = ["key", "sum", "none"]
-    now = datetime.now()
+        raise SummonerNotFoundError
     lastMatch = getLastMatch(name, ranked)
-    if lastMatch in codes:
-        return lastMatch
+    if lastMatch == None:
+        raise NoRecentMatchesError(name)
+    
+    now = datetime.now()
     lastMatch = Match(lastMatch)
     lastMatchEnd = datetime.fromtimestamp(int(lastMatch.gameEndTimestamp)/1000)
     totalSeconds = int((now-lastMatchEnd).total_seconds())
@@ -989,15 +988,14 @@ def timeSinceLastMatch(name, ranked=False):
                 return {"name":name, "time":f"{p(seconds, 'second')}"}
             return {"name":name, "time":f"{p(minutes, 'minute')}, {p(seconds, 'second')}"}
         return {"name":name, "time":f"{p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
-    return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')} {p(seconds, 'second')}"}
+    return {"name":name, "time":f"{p(days, 'day')}, {p(hours, 'hour')}, {p(minutes, 'minute')}, {p(seconds, 'second')}"}
 
-#TODO: unknown should not count in a non-SR mode
 def getRoleHistory(name, ranked=False, weightedMode=False):
     try:
         summoner = getSummonerData(name)
         name = summoner.name
     except KeyError:
-        return "sum"
+        raise SummonerNotFoundError
     matchList = getMatchHistory(name, ranked) # all games
     matchHistory = list() # only SR games
     for match in matchList:
@@ -1017,7 +1015,7 @@ def getRoleHistory(name, ranked=False, weightedMode=False):
     value = 1
     for i in range(len(matchHistory)):
         match = matchHistory[i]
-        if match.position == "Unknown" and match.map != "Summoner's Rift":
+        if match.map != "Summoner's Rift": #and (match.position == "Unknown")
             gp -= 1
             continue #don't count non-SR games
         if weightedMode:
@@ -1042,41 +1040,54 @@ def getTopRoles(data):
 
 #TODO: this should show a "loading" embed like the winrate embed
 async def getRolePlayDataEmbed(message, name, ranked=False):
-    title = "Retrieving data..."
-    text = "This may take a while if this summoner's match history hasn't recently been pulled."
-    embed = discord.Embed(title=title, description=text)
-    sentEmbed = await message.channel.send(embed=embed)
     try:
-        name = getSummonerData(name).name
-    except KeyError:
-        return "sum"
-    codes = ["key", "sum"]
-    rh = getRoleHistory(name, ranked=ranked, weightedMode=True)
-    if rh in codes:
-        return rh
-    name, data, gp = rh["name"], rh["roles"], rh["games"] 
-    primary, secondary = getTopRoles(data)
-    description = ""
-    for role in data:
-        freq = data[role]
-        if role == primary:
-            format = "**"
-        elif role == secondary:
-            format = "*"
-        else:
-            format = ""
-        if not (role == "Unknown" and freq == 0): #don't show unknown if 0%
-            description += f"{format}{freq:.2f}% {role}{format}\n"
-    title = f"{name} likely queues for **{primary}**/*{secondary}*."
-    rt = ""
-    if ranked:
-        rt = "ranked "
-    footertext = f"{gp} {rt}SR games analyzed."
-    embed.title=title,
-    embed.description=description
-    embed.color=discord.Color.random()
-    embed.set_footer(text=footertext)
-    await sentEmbed.edit(embed=embed)
+        title = "Retrieving data..."
+        text = "This may take a while if this summoner's match history hasn't recently been pulled."
+        embed = discord.Embed(title=title, description=text)
+        sentEmbed = await message.channel.send(embed=embed)
+        try:
+            name = getSummonerData(name).name
+        except AttributeError:
+            raise SummonerNotFoundError
+        rh = getRoleHistory(name, ranked=ranked, weightedMode=True)
+        if rh == "key":
+            raise KeyExpiredError
+        name, data, gp = rh["name"], rh["roles"], rh["games"] 
+        primary, secondary = getTopRoles(data)
+        description = ""
+        for role in data:
+            freq = data[role]
+            if role == primary:
+                format = "**"
+            elif role == secondary:
+                format = "*"
+            else:
+                format = ""
+            if not (role == "Unknown" and freq == 0): #don't show unknown if 0%
+                description += f"{format}{freq:.2f}% {role}{format}\n"
+        title = f"{name} likely queues for **{primary}**/*{secondary}*."
+        rt = ""
+        if ranked:
+            rt = "ranked "
+        footertext = f"{gp} {rt}SR games analyzed."
+        embed.title=title
+        embed.description=description
+        embed.color=discord.Color.random()
+        embed.set_footer(text=footertext)
+        await sentEmbed.edit(embed=embed)
+    except (KeyExpiredError, SummonerNotFoundError, ZeroDivisionError) as error:
+        if isinstance(error, KeyExpiredError):
+            await sentEmbed.delete()
+            await message.channel.send("Key expired.")
+        if isinstance(error, SummonerNotFoundError):
+            await sentEmbed.delete()
+            await message.channel.send("Summoner not found.")
+        if isinstance(error, ZeroDivisionError):
+            await sentEmbed.delete()
+            if ranked:
+                await message.channel.send("That summoner hasn't played any ranked matches!")
+            else:
+                await message.channel.send("That summoner hasn't played any matches!")
 
 def getBanData(matchList):
     if isinstance(matchList, Match):
@@ -1115,6 +1126,7 @@ def getLiveMatch(summoner):
         return "no"
     else: return LiveMatch(data.json(), summoner)
 
+
 async def getLiveMatchEmbed(summoner, message, hasRanked=False):
 
     class PlayerString():
@@ -1125,20 +1137,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 self.rank = data["rank"]
             self.team = data["team"]
 
-    async def rateCancel():
-        print("Cancelling...")
-        embed.title = "Rate limit exceeded!"
-        embed.description = (
-            "You're requesting too fast!\n" +
-            "Use command `" + 
-            getGuildPrefix(message.guild.id) +
-            "about ratelimit` for more info.")
-        embed.color = 0x840029
-        await sentEmbed.edit(embed=embed)
-        return False
-
     def parseLiveMatchPlayerString(player):
-        d = ""
         masteryStr = ""
         rankStr = ""
         level, points = 0, 0
@@ -1149,7 +1148,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         else:
             summonerName = player.summonerName
         if summoner == "rate":
-            return "rate"
+            raise RateLimitError
         champData = (anonGetSingleMastery(player.summonerName, player.champID))
         codes = ["no", "rate"]
         if champData not in codes:
@@ -1157,7 +1156,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                 # rankedData = (summoner.getRank(hasWR=False, deco=True))
                 rankedData = getRankedString(summoner, hasWR=False, deco=True)
                 if rankedData == "rate":
-                    return "rate"
+                    raise RateLimitError
                 elif rankedData != "":
                     rankStr = rankedData
                 else:
@@ -1179,7 +1178,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
                     # masteryStr = f"{msDec}(M{level} / {points:.1f}K){msDec}" # too long
                     masteryStr = f"{msDec}({points:.1f}K){msDec}"
         elif champData == "rate":
-            return "rate"
+            raise RateLimitError
         data = {
             "summoner": summonerName,
             "champ": f"{player.champName}  {masteryStr}",
@@ -1187,85 +1186,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             "team": player.teamID
         }
         return PlayerString(data=data, hasRanked=hasRanked)
-        
-    title = "Requesting match data..."
-    description = "Hang tight!"
-    embed = discord.Embed(title=title, description=description)
-    sentEmbed = await message.channel.send(embed=embed)
-    if isinstance(summoner, str):
-        data = getSummonerData(summoner)
-        if data == None:
-            embed.title = "Summoner not found"
-            embed.description = f"Summoner {summoner} doesn't seem to exist."
-            await sentEmbed.edit(embed=embed)
-            return False
-    summoner = data
-    match = getLiveMatch(summoner)
-    if match == "rate":
-        await rateCancel()
-        return "rate"
-    if isinstance(match, str):
-        if match == "rate":
-            await rateCancel()
-            return False
-        elif match == "no":
-            embed.title = "Match not found"
-            embed.description = f"Summoner {summoner.name} isn't in a match right now!"
-            await sentEmbed.edit(embed=embed)
-            return False
-
-    text = ""
-    if match.targetPlayer.teamID == 100:
-        embed.color = 0x3366cc    # blue
-    else: embed.color = 0xff5050  # red
-    embed.title = "Requesting data..."
-    embed.description = text
-
-    ## test code
-    # res = []
-    # for player in match.participants.values():
-    #     print(parseLiveMatchPlayerString(player))
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
-
-    # 5 workers tested to be most optimal for all setups
-
-    blueSumms = ""
-    blueChamps = ""
-    blueRanks = ""
-
-    redSumms = ""
-    redChamps = "" # gotta be a better way to do this?
-    redRanks = ""  # maybe lists but i still have to iterate
-
-    for playerString in res:
-        if playerString == "rate":
-            await rateCancel()
-            return False
-        else:
-            if playerString.team == 100:
-                blueSumms += (playerString.summoner) + "\n"
-                blueChamps += (playerString.champ) + "\n"
-                if hasRanked:
-                    blueRanks += (playerString.rank) + "\n"
-            elif playerString.team == 200:
-                redSumms += (playerString.summoner) + "\n"
-                redChamps += (playerString.champ) + "\n"
-                if hasRanked:
-                    redRanks += (playerString.rank) + "\n"
-
-    embed.add_field(name="Blue Players", value=blueSumms, inline=True)
-    embed.add_field(name="Champions", value=blueChamps, inline=True)
-    if hasRanked:
-        embed.add_field(name="Ranks", value=blueRanks, inline=True)
-    else: embed.add_field(name = chr(173), value = chr(173)) # null field
-
-    embed.add_field(name="Red Players", value=redSumms, inline=True)
-    embed.add_field(name="Champions", value=redChamps, inline=True)
-    if hasRanked:
-        embed.add_field(name="Ranks", value=redRanks, inline=True)
-    else: embed.add_field(name = chr(173), value = chr(173))
-
+    
     def dumpFile():
         try:
             file = open(f"{str(match.gameID)}.txt", "x")
@@ -1273,25 +1194,112 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             file.close()
         except:
             pass
+    
+    try:
+        title = "Requesting match data..."
+        description = "Hang tight!"
+        embed = discord.Embed(title=title, description=description)
+        sentEmbed = await message.channel.send(embed=embed)
+        if isinstance(summoner, str):
+            data = getSummonerData(summoner)
+            if data == None:
+                raise SummonerNotFoundError
+        summoner = data
+        match = getLiveMatch(summoner)
+        if match == "rate":
+            raise RateLimitError
+        if isinstance(match, str):
+            if match == "rate":
+                raise RateLimitError
+            elif match == "no":
+                raise SummonerNotInMatchError
 
-    embed.description = text
-    elapsed = match.elapsedTime
-    if not (0 <= elapsed <= 90*60):
-        title = f"Live Match - Loading In - {match.gameMode}"
-        dumpFile()
-    else:
-        m, s = divmod(elapsed, 60)
-        if m >= 60:
-            embed.set_footer(text="Time may be inaccurate")
+        text = ""
+        if match.targetPlayer.teamID == 100:
+            embed.color = 0x3366cc    # blue
+        else: embed.color = 0xff5050  # red
+        embed.title = "Requesting data..."
+        embed.description = text
+
+        ## test code
+        # res = []
+        # for player in match.participants.values():
+        #     print(parseLiveMatchPlayerString(player))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            res = executor.map(parseLiveMatchPlayerString, match.participants.values()) #create executor map of results
+
+        # 5 workers tested to be most optimal for all setups
+
+        blueSumms = ""
+        blueChamps = ""
+        blueRanks = ""
+
+        redSumms = ""
+        redChamps = "" # gotta be a better way to do this?
+        redRanks = ""  # maybe lists but i still have to iterate
+
+        for playerString in res:
+            if playerString == "rate":
+                raise RateLimitError
+            else:
+                if playerString.team == 100:
+                    blueSumms += (playerString.summoner) + "\n"
+                    blueChamps += (playerString.champ) + "\n"
+                    if hasRanked:
+                        blueRanks += (playerString.rank) + "\n"
+                elif playerString.team == 200:
+                    redSumms += (playerString.summoner) + "\n"
+                    redChamps += (playerString.champ) + "\n"
+                    if hasRanked:
+                        redRanks += (playerString.rank) + "\n"
+
+        embed.add_field(name="Blue Players", value=blueSumms, inline=True)
+        embed.add_field(name="Champions", value=blueChamps, inline=True)
+        if hasRanked:
+            embed.add_field(name="Ranks", value=blueRanks, inline=True)
+        else: embed.add_field(name = chr(173), value = chr(173)) # null field
+
+        embed.add_field(name="Red Players", value=redSumms, inline=True)
+        embed.add_field(name="Champions", value=redChamps, inline=True)
+        if hasRanked:
+            embed.add_field(name="Ranks", value=redRanks, inline=True)
+        else: embed.add_field(name = chr(173), value = chr(173))
+
+        embed.description = text
+        elapsed = match.elapsedTime
+        if not (0 <= elapsed <= 90*60):
+            title = f"Live Match - Loading In - {match.gameMode}"
             dumpFile()
-            m = m % 60
-        title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
-    embed.title = title
-    await sentEmbed.edit(embed=embed)
-    return True
+        else:
+            m, s = divmod(elapsed, 60)
+            if m >= 60:
+                embed.set_footer(text="Time may be inaccurate")
+                dumpFile()
+                m = m % 60
+            title = f"Live Match - {m}:{s:02d} elapsed - {match.gameMode}"
+        embed.title = title
+        await sentEmbed.edit(embed=embed)
+        return True
+    except (RateLimitError, SummonerNotInMatchError, SummonerNotFoundError) as error:
+        if isinstance(error, RateLimitError):
+            embed.title = ":rotating_light: Rate limit reached! "
+            embed.description = (":rotating_light:\n Use `info ratelimit` " +
+                                "for more information." +
+                                "Wait about a minute before trying again.")
+            await sentEmbed.edit(embed=embed)
+        if isinstance(error, SummonerNotInMatchError):
+            embed.title = "Match not found"
+            embed.description = f"Summoner {summoner.name} isn't in a match right now!"
+            await sentEmbed.edit(embed=embed)
+            return False
+        if isinstance(error, SummonerNotFoundError):
+            embed.title = "Summoner not found"
+            embed.description = f"Summoner {summoner} doesn't seem to exist."
+            await sentEmbed.edit(embed=embed)
+            return False
 
 def ddGetAbilityName(message): # dd = datadragon
-    def parseQuery(q): # screw you riot
+    def parseQuery(q):
         return q.replace(".", "").replace('\'', "").replace(" ", "")
 
     ValidCodes = ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive', 'pass']

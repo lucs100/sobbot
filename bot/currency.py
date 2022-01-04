@@ -18,12 +18,35 @@ class SelfSendCoinsError(commands.CommandError):
 class InsufficientCoinsError(commands.CommandError):
     pass
 
-class LessThanZeroError(commands.CommandError):
+class SentLessThanZeroError(commands.CommandError):
     pass
 
+class ClaimNotReadyError(commands.CommandError):
+    def __init__(self, user0, time0):
+        self.user = user0
+        self.time = time0
+    pass
+
+class NonIntegerWagerError(commands.CommandError):
+    def __init__(self, user0):
+        self.user = user0
+
+class PrereqItemRequiredError(commands.CommandError):
+    def __init__(self, user0):
+        self.user = user0
+
+class LimitedItemAlreadyOwnedError(commands.CommandError):
+    pass
+
+class ItemDoesNotExistError(commands.CommandError):
+    pass
+
+class WagerTooLowError(commands.CommandError):
+    pass
+    
 users = {}
 
-# TODO: hey so the shop kinda sucks?
+# TODO: the shop kinda sucks?
 # maybe certain things like luck mod should just be ranks
 # like how mudae does it with eg. bronze is ONLY luck mod
 shop = {}
@@ -80,7 +103,7 @@ def give(message, sender, recipient, value):
     if users[sender]["coins"] < value:
         raise InsufficientCoinsError
     if value <= 0:
-        raise LessThanZeroError
+        raise SentLessThanZeroError
 
     users[sender]["coins"] -= value
     users[recipient]["coins"] += value
@@ -95,40 +118,40 @@ def getUserLuck(id):
     except: #key error
         return 0
 
-def claimHourly(id):
-    claimCooldown = float(2 * 60 * 60)  # 2 hours
+async def claimHourly(message, userID):
+    CLAIM_COOLDOWN = float(2 * 60 * 60)  # 2 hours
     value = 0
-    id = str(id)
-    if not isUserRegistered(id):
+    userID = str(userID)
+    if not isUserRegistered(userID):
         raise CoinNotRegisteredError # recipient error
-    if "coinsLastClaimed" not in users[id]:
-        users[id]["coinsLastClaimed"] = float(0) # create field
-    last = users[id]["coinsLastClaimed"]
+    if "coinsLastClaimed" not in users[userID]:
+        users[userID]["coinsLastClaimed"] = float(0) # create field
+    last = users[userID]["coinsLastClaimed"]
     
     currentTime = time.time()
     timeElapsed = currentTime - last
-    luck = getUserLuck(id)
+    luck = getUserLuck(userID)
     value = (random.randint(50, 100) + (random.randint(3+luck, 10) + random.randint(3+luck, 10)) ** 2) 
 
-    if timeElapsed >= claimCooldown:
-        if (getUserCoins(id) + value) <= 1000:
-            users[id]["coins"] = 1000
-            users[id]["coinsLastClaimed"] = currentTime
-            updateUserData(f"{id} reset to 1000 coins")
-            return [True, 1000]
+    if timeElapsed >= CLAIM_COOLDOWN:
+        if (getUserCoins(userID) + value) <= INITIAL_COINS:
+            users[userID]["coins"] = INITIAL_COINS
+            users[userID]["coinsLastClaimed"] = currentTime
+            updateUserData(f"{userID} reset to {INITIAL_COINS} coins")
+            await message.channel.send(f"<@!{userID}>, your balance was topped up to **{INITIAL_COINS}** soblecoins!")
         else:
-            users[id]["coins"] += value
-            users[id]["coinsLastClaimed"] = currentTime
-            updateUserData(f"{id} claimed {value} coins")
-            return [True, value]
+            users[userID]["coins"] += value
+            users[userID]["coinsLastClaimed"] = currentTime
+            updateUserData(f"{userID} claimed {value} coins")
+            await message.channel.send(f"<@!{userID}> claimed **{value}** soblecoins!")
     else:
-        availableTime = datetime.fromtimestamp(last + claimCooldown) # date magic to show the user when next claim ready
+        availableTime = datetime.fromtimestamp(last + CLAIM_COOLDOWN) # date magic to show the user when next claim ready
         currentTime = datetime.fromtimestamp(currentTime)
         nextTimeString = availableTime.strftime("%I:%M %p").lstrip("0")
         nextTimeString = "at " + nextTimeString
         if availableTime.day != currentTime.day:
             nextTimeString = "tomorrow " + nextTimeString
-        return [False, nextTimeString] # time not passed
+        raise ClaimNotReadyError(userID, nextTimeString) # time not passed
 
 def messageBonus(id):
     id = str(id)
@@ -144,23 +167,25 @@ def messageBonus(id):
             updateUserData(f"{id} earned {coinsOnMessage}")
     return True
 
-def luckyRoll(id, value):
+async def luckyRoll(message, userID, value):
     try:
         value = int(value)
     except:
-        return "int", 0, 0    # errors return a code and two placeholders
+        raise NonIntegerWagerError
+    if value <= 0:
+        raise WagerTooLowError
     prizeDict = [0, 0, 0, 0.1, 0.1, 0.1, 0.2, 0.2, 0.25, 
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.9, 0.9,
     1, 1.05, 1.1, 1.1, 1.25, 1.5, 2, 2.5, 3, 5, 10] # random set of prize multipliers
-    id = str(id)
-    balance = getUserCoins(id)
-    if not isUserRegistered(id):
+    userID = str(userID)
+    balance = getUserCoins(userID)
+    if not isUserRegistered(userID):
         raise CoinNotRegisteredError
     if balance < value:
-        return "insuff", balance, 0
-    luck = getUserLuck(id)
+        raise InsufficientCoinsError
+    luck = getUserLuck(userID)
     chances = 1 + luck
     pulled = []
     for i in range(chances):
@@ -173,10 +198,16 @@ def luckyRoll(id, value):
             pulled.remove(min(pulled))
         multi = random.choice(pulled)
     change = int(value * multi) - value
-    if isinstance(getUserCoins(id), int):
-        users[id]["coins"] += change
-        updateUserData(f"{id} wagered {value} for a change of {change}")
-    return "ok", abs(change), multi
+    if isinstance(getUserCoins(userID), int):
+        users[userID]["coins"] += change
+        updateUserData(f"{userID} wagered {value} for a change of {change}")
+    if multi > 1:
+        await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
+    elif multi == 1:
+        await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
+    elif multi < 1:
+        await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+    return True
 
 def setupUserInventory(id):
     id = str(id)
@@ -257,21 +288,21 @@ def getShop(message):
     embed.description = shopDescription
     return embed
 
-def buyFromShop(itemID, userID):
+async def buyFromShop(message, itemID, userID):
     #may need to add custom item properties someday
     itemID, userID = str(itemID), str(userID)
     if itemID not in shop:
-        return "exist", 0 #id doesnt exist error
+        raise ItemDoesNotExistError #id doesnt exist error
     if not isUserRegistered(userID):
         raise CoinNotRegisteredError #user not registered error
     setupUserInventory(userID)
     price = shop[itemID]["price"]
     if price > getUserCoins(userID):
-        return "broke", getUserCoins(userID) #insufficient funds error
+        raise InsufficientCoinsError #insufficient funds error
     if not checkPrereqs(itemID, userID):
-        return "prereq", 0 #prerequisite item required
+        raise PrereqItemRequiredError #prerequisite item required
     if not checkLimited(itemID, userID):
-        return "limit", 0 #limited item already owned
+        raise LimitedItemAlreadyOwnedError #limited item already owned
     else:
         users[userID]["coins"] -= price  #subtract price from balance
     countOwned = itemInInventory(itemID, userID)
@@ -282,4 +313,5 @@ def buyFromShop(itemID, userID):
         users[userID]["inventory"][itemID]["count"] += 1 #item count increased by 1
         setCustomItemProperties(itemID, userID)
     updateUserData(f"{userID} purchased {shop[itemID]['name']} for {price}")
-    return shop[itemID]["name"], countOwned + 1 
+    await message.channel.send(f"<@!{message.author.id}>, you purchased a **{shop[itemID]['name']}**! You now own {countOwned + 1}.")
+    return True

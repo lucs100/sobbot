@@ -301,7 +301,7 @@ async def randcolour(message):
 
 
 @bot.command(aliases=["viewcolor"])
-async def viewcolour(message, colourCode):
+async def viewcolour(message, *, colourCode):
 	embed, file = sob.colorPreview(colourCode)
 	await message.channel.send(embed=embed, file=file)
 
@@ -313,7 +313,6 @@ async def scramble(message, length: Optional[int] = sob.DEFAULT_SCRAMBLE_LENGTH)
 
 
 # LoL Commands
-#TODO: raise errors on riotapi side (lots more)
 #TODO: add cooldowns to API call heavy commands
 #TODO: change handleRegisteredSummoner to a Converter
 
@@ -357,12 +356,9 @@ async def lolregister(message, *, name=None):
 	if name == None:
 		await message.channel.send("Enter your summoner name to register it to your account!")
 		return True
-	if not riotapi.isUserRegistered(id):
-		ok = riotapi.addRegistration(id, name)
-	else:
-		ok = riotapi.editRegistration(id, name)
+	ok = riotapi.addRegistration(id, name)
 	if ok != False:
-		await message.channel.send(f"Set <@!{id}>'s summoner name to **{ok}**!")
+		await message.channel.send(f"Linked <@!{id}> to **{ok}**!")
 		return True
 	else:
 		raise riotapi.SummonerNotFoundError
@@ -372,97 +368,60 @@ async def lolregister(message, *, name=None):
 async def lolrank(message, *, name=None):
 	name = handleRegisteredSummoner(message, name)
 	embed = riotapi.embedRankedData(name)
-	if isinstance(embed, int):
-		if embed == 1:
-			raise riotapi.KeyExpiredError
-		elif embed == 2:
-			raise riotapi.SummonerNotFoundError(name)
-	else:
-		await message.channel.send(embed=embed)
-		return True
+	await message.channel.send(embed=embed)
+	return True
 
 
 @bot.command()
 async def lastmatch(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.timeSinceLastMatch(summoner, False)
-	codes = {
-		"key": "Key expired.",
-		"sum": f"Summoner {summoner} doesn't exist.",
-		"none": f"Summoner {summoner} hasn't played a match in a while!"
-	}
-	if isinstance(response, str):
-		await message.channel.send(codes[response])
-	else:
-		await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
+	await message.channel.send(f"{response['name']}'s last match was {response['time']} ago.")
 	return True
+
+@lastmatch.error
+async def lastmatch_error(message, error):
+	if isinstance(error, riotapi.NoRecentMatchesError):
+		await message.send(f"{error.name}'s last match was too long ago to find.")
 
 
 @bot.command(aliases = ["lastmatchr"])
 async def lastmatchranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
 	response = riotapi.timeSinceLastMatch(summoner, True)
-	codes = {
-		"key": "Key expired.",
-		"sum": f"Summoner {summoner} doesn't exist.",
-		"none": f"Summoner {summoner} hasn't played a ranked match in a while!"
-	}
-	if isinstance(response, str):
-		await message.channel.send(codes[response])
-	else:
-		await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
+	await message.channel.send(f"{response['name']}'s last ranked match was {response['time']} ago.")
 	return True
 
+@lastmatchranked.error
+async def lastmatchranked_error(message, error):
+	if isinstance(error, riotapi.NoRecentMatchesError):
+		await message.send(f"{error.name}'s last ranked match was too long ago to find.")
 
 @bot.command(aliases = ["lolr"])
 async def lolrole(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.getRolePlayDataEmbed(message, summoner, ranked=False)
-	codes = {
-		"key": "Key expired.",
-		"sum": f"Summoner {summoner} doesn't exist."
-	}
-	if isinstance(response, str):
-		await message.channel.send(codes[response])
+	await riotapi.getRolePlayDataEmbed(message, summoner, ranked=False)
 	return True
 
 
 @bot.command(aliases = ["lolrr", "lolroler"])
 async def lolroleranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.getRolePlayDataEmbed(message, summoner, ranked=True)
-	codes = {
-		"key": "Key expired.",
-		"sum": f"Summoner {summoner} doesn't exist."
-	}
-	if isinstance(response, str):
-		await message.channel.send(codes[response])
-	else:
-		await message.channel.send(embed=response)
+	await riotapi.getRolePlayDataEmbed(message, summoner, ranked=True)
 	return True
 
 
 @bot.command(aliases = ["lolwr"])
 async def lolwinrate(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.parseWinLossTrend(summoner, message, ranked=False)
-	codes = {
-		"sum": f"Summoner {summoner} doesn't exist."
-	}
-	if response in codes:
-		await message.channel.send(codes[response])
+	await riotapi.parseWinLossTrend(summoner, message, ranked=False)
 	return True
 
 
 @bot.command(aliases = ["lolwrr"])
 async def lolwinrateranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.parseWinLossTrend(summoner, message, ranked=True)
-	codes = {
-		"sum": f"Summoner {summoner} doesn't exist."
-	}
-	if response in codes:
-		await message.channel.send(codes[response])
+	await riotapi.parseWinLossTrend(summoner, message, ranked=True)
 	return True
 
 
@@ -470,14 +429,14 @@ async def lolwinrateranked(message, *, summoner=None):
 #TODO: why Summoner Not Found? might be fixed.
 async def livematch(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
+	await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=False)
 	return True
 
 
 @bot.command(aliases = ["lmr"])
 async def livematchranked(message, *, summoner=None):
 	summoner = handleRegisteredSummoner(message, summoner)
-	response = await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
+	await riotapi.getLiveMatchEmbed(summoner, message, hasRanked=True)
 	return True
 
 
@@ -503,6 +462,7 @@ async def lollobby(message, *, chat):
 #TODO: rewrite all currency commands to use user objects rather than ids
 #TODO: these really shouldnt @ that often
 
+
 @bot.command()
 async def coinstart(message):
 	ok = coin.addRegistration(message.author.id)
@@ -513,22 +473,21 @@ async def coinstart(message):
 	return False
 
 
-#TODO: dont @ recipient wtf??? get the user object
 @bot.command()
 async def give(message, recipient, value: int):
-	try:
-		sender = message.author.id
-		recipient = recipient[3:-1]
-		coin.give(message, sender, recipient, value)
-	except commands.BadArgument:
-		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
+	sender = message.author.id
+	recipient = recipient[3:-1]
+	coin.give(message, sender, recipient, value)
 	return True
 
 @give.error
 async def give_error(message, error):
 	if isinstance(error, commands.BadArgument):
 		await message.channel.send("Use `give` (recipient) (value) to send a friend soblecoins!")
-		
+	if isinstance(error, coin.SelfSendCoinsError):
+		await message.send("You can't send coins to yourself!")
+	if isinstance(error, coin.SentLessThanZeroError):
+		await message.send("You can't send negative coins!")
 
 @bot.command()
 async def balance(message):
@@ -538,60 +497,49 @@ async def balance(message):
 	else:
 		raise coin.CoinNotRegisteredError
 
-#TODO: maybe give better name/alias?
-#TODO: no "reg" warning
+
 @bot.command()
 async def claim(message):
-	ok, value = coin.claimHourly(message.author.id)
-	if isinstance(ok, str):
-		if ok == "reg":
-			raise coin.CoinNotRegisteredError
-	if ok:
-		if value == 1000:
-			await message.channel.send(f"<@!{message.author.id}>, your balance was topped up to **{value}** soblecoins!")
-		else:
-			await message.channel.send(f"<@!{message.author.id}> claimed **{value}** soblecoins!")
-	else:
-		await message.channel.send(f"<@!{message.author.id}>, your next gift isn't ready yet! Try again {value}.")
+	await coin.claimHourly(message, message.author.id)
 	return True
+
+@claim.error
+async def claim_error(message, error):
+	if isinstance(error, coin.ClaimNotReadyError):
+		await message.send(f"Your next gift isn't ready yet! Try again {error.time}.")
+
 
 @bot.command()
 async def roll(message, value):
-	status, change, multi = coin.luckyRoll(message.author.id, value)
-	codes = {
-		"int": f"<@!{message.author.id}>, you can only wager a whole number of soblecoins!",
-		"insuff": f"<@!{message.author.id}>, you only have {change} soblecoins!"
-	}
-	if status in codes:
-		await message.channel.send(codes[status])
-	else:
-		if multi > 1:
-			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi} and won {change} soblecoins!")
-		if multi == 1:
-			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! You didn't win or lose soblecoins.")
-		if multi < 1:
-			await message.channel.send(f"<@!{message.author.id}>, you rolled x{multi}! Sorry, you lost {change} soblecoins :frowning:")
+	await coin.luckyRoll(message, message.author.id, value)
 	return True
+
+@roll.error
+async def roll_error(message, error):
+	if isinstance(error, coin.NonIntegerWagerError):
+		await message.send("You can only wager a whole number of soblecoins.")
+	if isinstance(error, coin.WagerTooLowError):
+		await message.send("Your wager can't be less than 1!")
+
 
 @bot.command()
 async def shop(message):
 	await message.channel.send(embed = coin.getShop(message))
 	return True
 
+@shop.error
+async def shop_error(message, error):
+	if isinstance(error, coin.PrereqItemRequiredError):
+		await message.send("You need a prerequisite item in order to buy that.")
+	if isinstance(error, coin.LimitedItemAlreadyOwnedError):
+		await message.send("You already own that limited item.")
+
+
 @bot.command()
 async def buy(message, selectionID):
-	code, num = coin.buyFromShop(selectionID, message.author.id)
-	messages = {
-		"exist": f"<@!{message.author.id}>, no item with the ID {selectionID} exists!",
-		"broke": f"<@!{message.author.id}>, you only have {num} soblecoins!",
-		"limit": f"<@!{message.author.id}>, you already own that limited item.",
-		"prereq": f"<@!{message.author.id}>, you need a prerequisite item in order to buy that."
-	}
-	if code in messages:
-		await message.channel.send(messages[code])
-	else:
-		await message.channel.send(f"<@!{message.author.id}>, you purchased a **{code}**! You now own {num}.")
+	await coin.buyFromShop(message, selectionID, message.author.id)
 	return True
+
 
 @bot.command()
 async def inventory(message):
@@ -611,6 +559,7 @@ async def ticker(message, symbol):
 		await message.channel.send(f"Symbol {symbol.upper()} doesn't seem to exist.")
 	return True
 
+
 @bot.command(aliases=["portfoliostart"])
 async def pfstart(message):
 	ok = finance.createPortfolio(message.author.id)
@@ -619,6 +568,7 @@ async def pfstart(message):
 	else:
 		await message.channel.send("Portfolio already exists! Use `resetportfolio` (coming soon) to reset your portfolio.")
 	return True
+
 
 @bot.command(aliases=["portfolioshow", "showportfolio", "showpf"])
 async def pfshow(message):
@@ -631,7 +581,8 @@ async def pfshow(message):
 		await message.channel.send(codes[data])
 	return True
 
-#TODO: can commands be in any order since they're strictly typed?
+
+#TODO: can args be in any order since they're strictly typed?
 @bot.command(aliases=["portfolioadd"])
 async def pfadd(message, symbol, count):
 	id = message.author.id
@@ -653,7 +604,7 @@ async def pfadd(message, symbol, count):
 
 
 # Spotify Functions
-# note: if non-server playlists are ever added, need to realias.
+# note: if non-server playlists are ever added, need to realias commands.
 
 
 @bot.command(aliases=["playlistcreate"])
@@ -661,16 +612,19 @@ async def spcreate(message):
 	await sp.createGuildPlaylistGuildSide(message)
 	return True
 
+
 @bot.command(aliases=["playlistadd"])
 async def spadd(message, *, song):
 	await sp.addToGuildPlaylistGuildSide(message, song)
 	return True
+
 
 @bot.command(aliases=["playlistoverview"])
 async def spoverview(message):
 	members = getMemberList(message.guild.id)
 	await sp.fetchGuildPlaylistOverviewGuildSide(message, members)
 	return True
+
 
 @bot.command(aliases=["playlistlink"])
 async def splink(message):
@@ -680,6 +634,7 @@ async def splink(message):
 	except AttributeError:
 		raise sp.NoGuildPlaylistError
 	return True
+
 
 @bot.command(aliases=["playlistsettitle", "setplaylisttitle"])
 @commands.check(commands.has_permissions(manage_guild = True))
@@ -692,6 +647,7 @@ async def spsettitle(context, *, title):
 		await context.message.add_reaction("👎")
 		return False
 
+
 @bot.command(aliases=["playlistsetdesc", "setplaylistdesc"])
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spsetdesc(context, *, desc):
@@ -702,6 +658,7 @@ async def spsetdesc(context, *, desc):
 	else:
 		await context.message.add_reaction("👎")
 		return False
+
 
 #TODO: can multimessage handling be done better? :(
 @bot.command(aliases=["playlistclear"])
@@ -726,6 +683,7 @@ async def spclear(message):
 		await message.channel.send("Cancelled. :grin:")
 		return False
 
+
 @bot.command(aliases=["playlistsetimage", "playlistsetcover", "spsetcover"])
 async def spsetimage(context):
 	try:
@@ -745,6 +703,7 @@ async def spsetimage(context):
 	else:
 		raise sp.NoGuildPlaylistError
 
+
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
 async def spdelnewest(context):
 	gph = sp.getGuildPlaylist(context.guild.id)
@@ -760,6 +719,7 @@ async def spdelnewest(context):
 			return False
 	else:
 		raise sp.NoGuildPlaylistError
+
 
 @bot.command(aliases=["playlistdelete", "playlistremove", "spremove"])
 @commands.check(commands.has_permissions(manage_guild = True))
@@ -781,44 +741,42 @@ async def spdelete(context, *, song):
 		raise sp.NoGuildPlaylistError
 
 
-# Error Handling
+# Global Error Handling
 
 
 @bot.event
 async def on_command_error(ctx, error):
 	if isinstance(error, commands.NotOwner):
 		await ctx.send("Only the bot owner can do that!")
-	if isinstance(error, commands.CheckAnyFailure): # vague, specify if possible
+	elif isinstance(error, commands.CheckAnyFailure): # vague, specify if possible
 		await ctx.send("You don't have permission to do that.")
-	if isinstance(error, commands.DisabledCommand):
+	elif isinstance(error, commands.DisabledCommand):
 		await ctx.send("Command is currently disabled.")
 
-	if isinstance(error, coin.CoinNotRegisteredError):
+	elif isinstance(error, coin.CoinNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-	if isinstance(error, coin.CoinRecipientNotRegisteredError):
+	elif isinstance(error, coin.CoinRecipientNotRegisteredError):
 		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
-	if isinstance(error, coin.SelfSendCoinsError):
-		await ctx.send("You can't send coins to yourself!")
-	if isinstance(error, coin.InsufficientCoinsError):
+	elif isinstance(error, coin.InsufficientCoinsError):
 		await ctx.send("You don't have enough soblecoins!")
-	if isinstance(error, coin.LessThanZeroError):
-		await ctx.send("You can't send negative coins!")
 
-	if isinstance(error, sp.NoGuildPlaylistError):
+	elif isinstance(error, sp.NoGuildPlaylistError):
 		await ctx.send("This server doesn't have a server playlist yet!\n" + 
             f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
 
-	if isinstance(error, riotapi.SummonerNotRegisteredError):
+	elif isinstance(error, riotapi.SummonerNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `lolregister` to add your summoner name.\n"+
 						"You can also specify a summoner name after this command to use it while unregistered.")
-	if isinstance(error, riotapi.SummonerNotFoundError):
+	elif isinstance(error, riotapi.SummonerNotFoundError):
 		await ctx.send(f"{error.name} could not be found.")
-	if isinstance(error, riotapi.MatchHistoryOutdatedWarning):
+	elif isinstance(error, riotapi.KeyExpiredError):
+		await ctx.send("Sobbot's Riot API key has expired. <@312012475761688578>")
+	elif isinstance(error, riotapi.MatchHistoryOutdatedWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info mh` for more info.")
-	if isinstance(error, riotapi.MatchHistoryDataWarning):
+	elif isinstance(error, riotapi.MatchHistoryDataWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
-	
 		
+	else: print(error.__dict__) #TODO: log as well as print?
 
 	return True
 
