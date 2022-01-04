@@ -134,9 +134,10 @@ def getPhaseChangeTiming(phase=(getMarketPhase())):
 
 def createStockEmbed(stock):
     if not isinstance(stock, Stock):
-        stock = safelyCreateStock(stock)
-        if stock == None:
-            return stock
+        stockTemp = safelyCreateStock(stock)
+        if stockTemp == None:
+            raise InvalidSymbolError(stock)
+        stock = stockTemp
     title = f"**{stock.symbol}** - {stock.name}"
     phase = getMarketPhase()
     phases = [
@@ -187,12 +188,15 @@ async def updatePortfolio(message, stock, id, count):
     stock = stock.upper()
     id = str(id)
     if count < 0:
-        return NegativeSharesError
+        raise NegativeSharesError
     if not userPortfolioExists(id):
         raise NoPortfolioError(id)
-    if stock == None:
+    stockTemp = safelyCreateStock(stock)
+    if stockTemp == None:
         raise InvalidSymbolError(stock)
-    elif count == 0:
+    stock = stockTemp
+    
+    if count == 0:
         if existsInPortfolio(stock, id):
             users[id]["portfolio"].pop(stock)
             updateUserData()
@@ -208,7 +212,8 @@ async def updatePortfolio(message, stock, id, count):
         updateUserData()
         if count == 1:
             await message.channel.send(f"Your portfolio now has **{count}** share of {stock.symbol}!")
-        await message.channel.send(f"Your portfolio now has **{count}** shares of {stock.symbol}!")
+        else:
+            await message.channel.send(f"Your portfolio now has **{count}** shares of {stock.symbol}!")
         return True
 
 def parseChangeValue(change, annotation="", hasBrackets=True, roundTo=2, prefix=""):

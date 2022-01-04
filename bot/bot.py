@@ -554,10 +554,7 @@ async def inventory(message):
 @bot.command()
 async def ticker(message, symbol):
 	embed = finance.createStockEmbed(symbol)
-	if embed != None:
-		await message.channel.send(embed=embed)
-	else:
-		raise finance.InvalidSymbolError(symbol)
+	await message.channel.send(embed=embed)
 	return True
 
 
@@ -583,15 +580,15 @@ async def pfshow_error(message, error):
 
 #TODO: can args be in any order since they're strictly typed?
 @bot.command(aliases=["portfolioadd"])
-async def pfadd(message, symbol: str, count: int):
+async def pfadd(message, symbol: str, count: float):
 	return await finance.updatePortfolio(message, symbol, message.author.id, count)
 
 @pfadd.error
 async def pfadd_error(message, error):
 	if isinstance(error, finance.NegativeSharesError):
-		message.send("You can't have negative shares!")
+		await message.send("You can't have negative shares!")
 	if isinstance(error, commands.BadArgument):
-		message.send("Use `s!pfadd (symbol) (count)` to add shares to your portfolio!")
+		await message.send("Use `s!pfadd (symbol) (count)` to add shares to your portfolio!")
 
 
 # Spotify Functions
@@ -690,8 +687,8 @@ async def spsetimage(context):
 @spsetimage.error
 async def spsetimage_error(message, error):
 	if isinstance(error, sp.NoImageSentError):
-		await message.send("Send an image with that command.")
-		return False
+		await message.send("Attach an image when sending that command to " +
+							"set it as the server playlist's cover image!")
 
 
 @bot.command(aliases=["spdeletenewest", "playlistdeletenewest"])
@@ -737,17 +734,6 @@ async def on_command_error(ctx, error):
 	elif isinstance(error, commands.DisabledCommand):
 		await ctx.send("Command is currently disabled.")
 
-	elif isinstance(error, coin.CoinNotRegisteredError):
-		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
-	elif isinstance(error, coin.CoinRecipientNotRegisteredError):
-		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
-	elif isinstance(error, coin.InsufficientCoinsError):
-		await ctx.send("You don't have enough soblecoins!")
-
-	elif isinstance(error, sp.NoGuildPlaylistError):
-		await ctx.send("This server doesn't have a server playlist yet!\n" + 
-            f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
-
 	elif isinstance(error, riotapi.SummonerNotRegisteredError):
 		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `lolregister` to add your summoner name.\n"+
 						"You can also specify a summoner name after this command to use it while unregistered.")
@@ -760,11 +746,22 @@ async def on_command_error(ctx, error):
 	elif isinstance(error, riotapi.MatchHistoryDataWarning):
 		await ctx.send(f"Command is currently disabled. Use `{admin.getGuildPrefix(ctx.guild.id)}info md` for more info.")
 	
-	elif isinstance(error, finance.NoPortfolioError):
-		ctx.send(f"<@!{error.userID}>, you don't don't have a portfolio!\n" + 
-			"Use `s!pfstart` to create one.")
+	elif isinstance(error, coin.CoinNotRegisteredError):
+		await ctx.send(f"<@!{ctx.author.id}>, you aren't registered! Use `coinstart` to start using soblecoins.")
+	elif isinstance(error, coin.CoinRecipientNotRegisteredError):
+		await ctx.send("That user doesn't have soblecoins enabled, or doesn't exist.")
+	elif isinstance(error, coin.InsufficientCoinsError):
+		await ctx.send("You don't have enough soblecoins!")
+		
 	elif isinstance(error, finance.InvalidSymbolError):
-		ctx.send(f"{error.symbol} isn't a valid symbol!")
+		await ctx.send(f"{error.symbol} isn't a valid symbol!")
+
+	elif isinstance(error, sp.NoGuildPlaylistError):
+		await ctx.send("This server doesn't have a server playlist yet!\n" + 
+            f"Use `{admin.getGuildPrefix(ctx.guild.id)}spcreate` to make one.")
+	elif isinstance(error, finance.NoPortfolioError):
+		await ctx.send(f"<@!{error.userID}>, you don't don't have a portfolio!\n" + 
+			"Use `s!pfstart` to create one.")
 
 	else: print(error.__dict__) #TODO: log as well as print?
 
