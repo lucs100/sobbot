@@ -79,6 +79,8 @@ MASTERY_TIER_3_BREAKPOINT = 500
 MASTERY_TIER_2_BREAKPOINT = 250
 MASTERY_TIER_1_BREAKPOINT = 100
 
+SEASON_12_START_TIME = datetime.fromtimestamp(1641556801)
+
 
 # Class Declarations
 
@@ -113,22 +115,6 @@ class ChampionMastery:
             self.champ = None
             self.level = 0
             self.points = 0
-
-# V4 iteration is now deprecated
-# class MatchKey:
-#     def __init__(self, matchData):
-#         self.gameID = matchData["gameId"]
-#         self.champID = int(matchData["champion"])
-#         self.champ = getChampNameById(self.champID)
-#         self.queue = int(matchData["queue"])
-#         self.map = getModeFromQueueID(self.queue)["map"]
-#         self.time = datetime.fromtimestamp(int(matchData["timestamp"])/1000)
-#         if self.map == "Summoner's Rift":
-#             self.role = getRole(matchData["role"], matchData["lane"])
-#         else:
-#             self.role = None
-#         self.debugData = (matchData["role"], matchData["lane"])
-
 
 class MatchKey:
     def __init__(self, matchCode):
@@ -641,18 +627,18 @@ def parseQueue(queue):
     }
     return queueTable[queue]
 
-def embedRankedData(s):
-    data = getRankedData(s) # either False, for error 2, or data
+def embedRankedData(summoner):
+    data = getRankedData(summoner) # either False or data
     if checkKeyInvalid():   
         raise KeyExpiredError
     if data == False:
         raise SummonerNotFoundError
     try:
-        s = data[0].name
+        summonerName = data[0].name
     except:
-        s = data.name
+        summonerName = data.name
         data = []
-    title=f"{s}  -  Ranked Status"
+    title=f"{summonerName}  -  Ranked Status"
     description, rankDict = "", []
     color = 0x64686e
     for i in range(0, len(data)):
@@ -677,7 +663,16 @@ def embedRankedData(s):
     else:
         color = 0x64686e
     if description == "": #no data returned
-        description = "This summoner isn't ranked in any queues yet!"
+        lastMatch = getLastMatch(summoner, True)
+        if lastMatch == None:
+            description = "This summoner isn't ranked in any queues yet!"
+        else:
+            lastMatch = Match(lastMatch)
+            lastMatchEnd = datetime.fromtimestamp(int(lastMatch.gameEndTimestamp)/1000)
+            if lastMatchEnd > SEASON_12_START_TIME:
+                description = "This summer is in the middle of their placement matches, so ranked data isn't available."
+            else:
+                description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
 
 def anonGetSingleMastery(summoner, champ):
