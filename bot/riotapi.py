@@ -74,6 +74,11 @@ CurrentPatch = "11.24.1" #TODO - get from ddrag
 MATCH_LIMIT = 25
 ADJ_WINRATE_DECAY_CONSTANT = 0.925
 
+MASTERY_TIER_4_BREAKPOINT = 1000
+MASTERY_TIER_3_BREAKPOINT = 500
+MASTERY_TIER_2_BREAKPOINT = 250
+MASTERY_TIER_1_BREAKPOINT = 100
+
 
 # Class Declarations
 
@@ -545,6 +550,8 @@ def getRankedData(s):
     if len(data) > 0:
         return data # list of Rank objects
     else: return summoner
+
+getRankedData("cand3l")
 
 def getMaxRank(list):
     rankSet = set()
@@ -1164,16 +1171,16 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
             level, points = champData.level, (champData.points/1000) # points in 1000s
             msDec = ""
             if level >= 3:
-                if points >= 1000:
+                if points >= MASTERY_TIER_4_BREAKPOINT:
                     msDec = "`"
                     # masteryStr = f"{msDec}(M{level} / {points:.2f}M){msDec}" # too long, maybe use showLevel flag?
                     masteryStr = f"{msDec}({(points/1000):.2f}M){msDec}"
                 else:
-                    if points >= 500:
+                    if points >= MASTERY_TIER_3_BREAKPOINT:
                         msDec = "***"
-                    elif points >= 200:
+                    elif points >= MASTERY_TIER_2_BREAKPOINT:
                         msDec = "**"
-                    elif points >= 50:
+                    elif points >= MASTERY_TIER_1_BREAKPOINT:
                         msDec = "*"
                     # masteryStr = f"{msDec}(M{level} / {points:.1f}K){msDec}" # too long
                     masteryStr = f"{msDec}({points:.1f}K){msDec}"
