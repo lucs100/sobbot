@@ -133,6 +133,10 @@
                 {
                     "usage": "scramble `length`",
                     "description": "Generates a rubik's scramble."
+                },
+                {
+                    "usage": "randomizeteams `[names]`",
+                    "description": "Generates two random teams from the names given."
                 }
             ]
         },
