@@ -537,8 +537,6 @@ def getRankedData(s):
         return data # list of Rank objects
     else: return summoner
 
-getRankedData("cand3l")
-
 def getMaxRank(list):
     rankSet = set()
     ranks = {
@@ -1286,7 +1284,7 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
         if isinstance(error, RateLimitError):
             embed.title = ":rotating_light: Rate limit reached! "
             embed.description = (":rotating_light:\n Use `info ratelimit` " +
-                                "for more information." +
+                                "for more information. " +
                                 "Wait about a minute before trying again.")
             await sentEmbed.edit(embed=embed)
         if isinstance(error, SummonerNotInMatchError):
