@@ -319,6 +319,30 @@ def cubeScramble(count = DEFAULT_SCRAMBLE_LENGTH):
         if i % 5 == 4:
             scramble += "  "
     return scramble
+
+async def randomTeams(message, stringOfNames):
+    embed = discord.Embed()
+    nameList = list(stringOfNames.split(" "))
+    random.shuffle(nameList)
+    if len(nameList) == 0:
+        pass
+        #TODO: return error
+        #TODO: max team size?
+    embed.title = "Randomized Teams"
+    embed.description = ""
+
+    blueNames, redNames = "", ""
+    while len(nameList) != 0:
+        if len(nameList) % 2 == 0:
+            blueNames += (nameList.pop()) + "\n"
+        else:
+            redNames += (nameList.pop()) + "\n"
+    embed.add_field(name="Blue Team", value=blueNames, inline=True)
+    embed.add_field(name="Red Team", value=redNames, inline=True)
+    embed.color=discord.Colour.orange()
+    await message.channel.send(embed=embed)
+    return True
+
     
 
 # async def setActivity(client):

@@ -304,6 +304,14 @@ async def scramble(message, length: Optional[int] = sob.DEFAULT_SCRAMBLE_LENGTH)
 	return True
 
 
+@bot.command(aliases=["randomizeteams"])
+async def randomteams(message, *, stringOfNames):
+	await sob.randomTeams(message, stringOfNames)
+	return True
+
+#TODO: error handling
+
+
 # LoL Commands
 #TODO: add cooldowns to API call heavy commands
 #TODO: change handleRegisteredSummoner to a Converter
