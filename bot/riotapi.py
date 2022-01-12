@@ -8,6 +8,7 @@
 # Library Imports and Other Formalities
 
 
+from logging import exception
 from discord.ext.commands.errors import CommandError
 import requests, os, json, discord, concurrent, warnings
 from dotenv import load_dotenv
@@ -736,11 +737,17 @@ def isUserRegistered(id):
             return users[id]["lol"]  # if lol name in user data
     return False
 
+#TODO: make this class -> pickle it
+
 def addRegistration(id, name):
     summoner = getSummonerData(name)
     if summoner == None:
         return False  # summoner does not exist
-    users[str(id)]["lol"] = str(summoner.name)
+    try:
+        users[str(id)]["lol"] = str(summoner.name)
+    except KeyError:
+        users[str(id)] = {}     # initialize userdata
+        users[str(id)]["lol"] = str(summoner.name)
     updateUserData()
     return (summoner.name) # confirms with properly capitalized name
 
