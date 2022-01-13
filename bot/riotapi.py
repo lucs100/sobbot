@@ -669,7 +669,7 @@ def embedRankedData(summoner):
             lastMatch = Match(lastMatch)
             lastMatchEnd = datetime.fromtimestamp(int(lastMatch.gameEndTimestamp)/1000)
             if lastMatchEnd > SEASON_12_START_TIME:
-                description = "This summer is in the middle of their placement matches, so ranked data isn't available."
+                description = "This summoner is in the middle of their placement matches, so ranked data isn't available."
             else:
                 description = "This summoner isn't ranked in any queues yet!"
     return discord.Embed(title=title, description=description, color=color)
