@@ -656,8 +656,9 @@ def embedRankedData(summoner):
         description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
         description += "\n"
         #description += (f"*{round(awr, 2)}% adjusted winrate*") #using carry factor for now
-        description += (f"*Carry Factor: {round(carryFactor, 3)}*")
-        description += "\n"
+        if (q == "Solo/Duo"):
+            description += (f"*Carry Factor: {round(carryFactor, 3)}*")
+            description += "\n"
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
