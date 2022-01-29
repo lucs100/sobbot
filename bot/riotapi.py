@@ -62,7 +62,7 @@ class SummonerNotInMatchError(commands.CommandError):
 # Constants and Constant Data
 
 
-champs = {}
+champs = {} #TODO: get from ddrag
 users = {}
 pulledMatches = {}
 queues = {}
@@ -70,7 +70,7 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-CurrentPatch = "11.24.1" #TODO - get from ddrag
+CurrentPatch = "12.2.1" #TODO - get from ddrag
 
 MATCH_LIMIT = 25
 ADJ_WINRATE_DECAY_CONSTANT = 0.925
