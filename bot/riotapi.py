@@ -646,12 +646,17 @@ def embedRankedData(summoner):
         lp, w, l, gp, wr = data[i].lp, data[i].wins, data[i].losses, data[i].gp, ((data[i].wins * 100) / (data[i].gp))
         awr = (w+10)*100 / (gp+20) # 3b1b's method of review checking, applied to winrate
         rmx = calculateRankMultiplier(data[i].tier, data[i].division) # rank multiplier
+        # currently testing Carry Factor        
+        carryFactor = ((wr/100)-(4/9))*9
+        # methodology in helpfile
+        # end testing
         rs = int((w**2.5 * wr)*rmx / gp)
         description += (f"**{q}** - **{rank}** - {lp} LP")
         description += "\n"
         description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
         description += "\n"
-        description += (f"*{round(awr, 2)}% adjusted winrate*")
+        #description += (f"*{round(awr, 2)}% adjusted winrate*") #using carry factor for now
+        description += (f"*Carry Factor: {round(carryFactor, 3)}*")
         description += "\n"
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
@@ -659,6 +664,7 @@ def embedRankedData(summoner):
         rankDict.append(data[i].tier)
     if len(rankDict) > 0:
         color = getTierColor(getMaxRank(rankDict))
+        footer = "try s!info carryfactor"
     else:
         color = 0x64686e
     if description == "": #no data returned
@@ -672,7 +678,7 @@ def embedRankedData(summoner):
                 description = "This summoner is in the middle of their placement matches, so ranked data isn't available."
             else:
                 description = "This summoner isn't ranked in any queues yet!"
-    return discord.Embed(title=title, description=description, color=color)
+    return discord.Embed(title=title, description=description, color=color, footer=footer)
 
 def anonGetSingleMastery(summoner, champ):
     if isinstance(summoner, str):
