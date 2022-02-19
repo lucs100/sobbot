@@ -80,6 +80,8 @@ MASTERY_TIER_3_BREAKPOINT = 500
 MASTERY_TIER_2_BREAKPOINT = 250
 MASTERY_TIER_1_BREAKPOINT = 100
 
+CARRY_FACTOR_UNLOCK = 25
+
 SEASON_12_START_TIME = datetime.fromtimestamp(1641556801)
 
 
@@ -657,8 +659,12 @@ def embedRankedData(summoner):
         description += "\n"
         #description += (f"*{round(awr, 2)}% adjusted winrate*") #using carry factor for now
         if (q == "Solo/Duo"):
-            description += (f"*Carry Factor: {round(carryFactor, 3)}*")
-            description += "\n"
+            if (gp >= CARRY_FACTOR_UNLOCK):
+                description += (f"*Carry Factor: {round(carryFactor, 3)}*")
+                description += "\n"
+            else:
+                description += (f"*Carry Factor unlocks at {CARRY_FACTOR_UNLOCK} games played.*")
+                description += "\n"
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
