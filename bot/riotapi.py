@@ -70,7 +70,7 @@ runes = {}
 summSpells = {}
 summonerList = []
 
-CurrentPatch = "12.2.1" #TODO - get from ddrag
+CurrentPatch = "12.4.1" #TODO - get from ddrag
 
 MATCH_LIMIT = 25
 ADJ_WINRATE_DECAY_CONSTANT = 0.925
@@ -312,7 +312,7 @@ def getChampIdByName(q):
             return id
     for id, n in champs.items():
         n = n.lower()
-        if n[0:len(q)] == q[0:len(q)].lower():
+        if n[0:len(q)] == q[0:len(q)].lower(): #bound to size of query
             return id
     for id, n in champs.items():
         n = n.lower()
@@ -1320,6 +1320,8 @@ async def getLiveMatchEmbed(summoner, message, hasRanked=False):
 
 def ddGetAbilityName(message): # dd = datadragon
     def parseQuery(q):
+        if q == "Renata Glasc":
+            return "Renata"
         return q.replace(".", "").replace('\'', "").replace(" ", "")
 
     ValidCodes = ['q','w', 'e', 'r', 'ult', 'ultimate', 'ulti', 'p', 'passive', 'pass']
@@ -1383,7 +1385,7 @@ def getWikiLink(message):
     # assume passed champ + ability
     champ, spell = ddGetAbilityName(message)
     
-    try:
+    try: #TODO: make these Discord.py errors
         if champ == "err": # out of date?
             return "Something went wrong. Riot's API might be down."
         if isNoCode(message): # assume no ability code + long enough
