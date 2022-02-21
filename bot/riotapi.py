@@ -644,27 +644,28 @@ def embedRankedData(summoner):
     color = 0x64686e
     for i in range(0, len(data)):
         rank = parseRank(data[i].tier, data[i].division)
-        q = parseQueue(data[i].queue)
-        lp, w, l, gp, wr = data[i].lp, data[i].wins, data[i].losses, data[i].gp, ((data[i].wins * 100) / (data[i].gp))
-        awr = (w+10)*100 / (gp+20) # 3b1b's method of review checking, applied to winrate
-        rmx = calculateRankMultiplier(data[i].tier, data[i].division) # rank multiplier
+        queueName = parseQueue(data[i].queue)
+        lp, wins, losses, gamesPlayed, winRate = data[i].lp, data[i].wins, data[i].losses, data[i].gp, ((data[i].wins * 100) / (data[i].gp))
+        awr = (wins+10)*100 / (gamesPlayed+20) # 3b1b's method of review checking, applied to winrate
+        rankMultiplier = calculateRankMultiplier(data[i].tier, data[i].division)
         # currently testing Carry Factor        
-        carryFactor = ((wr/100)-(4/9))*9
+        carryFactor = ((winRate/100)-(4/9))*9
         # methodology in helpfile
         # end testing
-        rs = int((w**2.5 * wr)*rmx / gp)
-        description += (f"**{q}** - **{rank}** - {lp} LP")
+        rs = int((wins**2.5 * winRate)*rankMultiplier / gamesPlayed)
+        description += (f"**{queueName}** - **{rank}** - {lp} LP")
         description += "\n"
-        description += (f"({w} wins, {l} losses - {round(wr, 2)}% winrate)")
+        description += (f"({wins} wins, {losses} losses - {round(winRate, 2)}% winrate)")
         description += "\n"
         #description += (f"*{round(awr, 2)}% adjusted winrate*") #using carry factor for now
-        if (q == "Solo/Duo"):
-            if (gp >= CARRY_FACTOR_UNLOCK):
+        if (queueName == "Solo/Duo"):
+            if (gamesPlayed >= CARRY_FACTOR_UNLOCK):
                 description += (f"*Carry Factor: {round(carryFactor, 3)}*")
-                description += "\n"
+            elif gamesPlayed == CARRY_FACTOR_UNLOCK-1:
+                description += ("*Carry Factor unlocks in 1 more game.*")
             else:
-                description += (f"*Carry Factor unlocks at {CARRY_FACTOR_UNLOCK} games played.*")
-                description += "\n"
+                description += (f"*Carry Factor unlocks in {CARRY_FACTOR_UNLOCK-gamesPlayed} more games.*")
+            description += "\n"
         description += (f"*Queue Ranked Score: {rs:,}*")
         description += "\n"
         description += "\n"
