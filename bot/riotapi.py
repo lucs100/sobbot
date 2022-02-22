@@ -652,7 +652,7 @@ def embedRankedData(summoner):
         carryFactor = ((winRate/100)-(4/9))*9
         # methodology in helpfile
         # end testing
-        rs = int((wins**2.5 * winRate)*rankMultiplier / gamesPlayed)
+        rankedScore = int((wins**2.5 * winRate)*rankMultiplier / gamesPlayed)
         description += (f"**{queueName}** - **{rank}** - {lp} LP")
         description += "\n"
         description += (f"({wins} wins, {losses} losses - {round(winRate, 2)}% winrate)")
@@ -666,7 +666,7 @@ def embedRankedData(summoner):
             else:
                 description += (f"*Carry Factor unlocks in {CARRY_FACTOR_UNLOCK-gamesPlayed} more games.*")
             description += "\n"
-        description += (f"*Queue Ranked Score: {rs:,}*")
+        description += (f"*Queue Ranked Score: {rankedScore:,}*")
         description += "\n"
         description += "\n"
         rankDict.append(data[i].tier)
