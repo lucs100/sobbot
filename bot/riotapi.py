@@ -1366,6 +1366,7 @@ def ddGetAbilityName(message): # dd = datadragon
     return champ, spellDict[code]
 
 def getWikiLink(message):
+    #TODO: make this a bit nicer? too bad you cant do custom link text, but just a raw link is ugly
     def scoreSpaces(input):
         if input == None or input == "None": # stupid gCCN returns string
             return None
@@ -1388,7 +1389,7 @@ def getWikiLink(message):
     try: #TODO: make these Discord.py errors
         if champ == "err": # out of date?
             return "Something went wrong. Riot's API might be down."
-        if isNoCode(message): # assume no ability code + long enough
+        if isNoCode(message): # assume no ability code + long enough #TODO: why just getFormat(message)? elegant but confusing
             return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
         elif champ != None and spell != None: # result passed # TODO - "she" erroneously becomes "ashe / e"
             champ, spell = scoreSpaces(champ), scoreSpaces(spell)
