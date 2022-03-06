@@ -9,7 +9,7 @@ with open('bot/resources/data/private/guilds.json') as f:
 
 def getGuildPrefix(id):
     return DefaultPrefix
-    #TODO: FIX PREFIX MANAGEMENT
+    #TODO: FIX PREFIX MANAGEMENT or dont at all, idk if it's possible using command update
     try:
         return guilds[str(id)]["prefix"]
     except KeyError:

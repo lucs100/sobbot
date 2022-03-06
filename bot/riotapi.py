@@ -140,7 +140,7 @@ class Match:
             self.position = getRoleFromMatch(matchData, summonerPUUID) #this is horrible, this entire class needs better structure
         else:
             self.position = "Unknown"
-        #TODO: adding members as neccesary.
+        #TODO: adding class members as neccesary.
 
 class LiveMatchParticipant():
     def __init__(self, data):
@@ -155,7 +155,7 @@ class LiveMatchParticipant():
         # self.perks = data["perks"]["perkIds"] #change these to runes later maybe?
         # self.primaryRuneTree = data["perks"]["perkStyle"]
         # self.secondaryRuneTree = data["perks"]["perkSubStyle"]
-        # self.rank = getRank(self.summonerName) #TODO
+        # self.rank = getRank(self.summonerName) #TODO - adding as neccesary, v5 screwed up classes
 
 class LiveMatchBan():
     def __init__(self, data):
@@ -438,7 +438,7 @@ def getSummonerData(s):
         if code == 404: #TODO: raise error here, not a level down
             return None
         print(f"Error {code} in getSummonerData wasn't explicitly handled. Returning Nonetype.")
-        return None #this is horrible
+        return None #this is horrible lol
     else: return Summoner(summonerData)
 
 def getRankedString(s, hasLP=False, hasWR=False, deco=False, hasGP=False, queue="RANKED_SOLO_5x5"): #only works with default rank right now
@@ -468,7 +468,7 @@ def getRankedString(s, hasLP=False, hasWR=False, deco=False, hasGP=False, queue=
 
     try:
         data = getRankedData(s)
-    except: #TODO: what type?
+    except: #TODO: what error?
         raise RateLimitError
     wr, g = 0, 0 #init to cover case when no ranked data
     found = False
@@ -826,7 +826,7 @@ def analyzePlayerPerformance(matchId, summoner):
     matchdata, playerdata = (getPlayerRespectiveInfo(match, summoner.esid))
     print(json.dumps(matchdata, indent=4))
     print(json.dumps(playerdata, indent=4))
-    #TODO
+    #TODO - this is unfinished
 
 def didPlayerWin(summonerId, matchData):
     try:
@@ -1059,7 +1059,6 @@ def getTopRoles(data):
     secondary = max(temp, key=temp.get)
     return primary, secondary
 
-#TODO: this should show a "loading" embed like the winrate embed
 async def getRolePlayDataEmbed(message, name, ranked=False):
     try:
         title = "Retrieving data..."
@@ -1391,7 +1390,7 @@ def getWikiLink(message):
             return "Something went wrong. Riot's API might be down."
         if isNoCode(message): # assume no ability code + long enough
             return f"<https://leagueoflegends.fandom.com/wiki/{getFormat(message)}/LoL>"
-        elif champ != None and spell != None: # result passed # TODO - "she" => "ashe / e"
+        elif champ != None and spell != None: # result passed # TODO - "she" erroneously becomes "ashe / e"
             champ, spell = scoreSpaces(champ), scoreSpaces(spell)
             return f"<https://leagueoflegends.fandom.com/wiki/{champ}/LoL#{spell}>"
         elif getFormat(message) != None and len(message) >= 2: # separate case if can be refactored later

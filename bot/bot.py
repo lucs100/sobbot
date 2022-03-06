@@ -28,7 +28,8 @@ bot = commands.Bot(
 	owner_id = int(botCreatorID),
 	help_command=None)
 
-#TODO: edit @bot.command() decorator to record successful function uses?
+#TODO: edit @bot.command() decorator to record/count successful function uses?
+#TODO: ^, to log uses that error out?
 #TODO: create a real helpcommand using discord-pretty-help
 
 
@@ -315,6 +316,11 @@ async def randomteams(message, *, stringOfNames):
 # LoL Commands
 #TODO: add cooldowns to API call heavy commands
 #TODO: change handleRegisteredSummoner to a Converter
+	#ie. automatically convert "" to user's summName, or leave text as text
+	#could either implement some stupid class for this or just pass a Summoner to every command
+	#rather than creating a Summoner in every single command function
+	#could even save Summoner objects pickled??? but might be a bad idea for changing data
+	#would have to diffrentiate between uses of a stale Summoner that don't need a reGET
 
 def handleRegisteredSummoner(message, query):
 	if query == None:
@@ -459,6 +465,7 @@ async def lollobby(message, *, chat):
 # Currency Commands
 #TODO: these commands suck 
 #TODO: rewrite all currency commands to use user objects rather than ids
+	#or just a class/pickle it ghhhh
 
 
 @bot.command()
@@ -644,7 +651,9 @@ async def spsetdesc(context, *, desc):
 	return await HandleSuccessReaction(context, response)
 
 
-#TODO: can multimessage handling be done better? :(
+#TODO: can multimessage handling (ie. confirmations) be done better? :(
+#look for other code snippets that do this
+
 @bot.command(aliases=["playlistclear"])
 @commands.check(commands.has_permissions(manage_guild = True))
 async def spclear(message):
